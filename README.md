@@ -8,14 +8,21 @@
 - 최대한 번거롭지 않게 하려했지만 로컬에서 설정할 게 있어요
 - npm i 이후의 작업이에요
 
-`mkdir -p .husky
+```
+mkdir -p .husky
 echo '#!/bin/sh
-npx commitlint --edit "$1"' > .husky/commit-msg`
+npx commitlint --edit "$1"' > .husky/commit-msg
+```
 
-`echo '#!/bin/sh
-npx lint-staged' > .husky/pre-commit`
+```
+mkdir -p .husky
+echo '#!/bin/sh
+npx lint-staged' > .husky/pre-commit
+```
 
-1. 위의 두 가지 코드를 터미널에 입력하시면 됩니다.
+- 위의 두 가지 코드를 터미널에 입력하시면 됩니다.
+- 프로젝트를 열면 다운받길 권장하는 에디터가 있어요 ( ESLint, Prettier )
+- 에디터도 다운 해주세요!
 
 #### 목표
 
@@ -43,10 +50,12 @@ npx lint-staged' > .husky/pre-commit`
 
 ### 포맷
 
-```
+````
+
 type: subject
 
 body
+
 ```
 
 #### type
@@ -74,3 +83,5 @@ body
 - 가능하면 한줄당 72자를 넘지 않도록 한다.
 - 본문의 양에 구애받지 않고 최대한 상세히 작성
 - “어떻게” 보다는 “무엇을" “왜” 변경했는지 설명한다.
+```
+````
