@@ -18,7 +18,7 @@
 
 5. git 컨벤션을 사용해주세요
 
-6. 커밋은 git bash를 이용해주세요
+6. 커밋은 터미널에서 하지않고 폴더를 클릭하여 git bash로 이용해주세요
 
 7. Gitmoji CLI를 이용하기 때문에 커밋 명령어는 `gitmoji -c` 입니다. (줄바꿈은 `Shift + Enter`)
 
