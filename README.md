@@ -85,8 +85,6 @@ body
 | ➖ | `:heavy_minus_sign:` | 의존성 제거 |
 | 🔧 | `:wrench:` | 구성 파일 추가/수정 |
 | 🔨 | `:hammer:` | 개발 스크립트 추가/수정 |
-| 🌐 | `:globe_with_meridians:` | 국제화/현지화 |
-| 💩 | `:poop:` | 똥싼 코드 |
 | ⏪ | `:rewind:` | 변경 내용 되돌리기 |
 | 🔀 | `:twisted_rightwards_arrows:` | 브랜치 합병 |
 | 📦 | `:package:` | 컴파일된 파일 추가/수정 |
@@ -94,7 +92,6 @@ body
 | 🚚 | `:truck:` | 리소스 이동, 이름 변경 |
 | 📄 | `:page_facing_up:` | 라이센스 추가/수정 |
 | 💡 | `:bulb:` | 주석 추가/수정 |
-| 🍻 | `:beers:` | 술 취해서 쓴 코드 |
 | 🗃 | `:card_file_box:` | 데이터베이스 관련 수정 |
 | 🔊 | `:loud_sound:` | 로그 추가/수정 |
 | 🙈 | `:see_no_evil:` | .gitignore 추가/수정 |
