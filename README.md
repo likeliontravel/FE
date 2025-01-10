@@ -4,8 +4,18 @@
 
 #### 처음 세팅해야 할 부분이 있습니다. 잘 따라와 주세요
 
-- Commitlint + Husky를 사용하여 커밋 메시지 컨벤션 검증을 시행할거에요! 최대한 번거롭지 않게 하려했지만 로컬에서 설정할 게 있어요
-  1. `npx husky add .husky/pre-commit "npx lint-staged" npx husky add .husky/commit-msg "npx --no -- commitlint --edit '$1'"`를 실행해주세요
+- Commitlint + Husky를 사용하여 커밋 메시지 컨벤션 검증을 시행할거에요!
+- 최대한 번거롭지 않게 하려했지만 로컬에서 설정할 게 있어요
+- npm i 이후의 작업이에요
+
+`mkdir -p .husky
+echo '#!/bin/sh
+npx commitlint --edit "$1"' > .husky/commit-msg`
+
+`echo '#!/bin/sh
+npx lint-staged' > .husky/pre-commit`
+
+1. 위의 두 가지 코드를 터미널에 입력하시면 됩니다.
 
 #### 목표
 
