@@ -4,6 +4,7 @@ const compat = new FlatCompat();
 
 export default [
   ...compat.extends(
+    'eslint:recommended',
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
@@ -18,6 +19,12 @@ export default [
       'no-console': ['warn'],
       'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/no-explicit-any': ['warn'],
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'lf',
+        },
+      ],
     },
   },
 ];
