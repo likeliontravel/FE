@@ -20,7 +20,7 @@
 
 6. 각자의 레포로 포크해간 후 머지할 땐 PR을 통해 하겠습니다.
 
-7. Gitmoji CLI를 이용하기 때문에 커밋 명령어는 `gitmoji -c` 입니다.
+7. Gitmoji CLI를 이용하기 때문에 커밋 명령어는 `gitmoji -c` 입니다. (줄바꿈은 `Shift + Enter`)
 
 ## Git Convention
 
