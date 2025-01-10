@@ -1,5 +1,12 @@
 ## 가이드라인 ( 정말 중요합니다!! )
 
+### 초기 세팅
+
+#### 처음 세팅해야 할 부분이 있습니다. 잘 따라와 주세요
+
+- Commitlint + Husky를 사용하여 커밋 메시지 컨벤션 검증을 시행할거에요! 최대한 번거롭지 않게 하려했지만 로컬에서 설정할 게 있어요
+  1. `npx husky add .husky/pre-commit "npx lint-staged" npx husky add .husky/commit-msg "npx --no -- commitlint --edit '$1'"`를 실행해주세요
+
 #### 목표
 
 - 코드의 재사용성
