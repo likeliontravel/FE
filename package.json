@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prepare": "husky install && npx lint-staged --init && npx commitlint --init",
+    "prepare": "husky install",
     "lint": "next lint",
     "format": "prettier --write .",
     "dev": "next dev --turbopack",
