@@ -1,15 +1,13 @@
 import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
 import prettier from 'eslint-plugin-prettier';
 import tsParser from '@typescript-eslint/parser';
 
 const compat = new FlatCompat();
 
 export default [
-  js.configs.recommended,
   ...compat.extends(
-    'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/strict',
+    'plugin:react-perf/recommended',
     'plugin:prettier/recommended'
   ),
   {
@@ -25,7 +23,7 @@ export default [
     rules: {
       'prettier/prettier': ['error', { endOfLine: 'lf' }],
       semi: ['error', 'always'],
-      quotes: ['error', 'double'],
+      quotes: ['error', 'single'],
       indent: ['error', 2],
       'no-unused-vars': ['warn'],
       'no-console': ['warn'],
