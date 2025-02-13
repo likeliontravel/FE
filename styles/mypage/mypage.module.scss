@@ -1,0 +1,72 @@
+.userbox {
+  width: 258px;
+  height: 167px;
+  display: flex;
+  justify-content: space-between;
+  margin-left: 300px;
+}
+
+.profile {
+  width: 69px;
+  height: 69px;
+  background-image: url('../../public/imgs/Ellipse5.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 50%;
+}
+
+.user {
+  width: 100px;
+}
+
+.name {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.email {
+  color: #5d6064;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.account {
+  color: #5d6064;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.oauthbox {
+  width: 85px;
+  height: 95px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  button {
+    line-height: 28px;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8.5px 2px 8.5px;
+    border: none;
+    border-radius: 20px;
+    color: #5d6064;
+  }
+}
+
+.oauth {
+  width: 25px;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #dcdfe4;
+  border-radius: 50%;
+  svg {
+    width: 20px;
+    height: 20px;
+    color: #5d6064;
+    opacity: 0.5;
+  }
+}
