@@ -5,6 +5,7 @@ import '../../styles/globals.css';
 import { Provider } from 'react-redux';
 import store from '../../store/store';
 import Header from '@/app/_component/Header';
+import Footer from '@/app/_component/Footer';
 
 export default function RootLayout({
   children,
@@ -17,6 +18,7 @@ export default function RootLayout({
         <body>
           <Header />
           {children}
+          <Footer />
         </body>
       </html>
     </Provider>
