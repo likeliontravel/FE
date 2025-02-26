@@ -1,7 +1,11 @@
 @use '../mixins.scss' as *;
 
+.header,
+.navBar {
+  @include display_flex-align_items_center;
+}
+
 .header {
-  @include display_flex-align_items_center();
   @include width-height(1920px, 80px);
 }
 
@@ -13,23 +17,22 @@
   margin-left: 130px;
 }
 
-.navBar {
-  @include display_flex-align_items_center();
+.navGroup,
+.userGroup,
+.user {
+  @include display_flex-align_itmes_center-justify_content_space_around;
 }
 
 .navGroup {
-  @include display_flex-align_itmes_center-justify_content_space_around();
   @include width-height(750px, 80px);
   margin-left: 470px;
 
   p {
-    @include font_size-font_weight(18px, 600);
-    height: 21.78px;
+    @include font_size-font_weight-line_height(18px, 600, 21.78px);
   }
 }
 
 .userGroup {
-  @include display_flex-align_itmes_center-justify_content_space_around();
   @include width-height(250px, 80px);
 }
 
@@ -43,12 +46,10 @@
 }
 
 .user {
-  @include display_flex-align_itmes_center-justify_content_space_around();
   @include width-height(80px, 80px);
 
   p {
-    @include font_size-font_weight(16px, 600);
-    height: 19.36px;
+    @include font_size-font_weight-line_height(16px, 600, 19.36px);
   }
 }
 
