@@ -1,4 +1,5 @@
-@use '../mixins.scss' as *;
+@use '../component/mixins.scss' as *;
+@use '../component/display_mixins.scss' as *;
 
 .header,
 .navBar {
@@ -11,7 +12,7 @@
 
 .logo {
   @include background_image-size_cover-repeat_no_repeat(
-    '../public/imgs/logo.png'
+    '../../public/imgs/logo.png'
   );
   @include width-height(100px, 40px);
   margin-left: 130px;
@@ -20,7 +21,7 @@
 .navGroup,
 .userGroup,
 .user {
-  @include display_flex-align_itmes_center-justify_content_space_around;
+  @include display_flex-align_items_center-justify_content_space_around;
 }
 
 .navGroup {
@@ -38,7 +39,7 @@
 
 .alram {
   @include background_image-size_cover-repeat_no_repeat(
-    '../public/imgs/alram.png'
+    '../../public/imgs/alram.png'
   );
   @include width-height(28px, 28px);
   margin-top: 5px;
@@ -55,7 +56,7 @@
 
 .userImage {
   @include background_image-size_cover-repeat_no_repeat(
-    '../public/imgs/Ellipse5.png'
+    '../../public/imgs/Ellipse5.png'
   );
   @include width-height(30px, 30px);
 }
