@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import style from '../../../styles/main/mainpage.module.scss';
 import useBetweenScroll from '../../../util/useBetweenScroll';
 
-export default function myPage() {
+export default function mainPage() {
   const topScrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomScrollContainerRef = useRef<HTMLDivElement>(null);
 
