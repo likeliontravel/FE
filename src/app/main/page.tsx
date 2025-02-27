@@ -1,52 +1,15 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import style from '../../../styles/main/mainpage.module.scss';
+import useBetweenScroll from '../../../util/useBetweenScroll';
 
 export default function myPage() {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const topScrollContainerRef = useRef<HTMLDivElement>(null);
+  const bottomScrollContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    let targetScrollLeft = container.scrollLeft;
-    let isAnimating = false;
-
-    const animateScroll = (): void => {
-      isAnimating = true;
-      const currentScrollLeft = container.scrollLeft;
-      const delta = targetScrollLeft - currentScrollLeft;
-
-      if (Math.abs(delta) < 1) {
-        container.scrollLeft = targetScrollLeft;
-        isAnimating = false;
-        return;
-      }
-      container.scrollLeft = currentScrollLeft + delta * 0.1;
-      requestAnimationFrame(animateScroll);
-    };
-
-    const onWheel = (e: WheelEvent): void => {
-      e.preventDefault();
-      targetScrollLeft += e.deltaY;
-      targetScrollLeft = Math.max(
-        0,
-        Math.min(
-          targetScrollLeft,
-          container.scrollWidth - container.clientWidth
-        )
-      );
-      if (!isAnimating) {
-        requestAnimationFrame(animateScroll);
-      }
-    };
-
-    container.addEventListener('wheel', onWheel, { passive: false });
-    return () => {
-      container.removeEventListener('wheel', onWheel);
-    };
-  }, []);
+  useBetweenScroll(topScrollContainerRef);
+  useBetweenScroll(bottomScrollContainerRef);
 
   return (
     <div className={style.body}>
@@ -94,7 +57,7 @@ export default function myPage() {
           </div>
         </div>
         {/* 핫플 리스트 */}
-        <div className={style.mate_hotplace} ref={scrollContainerRef}>
+        <div className={style.mate_hotplace} ref={topScrollContainerRef}>
           <div className={style.middle_content}>
             <div className={style.middle_content_img}></div>
             <div className={style.middle_content_details}>
@@ -151,7 +114,7 @@ export default function myPage() {
           </p>
         </div>
         {/* 여행 추천 리스트 */}
-        <div className={style.bottom_place} ref={scrollContainerRef}>
+        <div className={style.bottom_place} ref={bottomScrollContainerRef}>
           <div className={style.bottom_content}>
             <div className={style.bottom_content_title}>
               올 겨울 크리스마스는 이.거.다
