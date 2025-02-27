@@ -1,0 +1,20 @@
+@mixin width-height($witdh, $height) {
+  width: $witdh;
+  height: $height;
+}
+
+@mixin background_image-size_cover-repeat_no_repeat($url) {
+  background-image: url($url);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+@mixin font_size-font_weight-line_height(
+  $font-size,
+  $font-weight,
+  $line-height
+) {
+  font-size: $font-size;
+  font-weight: $font-weight;
+  line-height: $line-height;
+}
