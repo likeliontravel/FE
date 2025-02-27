@@ -117,6 +117,7 @@
   @include width-height(820px, 100%);
   overflow-x: auto;
   gap: 8px;
+  padding: 10px;
 }
 
 .mate_hotplace::-webkit-scrollbar,
@@ -190,7 +191,7 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  max-height: calc(1.3em * 2);
+  max-height: calc(1.5em * 2);
   text-overflow: ellipsis;
 }
 
@@ -222,6 +223,7 @@
   margin-left: 40px;
   overflow-x: auto;
   gap: 8px;
+  padding: 10px;
 }
 
 .bottom_content {
