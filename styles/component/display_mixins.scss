@@ -3,6 +3,11 @@
   align-items: center;
 }
 
+@mixin display_flex-justify_content_space_between {
+  display: flex;
+  justify-content: space-between;
+}
+
 @mixin display_flex-align_items_center-justify_content_center {
   display: flex;
   align-items: center;
