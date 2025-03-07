@@ -2,19 +2,17 @@
 @use '../component/display_mixins.scss' as *;
 
 .body,
-.bottom {
+.bottom,
+.none_mate_hotplace {
   @include display_flex-flex_direction_column-align_items_center-justify_content_center;
 }
 
 .top,
-.middle_content_profile {
-  @include display_flex-align_items_center;
-}
-
 .middle,
 .mate_hotplace,
-.bottom_place {
-  @include display_flex-align_items_center-justify_content_space_between;
+.bottom_place,
+.middle_content_profile {
+  @include display_flex-align_items_center;
 }
 
 .middle_text,
@@ -23,7 +21,8 @@
 }
 
 .middle_show,
-.middle_content_category {
+.middle_content_category,
+.rectangle {
   @include display_flex-align_items_center-justify_content_center;
 }
 
@@ -72,7 +71,7 @@
 .none_img {
   @include width-height(170px, 154px);
   @include background_image-size_cover-repeat_no_repeat(
-    '/../public/imgs/none.png'
+    '../../public/imgs/none.png'
   );
   border-radius: 10px;
 }
@@ -85,6 +84,7 @@
 
 .middle_text {
   @include width-height(356px, 100%);
+  margin-right: 44px;
 }
 
 .middle_title_text {
@@ -113,7 +113,8 @@
   }
 }
 
-.mate_hotplace {
+.mate_hotplace,
+.none_mate_hotplace {
   @include width-height(820px, 100%);
   overflow-x: auto;
   gap: 8px;
@@ -151,7 +152,6 @@
   @include width-height(84px, 22px);
   @include font_size-font_weight-line_height(12px, 500, 14.52px);
   border-radius: 5px;
-  background-color: red;
 }
 
 .middle_content_title {
@@ -173,7 +173,6 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
-  border: solid 1px firebrick;
 }
 
 .middle_content_profile_name {
@@ -193,6 +192,33 @@
   -webkit-line-clamp: 2;
   max-height: calc(1.5em * 2);
   text-overflow: ellipsis;
+}
+
+.none_mate_hotplace {
+  @include width-height(820px, 340px);
+  background-color: black;
+}
+
+.rectangle {
+  @include width-height(76px, 42px);
+  background-color: white;
+  border-radius: 21px;
+  div {
+    @include width-height(36px, 8px);
+    @include background_image-size_cover-repeat_no_repeat(
+      '../../public/imgs/threepoint.png'
+    );
+  }
+}
+
+.none_mate_hotplace_title {
+  @include font_size-font_weight-line_height(26px, 600, 100%);
+  color: white;
+}
+
+.none_mate_hotplace_text {
+  @include font_size-font_weight-line_height(16px, 500, 100%);
+  color: white;
 }
 
 .bottom {
