@@ -1,13 +1,14 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import style from '../../../styles/main/mainpage.module.scss';
 import useBetweenScroll from '../../../util/useBetweenScroll';
 
 export default function mainPage() {
   const topScrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomScrollContainerRef = useRef<HTMLDivElement>(null);
-
+  const [hotPlaceList, setHotPlaceList] = useState<any>(null);
+  setHotPlaceList(null);
   useBetweenScroll(topScrollContainerRef);
   useBetweenScroll(bottomScrollContainerRef);
 
@@ -57,52 +58,44 @@ export default function mainPage() {
           </div>
         </div>
         {/* 핫플 리스트 */}
-        <div className={style.mate_hotplace} ref={topScrollContainerRef}>
-          <div className={style.middle_content}>
-            <div className={style.middle_content_img}></div>
-            <div className={style.middle_content_details}>
-              <div className={style.middle_content_category}></div>
-              <div className={style.middle_content_title}></div>
-              <div className={style.middle_content_user}>
-                <div className={style.middle_content_profile}></div>
-                <div className={style.middle_content_text}></div>
-              </div>
-            </div>
-          </div>
-          <div className={style.middle_content}>
-            <div className={style.middle_content_img}></div>
-            <div className={style.middle_content_details}>
-              <div className={style.middle_content_category}>Hot 게시물</div>
-              <div className={style.middle_content_title}>
-                고즈넉한 국내 여행지 소개해요
-              </div>
-              <div className={style.middle_content_user}>
-                <div className={style.middle_content_profile}>
-                  <div className={style.middle_content_profile_img}></div>
-                  <div className={style.middle_content_profile_name}>
-                    여정이에요오오오오
+        {hotPlaceList ? (
+          <div className={style.mate_hotplace} ref={topScrollContainerRef}>
+            <div className={style.middle_content}>
+              <div className={style.middle_content_img}></div>
+              <div className={style.middle_content_details}>
+                <div className={style.middle_content_category}>Hot 게시물</div>
+                <div className={style.middle_content_title}>
+                  고즈넉한 국내 여행지 소개해요
+                </div>
+                <div className={style.middle_content_user}>
+                  <div className={style.middle_content_profile}>
+                    <div className={style.middle_content_profile_img}></div>
+                    <div className={style.middle_content_profile_name}>
+                      여정이에요오오오오
+                    </div>
+                  </div>
+                  <div className={style.middle_content_text}>
+                    제가 가본 국내 고즈넉한 여행지 추천해요! 안녕하세요 저번주
+                    경주 여행 다녀온 여정입니다 이번 여행은 정말 재밌었고 다음에
+                    또 가고 싶네요!
                   </div>
                 </div>
-                <div className={style.middle_content_text}>
-                  제가 가본 국내 고즈넉한 여행지 추천해요! 안녕하세요 저번주
-                  경주 여행 다녀온 여정입니다 이번 여행은 정말 재밌었고 다음에
-                  또 가고 싶네요!
-                </div>
               </div>
             </div>
           </div>
-          <div className={style.middle_content}>
-            <div className={style.middle_content_img}></div>
-            <div className={style.middle_content_details}>
-              <div className={style.middle_content_category}></div>
-              <div className={style.middle_content_title}></div>
-              <div className={style.middle_content_user}>
-                <div className={style.middle_content_profile}></div>
-                <div className={style.middle_content_text}></div>
-              </div>
+        ) : (
+          <div className={style.none_mate_hotplace}>
+            <div className={style.rectangle}>
+              <div></div>
             </div>
+            <p className={style.none_mate_hotplace_title}>
+              여러분의 여행 스토리를 기다리고 있어요
+            </p>
+            <p className={style.none_mate_hotplace_text}>
+              즐거운 여행의 추억을 공유해주세요!✈
+            </p>
           </div>
-        </div>
+        )}
       </div>
 
       {/* 하단 메뉴 */}
@@ -123,8 +116,6 @@ export default function mainPage() {
               올 겨울 따뜻한 크리스마스를 위해 무제가 엄선해온 여행지 TOP 3!
             </div>
           </div>
-          <div className={style.bottom_content}></div>
-          <div className={style.bottom_content}></div>
         </div>
       </div>
     </div>
