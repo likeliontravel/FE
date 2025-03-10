@@ -1,11 +1,16 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import style from '../../../styles/group/groupPage.module.scss';
 import useBetweenScroll from '../../../util/useBetweenScroll';
+import NonGroup from './nonGroup';
 
 export default function groupPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const [hotPlaceList, setHotPlaceList] = useState<any>(null);
+
+  setHotPlaceList(null);
 
   useBetweenScroll(scrollContainerRef);
 
@@ -21,58 +26,62 @@ export default function groupPage() {
           </div>
         </div>
         {/* 그룹 리스트 */}
-        <div className={style.group_list} ref={scrollContainerRef}>
-          <div className={style.group_content}>
-            <div className={style.group_content_title}>
-              <p>멋사</p>
+        {hotPlaceList ? (
+          <div className={style.group_list} ref={scrollContainerRef}>
+            <div className={style.group_content}>
+              <div className={style.group_content_title}>
+                <p>멋사</p>
+              </div>
+              <div className={style.group_content_people}>
+                <div className={style.group_img}></div>
+                <p>8명</p>
+              </div>
+              <div className={style.shapes_img}></div>
             </div>
-            <div className={style.group_content_people}>
-              <div className={style.group_img}></div>
-              <p>8명</p>
+            <div className={style.group_content}>
+              <div className={style.group_content_title}>
+                <p>멋사</p>
+              </div>
+              <div className={style.group_content_people}>
+                <div className={style.group_img}></div>
+                <p>8명</p>
+              </div>
+              <div className={style.shapes_img}></div>
             </div>
-            <div className={style.shapes_img}></div>
+            <div className={style.group_content}>
+              <div className={style.group_content_title}>
+                <p>멋사</p>
+              </div>
+              <div className={style.group_content_people}>
+                <div className={style.group_img}></div>
+                <p>8명</p>
+              </div>
+              <div className={style.shapes_img}></div>
+            </div>
+            <div className={style.group_content}>
+              <div className={style.group_content_title}>
+                <p>멋사</p>
+              </div>
+              <div className={style.group_content_people}>
+                <div className={style.group_img}></div>
+                <p>8명</p>
+              </div>
+              <div className={style.shapes_img}></div>
+            </div>
+            <div className={style.group_content}>
+              <div className={style.group_content_title}>
+                <p>멋사</p>
+              </div>
+              <div className={style.group_content_people}>
+                <div className={style.group_img}></div>
+                <p>8명</p>
+              </div>
+              <div className={style.shapes_img}></div>
+            </div>
           </div>
-          <div className={style.group_content}>
-            <div className={style.group_content_title}>
-              <p>멋사</p>
-            </div>
-            <div className={style.group_content_people}>
-              <div className={style.group_img}></div>
-              <p>8명</p>
-            </div>
-            <div className={style.shapes_img}></div>
-          </div>
-          <div className={style.group_content}>
-            <div className={style.group_content_title}>
-              <p>멋사</p>
-            </div>
-            <div className={style.group_content_people}>
-              <div className={style.group_img}></div>
-              <p>8명</p>
-            </div>
-            <div className={style.shapes_img}></div>
-          </div>
-          <div className={style.group_content}>
-            <div className={style.group_content_title}>
-              <p>멋사</p>
-            </div>
-            <div className={style.group_content_people}>
-              <div className={style.group_img}></div>
-              <p>8명</p>
-            </div>
-            <div className={style.shapes_img}></div>
-          </div>
-          <div className={style.group_content}>
-            <div className={style.group_content_title}>
-              <p>멋사</p>
-            </div>
-            <div className={style.group_content_people}>
-              <div className={style.group_img}></div>
-              <p>8명</p>
-            </div>
-            <div className={style.shapes_img}></div>
-          </div>
-        </div>
+        ) : (
+          <NonGroup />
+        )}
       </div>
       {/* 일정 */}
       <div className={style.schedule_div}>
