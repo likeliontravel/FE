@@ -1,49 +1,55 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import Calendar, { CalendarProps } from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
+// import React, { useState } from 'react';
+import FullCalendar from '@fullcalendar/react';
+// import dayGridPlugin from '@fullcalendar/daygrid';
+
+// 한국어 로케일
+// import koLocale from '@fullcalendar/core/locales/ko';
+
 import './CustomCalendar.css';
 
 const CustomCalendar = () => {
-  const [value, setValue] = useState<CalendarProps['value']>(new Date());
+  // const [currentDate, setCurrentDate] = useState(new Date());
 
-  const handleDateChange: CalendarProps['onChange'] = useCallback(
-    (newValue: any) => {
-      if (Array.isArray(newValue)) {
-        setValue(newValue[0]);
-      } else {
-        setValue(newValue);
-      }
-    },
-    []
-  );
-
-  const getTileClassName = useCallback(
-    ({ date, view }: { date: Date; view: string }) => {
-      const selectedDate = Array.isArray(value) ? value[0] : value;
-      const selectedDateObj = selectedDate ? new Date(selectedDate) : null;
-      return view === 'month' &&
-        selectedDateObj &&
-        date.toDateString() === selectedDateObj.toDateString()
-        ? 'selected-date'
-        : '';
-    },
-    [value]
-  );
+  // // 날짜가 변경될 때(이전/다음 달 이동 등) 실행되는 콜백
+  // const handleDatesSet = (arg: any) => {
+  //   const newDate = arg.view.currentStart;
+  //   // 이전 날짜와 다를 때만 업데이트
+  //   if (newDate.toDateString() !== currentDate.toDateString()) {
+  //     setCurrentDate(newDate);
+  //   }
+  // };
 
   return (
-    <div className="calendar-container">
-      <Calendar
-        onChange={handleDateChange}
-        value={value}
-        locale="ko-KR"
-        calendarType="gregory"
-        next2Label={null}
-        prev2Label={null}
-        formatDay={useCallback((locale: any, date: any) => date.getDate(), [])}
-        showNeighboringMonth={true}
-        tileClassName={getTileClassName}
+    <div className="mini-calendar-container">
+      <FullCalendar
+        // plugins={[dayGridPlugin]}
+        initialView="dayGridMonth"
+        // 한국어 적용
+        // locales={[koLocale]}
+        locale="ko"
+        // 헤더 설정 (이전달/다음달 버튼 + 중앙에 월/연도)
+        // headerToolbar={{
+        //   left: 'prev',
+        //   center: 'title',
+        //   right: 'next',
+        // }}
+        // 월간 달력 높이 자동조절
+        height="auto"
+        // 이번 달 이외의 날짜(이전/다음 달)도 표시
+        showNonCurrentDates={true}
+        // 날짜가 변경될 때마다 실행 (이전/다음 달 이동 등)
+        // datesSet={handleDatesSet}
+        // 제목 포맷(예: "2024년 12월")을 세밀하게 조정하고 싶다면 아래처럼:
+        // titleFormat={(date) => `${date.date.year}년 ${date.date.month + 1}월`}
+        // 주(week) 개수를 고정하지 않으려면 (마지막 줄만 표시)
+        fixedWeekCount={false}
+        /* 날짜 셀에 표시될 내용을 직접 정의 */
+        // dayCellContent={(arg) => {
+        //   // 예: 'arg.date.getDate()' -> 1, 2, 3... 숫자만 추출
+        //   return arg.date.getDate().toString();
+        // }}
       />
     </div>
   );
