@@ -1,7 +1,7 @@
 import style from '../../../styles/mypage/mypage.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import CustomCalendar from '../../../util/calendar/CustomCalendar';
+// import CustomCalendar from '../../../util/calendar/MiniCalendar';
 
 export default function myPage() {
   return (
@@ -31,9 +31,7 @@ export default function myPage() {
             </div>
           </div>
           {/* 캘린더 */}
-          <div>
-            <CustomCalendar />
-          </div>
+          <div>{/* <CustomCalendar /> */}</div>
         </div>
 
         {/* 여행 계획 */}
