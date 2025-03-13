@@ -1,0 +1,181 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  align-items: flex-start;
+  padding-top: 3rem;
+
+  .imageSection {
+    width: 40%;
+    background: url('/path/to/image.png') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .formSection {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 3rem;
+
+    h2 {
+      font-size: 2.5rem;
+      font-weight: bold;
+      text-align: left;
+      width: 100%;
+      max-width: 420px;
+      line-height: 1.4;
+      margin-bottom: 1.5rem;
+      color: #1f2937;
+    }
+
+    form {
+      width: 100%;
+      max-width: 420px;
+      margin-top: 0.5rem;
+
+      .inputGroup {
+        margin-bottom: 1.2rem;
+
+        label {
+          display: block;
+          color: #374151;
+          font-weight: 600;
+          margin-bottom: 0.4rem;
+        }
+
+        input {
+          width: 100%;
+          padding: 0.8rem;
+          border: 1px solid #d1d5db;
+          border-radius: 0.5rem;
+          font-size: 1rem;
+        }
+      }
+
+      .optionsRow {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .registerLink {
+        color: #27abf1;
+        text-decoration: none;
+      }
+
+      .checkboxGroup {
+        display: flex;
+        align-items: center;
+      }
+
+      .links {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .links a {
+        color: #5d6064;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+      }
+
+      .links a:hover {
+        text-decoration: underline;
+      }
+
+      .links span {
+        color: #999;
+      }
+
+      .errorMessage {
+        color: #ef4444;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+
+      .successMessage {
+        color: #10b981;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+
+      button {
+        width: 100%;
+        background-color: #27abf1;
+        color: white;
+        padding: 0.9rem;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+        margin-bottom: 1.5rem;
+
+        &:hover {
+          background-color: #1e40af;
+        }
+
+        &:disabled {
+          background-color: #93c5fd;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .socialLogin {
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      width: 100%;
+
+      p {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin-right: 1rem;
+      }
+
+      .socialButtons {
+        display: flex;
+        gap: 1rem;
+
+        button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 160px;
+          padding: 0.75rem;
+          border-radius: 0.5rem;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: white;
+          cursor: pointer;
+          transition: background-color 0.2s ease-in-out;
+
+          &.google {
+            background-color: #ea4335;
+
+            &:hover {
+              background-color: #c5221f;
+            }
+          }
+
+          &.facebook {
+            background-color: #1877f2;
+
+            &:hover {
+              background-color: #155ab6;
+            }
+          }
+        }
+      }
+    }
+  }
+}

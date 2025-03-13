@@ -1,0 +1,159 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 3rem 5rem;
+  background-color: #fff;
+}
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 80%;
+  gap: 6rem;
+  margin-top: 2rem;
+}
+
+.progressContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  margin-top: 1rem;
+}
+
+.progressBar {
+  width: 60%;
+  height: 100%;
+  background-image: url('/imgs/progress1.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.infoSection {
+  width: 28%;
+  text-align: left;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #6b7280;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1.4;
+    margin: 1rem 0;
+  }
+
+  .blue {
+    color: #27abf1;
+  }
+
+  .highlight {
+    color: #27abf1;
+    font-weight: bold;
+  }
+
+  .notice {
+    font-size: 0.9rem;
+    color: #000000;
+  }
+}
+
+.formSection {
+  width: 50%;
+  background: #ffffff;
+  padding: 2rem 3rem;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0);
+}
+
+.formSection form {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputGroup {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .required {
+    color: red;
+  }
+
+  input {
+    width: 50%;
+    padding: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+  }
+}
+
+.emailField {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  input {
+    height: 20px;
+    width: 50%;
+  }
+
+  .verifyButton {
+    background-color: #27abf1;
+    color: white;
+    border: none;
+    padding: 0.8rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    height: 50px;
+    min-width: 100px;
+
+    &:hover {
+      background-color: #005bb5;
+    }
+  }
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.nextButton {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    width: 70px;
+    height: 70px;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}

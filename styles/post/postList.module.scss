@@ -1,0 +1,291 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 🔹 추천 검색어 위치 변경 */
+.recommendedKeywords {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+  justify-content: flex-end; /* ✅ 오른쪽 정렬 */
+  width: 100%;
+}
+
+.emptyState {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.emptyImage {
+  width: 200px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.keyword {
+  font-size: 14px;
+  padding: 5px 10px;
+  background-color: #f1f1f1;
+  border-radius: 15px;
+  cursor: pointer;
+  color: #333;
+
+  &:hover {
+    background-color: #ddd;
+  }
+}
+
+/* 🔹 정렬 선택 바 우측 정렬 */
+.sortOptions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: flex-end; /* ✅ 우측 정렬 */
+
+  label {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .sortSelect {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+}
+
+.contentWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1200px;
+  gap: 30px;
+}
+
+.searchBar {
+  width: 80%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 10px;
+  background-color: #afb2b7; /* ✅ 검색창 배경색 변경 */
+  padding: 10px;
+  border-radius: 30px;
+
+  .searchInput {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 30px;
+    font-size: 16px;
+    background-color: transparent; /* ✅ 배경색 투명 */
+    color: white; /* ✅ 글씨 색상 조정 */
+    padding-left: 50px;
+  }
+
+  .searchIcon {
+    position: absolute;
+    left: 20px; /* 🔹 아이콘 위치 수정 */
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* 🔹 게시글과 사이드바를 정렬 */
+.contentWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1200px; /* 🔹 전체 너비 조정 */
+  gap: 30px;
+}
+
+/* 🔹 게시글 리스트 배경색 변경 */
+.mainContent {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #f4f5fb; /* ✅ 배경색 변경 */
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.postList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.postItem {
+  display: flex;
+  flex-direction: row-reverse; /* 🔹 이미지 오른쪽 배치 */
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+.postImage {
+  width: 150px;
+  height: 150px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* 🔹 게시글 내용 */
+.postContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.postTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.postMeta {
+  font-size: 14px;
+  color: #777;
+}
+
+.postExcerpt {
+  font-size: 15px;
+  color: #444;
+  margin-top: 5px;
+}
+
+.sidebar {
+  width: 30%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 🔹 프로필 카드 스타일 */
+.profileCard {
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* ✅ 사진과 닉네임을 세로 정렬 */
+  gap: 10px;
+}
+
+/* 프로필 사진 */
+.profileImage {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+}
+
+/* 닉네임 스타일 */
+.username {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* 🔹 버튼 스타일 수정 */
+.profileActions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: 10px;
+  margin-top: 10px;
+
+  button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: #f5f5f5;
+    font-weight: bold;
+    flex: 1;
+
+    img {
+      width: 24px;
+      height: 24px;
+    }
+
+    &:hover {
+      background-color: #ddd;
+    }
+  }
+}
+
+.categoryContainer {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.categoryTabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.categoryTab {
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  color: #444;
+  background-color: #f5f5f5;
+}
+
+.categoryTab.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* 🔹 지역 버튼 스타일 */
+.categoryItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.categoryItem {
+  font-size: 14px;
+  padding: 7px 12px;
+  background-color: #f5f5f5;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #444;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #ddd;
+  }
+}
