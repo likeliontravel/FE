@@ -97,8 +97,12 @@
 //             initialDate={mainViewDate}
 //             locales={[koLocale]}
 //             locale="ko"
-//             headerToolbar={false}
-//             height="auto"
+//             headerToolbar={{
+//               left: 'prev',
+//               center: 'title',
+//               right: 'next',
+//             }}
+//             height="275px"
 //             selectable={true}
 //             select={handleMiniDateClick}
 //             events={events}
@@ -106,6 +110,9 @@
 //             eventDisplay="none"
 //             // 날짜 셀마다 has-event 클래스 부여
 //             dayCellClassNames={handleDayCellClassNames}
+//             dayCellContent={(arg) => {
+//               return arg.date.getDate().toString();
+//             }}
 //           />
 //         </div>
 

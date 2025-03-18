@@ -57,6 +57,14 @@
     background-color: #007bff; /* 파란색 동그라미 */
     color: #fff; /* 글자색 흰색 */
   }
+
+  :global(.fc-daygrid-day-events) {
+    display: none;
+  }
+
+  .fc-scroller fc-scroller-liquid-absolute {
+    display: none;
+  }
 }
 
 /* 메인 스케줄 (주간) */
