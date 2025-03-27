@@ -1,14 +1,14 @@
-// 'use client';
+'use client';
 
-// import WeekCalendar from '../../../util/schedule/WeekCalendar';
+import WeekCalendar from '../../../util/scheduleCalendar/WeekCalendar';
 
-// const SchedulePage = () => {
-//   return (
-//     <>
-//       <WeekCalendar />
-//       <div></div>
-//     </>
-//   );
-// };
+const SchedulePage = () => {
+  return (
+    <>
+      <WeekCalendar />
+      <div></div>
+    </>
+  );
+};
 
-// export default SchedulePage;
+export default SchedulePage;
