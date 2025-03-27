@@ -127,7 +127,7 @@ const WeekCalendar = () => {
   );
 
   const getWeekDates = (baseDate: Date) => {
-    const startOfWeek = dayjs(baseDate).startOf('week'); // dayjs 기본은 '일'이 주 시작
+    const startOfWeek = dayjs(baseDate).startOf('week');
     return Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, 'day'));
   };
 
@@ -135,15 +135,24 @@ const WeekCalendar = () => {
 
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
 
-  const handleDayColumnClick = useCallback((dateStr: string) => {
-    setOpenDays((prev) => ({
-      ...prev,
-      [dateStr]: !prev[dateStr],
-    }));
-  }, []);
+  const handleDayColumnClick = useCallback(
+    (event: React.MouseEvent, dateStr: string) => {
+      if ((event.target as HTMLElement).classList.contains(styles.dayHeader)) {
+        setOpenDays((prev) => ({
+          ...prev,
+          [dateStr]: !prev[dateStr],
+        }));
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new Event('resize'));
+        });
+      }
+    },
+    []
+  );
 
   const getDayColumnClickHandler = useCallback(
-    (dateStr: string) => () => handleDayColumnClick(dateStr),
+    (dateStr: string) => (event: React.MouseEvent) =>
+      handleDayColumnClick(event, dateStr),
     [handleDayColumnClick]
   );
 
@@ -166,6 +175,20 @@ const WeekCalendar = () => {
     return arg.date.getDate().toString();
   }, []);
 
+  const gridTemplateColumns = useMemo(() => {
+    return weekDates
+      .map((day) => {
+        const dayStr = day.format('YYYY-MM-DD');
+        return openDays[dayStr] ? '2fr' : '1fr';
+      })
+      .join(' ');
+  }, [weekDates, openDays]);
+
+  const dayColumnDivStyle = useMemo<React.CSSProperties>(
+    () => ({ gridTemplateColumns }),
+    [gridTemplateColumns]
+  );
+
   return (
     <div className={styles.container}>
       {/* ──────────────── 메인 스케줄(요일별) ──────────────── */}
@@ -175,7 +198,7 @@ const WeekCalendar = () => {
           <p>{getMonthWeekString(mainViewDate)}</p>
           <UseReactSelect />
         </div>
-        <div className={styles.dayColumnDiv}>
+        <div className={styles.dayColumnDiv} style={dayColumnDivStyle}>
           {weekDates.map((day) => {
             const dayStr = day.format('YYYY-MM-DD');
             const isOpen = openDays[dayStr] ?? false;
@@ -183,9 +206,7 @@ const WeekCalendar = () => {
             return (
               <div
                 key={dayStr}
-                className={`${styles.dayColumn} ${
-                  isOpen ? styles.expanded : styles.collapsed
-                }`}
+                className={`${styles.dayColumn} ${isOpen ? styles.expanded : styles.collapsed}`}
                 onClick={getDayColumnClickHandler(dayStr)}
                 data-date={dayStr}
               >
