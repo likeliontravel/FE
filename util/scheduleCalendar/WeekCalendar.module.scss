@@ -107,8 +107,12 @@
 
 .dayColumnDiv {
   @include display_flex-align_items_center-justify_content_space_between;
+  height: 100%;
   display: grid;
+  align-items: start;
   grid-template-columns: repeat(7, 1fr);
+  transition: grid-template-columns 0.1s ease;
+  overflow: hidden;
 }
 
 :global(.fc .fc-day-today),
@@ -118,28 +122,33 @@
 
 .dayColumn {
   min-height: 510px;
+  height: 100%;
   margin-right: 8px;
   background-color: #ffffff;
   padding: 5px;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
-  cursor: pointer;
+  overflow: auto;
 
   &.collapsed {
-    width: auto;
+    cursor: default;
   }
 
   &.expanded {
-    width: 200px;
+    cursor: pointer;
   }
+}
+
+.dayColumn::-webkit-scrollbar {
+  display: none;
 }
 
 .dayHeader {
   text-align: center;
   font-weight: bold;
   margin-bottom: 8px;
+  cursor: pointer;
 }
 
 :global(.fc .fc-timegrid) table,
