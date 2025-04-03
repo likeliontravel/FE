@@ -196,7 +196,7 @@ const WeekCalendar = () => {
       <div className={styles.mainScheduleDays}>
         <div className={styles.daySelect}>
           <p>{getMonthWeekString(mainViewDate)}</p>
-          <UseReactSelect />
+          <UseReactSelect type="calendar" />
         </div>
         <div className={styles.dayColumnDiv} style={dayColumnDivStyle}>
           {weekDates.map((day) => {
