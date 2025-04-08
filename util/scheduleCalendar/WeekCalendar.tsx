@@ -189,6 +189,8 @@ const WeekCalendar = () => {
     [gridTemplateColumns]
   );
 
+  const [activeTab, setActiveTab] = useState('지역');
+
   return (
     <div className={styles.container}>
       {/* ──────────────── 메인 스케줄(요일별) ──────────────── */}
@@ -275,6 +277,83 @@ const WeekCalendar = () => {
             dayCellContent={dayCellContent}
           />
         </div>
+        <div className={styles.switch}>
+          <div
+            className={activeTab === '지역' ? styles.active : styles.non_active}
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            onClick={() => setActiveTab('지역')}
+          >
+            지역
+          </div>
+          <div
+            className={activeTab === '테마' ? styles.active : styles.non_active}
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            onClick={() => setActiveTab('테마')}
+          >
+            테마
+          </div>
+        </div>
+        {activeTab === '지역' && (
+          <div className={styles.locate}>
+            <table>
+              <tr>
+                <td>서울</td>
+                <td>인천</td>
+                <td>대전</td>
+                <td>대구</td>
+                <td>광주</td>
+              </tr>
+              <tr>
+                <td>부산</td>
+                <td>울산</td>
+                <td>경기</td>
+                <td>강원</td>
+                <td>충북</td>
+              </tr>
+              <tr>
+                <td>충남</td>
+                <td>세종</td>
+                <td>경북</td>
+                <td>경남</td>
+                <td>전북</td>
+              </tr>
+              <tr>
+                <td>전남</td>
+                <td>제주</td>
+                <td>가평</td>
+                <td>양평</td>
+                <td>강릉</td>
+              </tr>
+              <tr>
+                <td>경주</td>
+                <td>전주</td>
+                <td>부산</td>
+                <td>여수</td>
+                <td>춘천</td>
+              </tr>
+              <tr>
+                <td>홍천</td>
+                <td>태안</td>
+                <td>통영</td>
+                <td>거제</td>
+                <td>포항</td>
+              </tr>
+              <tr>
+                <td>안동</td>
+              </tr>
+            </table>
+          </div>
+        )}
+        {activeTab === '테마' && (
+          <div className={styles.theme}>
+            <div>체험/액티비티</div>
+            <div>자연 속에서 힐링</div>
+            <div>열정적인 쇼핑 투어</div>
+            <div>미식 여행, 먹방 중심</div>
+            <div>문화, 예술 & 역사 탐방</div>
+          </div>
+        )}
+        <div className={styles.ai_schedule}>AI 맞춤 일정 구성하기</div>
       </div>
     </div>
   );
