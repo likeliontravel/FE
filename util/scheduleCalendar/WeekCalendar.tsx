@@ -3,36 +3,30 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import { DateClickArg } from '@fullcalendar/interaction';
-import { DateSelectArg, EventMountArg } from '@fullcalendar/core';
+import { EventMountArg } from '@fullcalendar/core';
 
-import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import koLocale from '@fullcalendar/core/locales/ko';
 import UseReactSelect from '../select/UseReactSelect';
 
 import dayjs from 'dayjs';
-import 'dayjs/locale/ko'; // 한국어 요일/달 표기
+import 'dayjs/locale/ko';
 dayjs.locale('ko');
 
 import styles from './WeekCalendar.module.scss';
 import getMonthWeekString from './getMonthWeekString';
+import MiniCalendar from './MiniCalendar';
 
-interface CalendarEvent {
-  id: string;
-  title: string;
-  start: string;
-  end?: string;
-}
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import { addSelectedSlot, removeSelectedSlot } from '../../store/calendarSlice';
 
-interface WeekCalendarProps {
-  events: CalendarEvent[];
-  // 여러 슬롯 클릭 시마다 상위로 전달
-  onSlotSelect: (date: Date) => void;
-}
-
-const WeekCalendar = ({ events, onSlotSelect }: WeekCalendarProps) => {
-  const pluginMini = useMemo(() => [dayGridPlugin, interactionPlugin], []);
+const WeekCalendar = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { events, mainViewDate } = useSelector(
+    (state: RootState) => state.calendar
+  );
   const pluginsMain = useMemo(() => [timeGridPlugin, interactionPlugin], []);
   const localesArray = useMemo(() => [koLocale], []);
 
@@ -74,57 +68,31 @@ const WeekCalendar = ({ events, onSlotSelect }: WeekCalendarProps) => {
     }
   }, []);
 
-  const [mainViewDate, setMainViewDate] = useState(new Date());
-
-  const handleMiniDateClick = useCallback((arg: DateSelectArg) => {
-    setMainViewDate(arg.start);
-  }, []);
-
   const handleMainSelect = useCallback(
     (arg: DateClickArg) => {
-      // 선택 상태를 상위에서 관리하고 있다면 onSlotSelect로 상태 업데이트
-      onSlotSelect(arg.date);
-
-      // DOM에서 해당 슬롯의 요소를 찾아서, 이미 선택되었으면 제거하고, 아니면 추가
+      dispatch(addSelectedSlot(arg.date));
       const timeStr = dayjs(arg.date).format('HH:mm:00');
       const dateStr = dayjs(arg.date).format('YYYY-MM-DD');
-
       const slotLaneEl = document.querySelector(
         `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`
       );
       const slotLabelEl = document.querySelector(
         `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`
       );
-
       if (slotLaneEl && slotLabelEl) {
-        // 이미 선택되어 있으면 제거, 아니면 추가 (토글)
         const isSelected = slotLaneEl.classList.contains('has-event');
         if (isSelected) {
+          dispatch(removeSelectedSlot(arg.date));
           slotLaneEl.classList.remove('has-event');
           slotLabelEl.classList.remove('has-event');
         } else {
+          dispatch(addSelectedSlot(arg.date));
           slotLaneEl.classList.add('has-event');
           slotLabelEl.classList.add('has-event');
         }
       }
     },
-    [onSlotSelect]
-  );
-
-  const hasEventOnDate = (date: Date) => {
-    const dayYmd = dayjs(date).format('YYYY-MM-DD');
-    return events.some((ev) => {
-      const startYmd = dayjs(ev.start).format('YYYY-MM-DD');
-      const endYmd = ev.end ? dayjs(ev.end).format('YYYY-MM-DD') : startYmd;
-      return dayYmd >= startYmd && dayYmd <= endYmd;
-    });
-  };
-
-  const handleDayCellClassNames = useCallback(
-    (arg: any) => {
-      return hasEventOnDate(arg.date) ? ['has-event'] : [];
-    },
-    [hasEventOnDate]
+    [dispatch]
   );
 
   const getWeekDates = (baseDate: Date) => {
@@ -133,7 +101,6 @@ const WeekCalendar = ({ events, onSlotSelect }: WeekCalendarProps) => {
   };
 
   const weekDates = getWeekDates(mainViewDate);
-
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
 
   const handleDayColumnClick = useCallback(
@@ -161,19 +128,6 @@ const WeekCalendar = ({ events, onSlotSelect }: WeekCalendarProps) => {
     const hour = arg.date.getHours();
     const hourStr = String(hour).padStart(2, '0');
     return hourStr + ' -';
-  }, []);
-
-  const headerToolbarConfig = useMemo(
-    () => ({
-      left: 'prev',
-      center: 'title',
-      right: 'next',
-    }),
-    []
-  );
-
-  const dayCellContent = useCallback((arg: any) => {
-    return arg.date.getDate().toString();
   }, []);
 
   const gridTemplateColumns = useMemo(() => {
@@ -211,7 +165,6 @@ const WeekCalendar = ({ events, onSlotSelect }: WeekCalendarProps) => {
   return (
     <div className={styles.container}>
       {/* ──────────────── 메인 스케줄(요일별) ──────────────── */}
-      {/* 한 주(7일) 날짜를 가로로 나열하고, 각 날짜마다 timeGridDay FullCalendar */}
       <div className={styles.mainScheduleDays}>
         <div className={styles.daySelect}>
           <p>{getMonthWeekString(mainViewDate)}</p>
@@ -271,26 +224,7 @@ const WeekCalendar = ({ events, onSlotSelect }: WeekCalendarProps) => {
 
       <div className={styles.content}>
         {/* ───────────────── 미니 달력 ───────────────── */}
-        <div className={styles.miniCalendar}>
-          <FullCalendar
-            plugins={pluginMini}
-            initialView="dayGridMonth"
-            initialDate={mainViewDate}
-            locales={localesArray}
-            locale="ko"
-            headerToolbar={headerToolbarConfig}
-            height="255px"
-            selectable={true}
-            select={handleMiniDateClick}
-            events={events}
-            // 이벤트 텍스트 표시 안 함 (동그라미만)
-            eventDisplay="none"
-            // 날짜 셀마다 has-event 클래스 부여
-            dayCellClassNames={handleDayCellClassNames}
-            dayCellContent={dayCellContent}
-            fixedWeekCount={false}
-          />
-        </div>
+        <MiniCalendar />
         <div className={styles.switch}>
           <div
             className={activeTab === '지역' ? styles.active : styles.non_active}

@@ -1,44 +1,97 @@
 'use client';
 
 import React, { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import UseReactSelect from '../select/UseReactSelect';
 import styles from './ScheduleList.module.scss';
+import { RootState, AppDispatch } from '../../store/store';
+import {
+  addEvent,
+  CalendarEvent,
+  clearSelectedSlots,
+} from '../../store/calendarSlice';
+import dayjs from 'dayjs';
 
-// 1. ScheduleItem 타입 정의
 interface ScheduleItem {
   id: string;
   title: string;
   address: string;
 }
 
-// 2. ScheduleList 컴포넌트의 props 타입 정의
-interface ScheduleListProps {
-  onScheduleItemClick: (item: ScheduleItem) => void;
-}
+const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
+  ({ item }) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const selectedSlots = useSelector(
+      (state: RootState) => state.calendar.selectedSlots
+    );
 
-// 3. 각 항목을 렌더링하는 별도 컴포넌트 생성 (React.memo를 사용하여 불필요한 리렌더링 방지)
-const ScheduleListItem: React.FC<{
-  item: ScheduleItem;
-  onScheduleItemClick: (item: ScheduleItem) => void;
-}> = React.memo(({ item, onScheduleItemClick }) => {
-  const handleClick = useCallback(() => {
-    onScheduleItemClick(item);
-  }, [onScheduleItemClick, item]);
+    const handleClick = useCallback(() => {
+      if (selectedSlots.length === 0) {
+        alert('먼저 달력에서 시간을 하나 이상 선택하세요.');
+        return;
+      }
 
-  return (
-    <div className={styles.main} onClick={handleClick}>
-      <div className={styles.overlay}></div>
-      <div className={styles.list_img}></div>
-      <div className={styles.list_content}>
-        <p className={styles.content_title}>{item.title}</p>
-        <p className={styles.content_address}>{item.address}</p>
+      const newEvents: CalendarEvent[] = selectedSlots.map((slot) => {
+        const startTime = dayjs(slot);
+        const endTime = startTime.add(1, 'hour'); // 1시간 일정 가정
+        return {
+          id: String(Date.now()) + Math.random(),
+          title: item.title,
+          start: startTime.toISOString(),
+          end: endTime.toISOString(),
+        };
+      });
+
+      newEvents.forEach((event) => {
+        dispatch(addEvent(event));
+      });
+      dispatch(clearSelectedSlots());
+    }, [dispatch, item, selectedSlots]);
+
+    return (
+      <div className={styles.main} onClick={handleClick}>
+        <div className={styles.overlay}></div>
+        <div className={styles.list_img}></div>
+        <div className={styles.list_content}>
+          <p className={styles.content_title}>{item.title}</p>
+          <p className={styles.content_address}>{item.address}</p>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
-const ScheduleList: React.FC<ScheduleListProps> = ({ onScheduleItemClick }) => {
-  // 예시 scheduleItems 배열 - 실제 데이터에 맞게 확장 가능
+const ScheduleList: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { selectedSlots } = useSelector((state: RootState) => state.calendar);
+
+  useCallback(
+    (item: any) => {
+      if (selectedSlots.length === 0) {
+        alert('먼저 달력에서 시간을 하나 이상 선택하세요.');
+        return;
+      }
+
+      const newEvents: CalendarEvent[] = selectedSlots.map((slot) => {
+        const startTime = dayjs(slot);
+        const endTime = startTime.add(1, 'hour');
+        return {
+          id: String(Date.now()) + Math.random(),
+          title: item.title,
+          start: startTime.toISOString(),
+          end: endTime.toISOString(),
+        } as CalendarEvent;
+      });
+
+      newEvents.forEach((event) => {
+        dispatch(addEvent(event));
+      });
+
+      dispatch(clearSelectedSlots());
+    },
+    [dispatch, selectedSlots]
+  );
+
   const scheduleItems: ScheduleItem[] = [
     {
       id: 'item1',
@@ -66,11 +119,7 @@ const ScheduleList: React.FC<ScheduleListProps> = ({ onScheduleItemClick }) => {
       </div>
       <div className={styles.main_list}>
         {scheduleItems.map((item) => (
-          <ScheduleListItem
-            key={item.id}
-            item={item}
-            onScheduleItemClick={onScheduleItemClick}
-          />
+          <ScheduleListItem key={item.id} item={item} />
         ))}
       </div>
     </div>
