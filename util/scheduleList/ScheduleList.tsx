@@ -16,6 +16,7 @@ interface ScheduleItem {
   id: string;
   title: string;
   address: string;
+  category: 'restaurant' | 'hotel' | 'tourist_spot';
 }
 
 const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
@@ -26,7 +27,7 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
     );
 
     const selectedSchedule = useSelector(
-      (state: RootState) => state.calendar.selectedSchedule
+      (state: RootState) => state.calendar.selectedListSchedule
     );
 
     const handleClick = useCallback(() => {
@@ -44,6 +45,7 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
           start: startTime.toISOString(),
           end: endTime.toISOString(),
           schedule: selectedSchedule.value,
+          category: item.category,
         };
       });
 
@@ -72,6 +74,7 @@ const ScheduleList: React.FC = () => {
       id: 'item1',
       title: '만석 닭강정',
       address: '강원 속초시 청초호반로 72',
+      category: 'restaurant',
     },
   ];
 

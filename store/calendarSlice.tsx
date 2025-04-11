@@ -6,6 +6,7 @@ export interface CalendarEvent {
   start: string;
   end?: string;
   schedule?: string;
+  category?: 'restaurant' | 'hotel' | 'tourist_spot';
 }
 
 export interface ScheduleOption {
@@ -19,18 +20,23 @@ interface CalendarState {
   events: CalendarEvent[];
   mainViewDate: Date;
   selectedSlots: Date[];
-  selectedSchedule: ScheduleOption;
+  selectedCalendarSchedule: ScheduleOption;
+  selectedListSchedule: ScheduleOption;
 }
 
 const initialState: CalendarState = {
   events: [],
   mainViewDate: new Date(),
   selectedSlots: [],
-  selectedSchedule: {
+  selectedCalendarSchedule: {
     value: 'default',
     label: '-',
     prefix: '내일정',
     suffix: 'D-',
+  },
+  selectedListSchedule: {
+    value: 'restaurant',
+    label: '맛집',
   },
 };
 
@@ -70,9 +76,14 @@ const calendarSlice = createSlice({
       state.selectedSlots = [];
     },
 
-    // 드롭다운에서 선택된 일정 업데이트
-    setSelectedSchedule(state, action: PayloadAction<ScheduleOption>) {
-      state.selectedSchedule = action.payload;
+    // 캘린더 Select(“내 일정” 등)용
+    setSelectedCalendarSchedule(state, action: PayloadAction<ScheduleOption>) {
+      state.selectedCalendarSchedule = action.payload;
+    },
+
+    // 리스트 Select(“맛집/숙소/관광지”)용
+    setSelectedListSchedule(state, action: PayloadAction<ScheduleOption>) {
+      state.selectedListSchedule = action.payload;
     },
   },
 });
@@ -84,7 +95,8 @@ export const {
   addSelectedSlot,
   removeSelectedSlot,
   clearSelectedSlots,
-  setSelectedSchedule,
+  setSelectedCalendarSchedule,
+  setSelectedListSchedule,
 } = calendarSlice.actions;
 
 export default calendarSlice.reducer;

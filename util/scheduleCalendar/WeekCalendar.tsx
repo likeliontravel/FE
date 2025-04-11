@@ -28,7 +28,7 @@ const WeekCalendar = () => {
     (state: RootState) => state.calendar
   );
   const selectedSchedule = useSelector(
-    (state: RootState) => state.calendar.selectedSchedule
+    (state: RootState) => state.calendar.selectedCalendarSchedule
   );
 
   const filteredEvents = useMemo(() => {
@@ -255,198 +255,260 @@ const WeekCalendar = () => {
         {activeTab === '지역' && (
           <div className={styles.locate}>
             <table>
-              <tr>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '서울' ? styles.selected : ''}
-                >
-                  서울
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '인천' ? styles.selected : ''}
-                >
-                  인천
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '대전' ? styles.selected : ''}
-                >
-                  대전
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '대구' ? styles.selected : ''}
-                >
-                  대구
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '광주' ? styles.selected : ''}
-                >
-                  광주
-                </td>
-              </tr>
-              <tr>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '부산' ? styles.selected : ''}
-                >
-                  부산
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '울산' ? styles.selected : ''}
-                >
-                  울산
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '경기' ? styles.selected : ''}
-                >
-                  경기
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '강원' ? styles.selected : ''}
-                >
-                  강원
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '충북' ? styles.selected : ''}
-                >
-                  충북
-                </td>
-              </tr>
-              <tr>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '충남' ? styles.selected : ''}
-                >
-                  충남
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '세종' ? styles.selected : ''}
-                >
-                  세종
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '경북' ? styles.selected : ''}
-                >
-                  경북
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '경남' ? styles.selected : ''}
-                >
-                  경남
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '전북' ? styles.selected : ''}
-                >
-                  전북
-                </td>
-              </tr>
-              <tr>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '전남' ? styles.selected : ''}
-                >
-                  전남
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '제주' ? styles.selected : ''}
-                >
-                  제주
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '가평' ? styles.selected : ''}
-                >
-                  가평
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '양평' ? styles.selected : ''}
-                >
-                  양평
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '강릉' ? styles.selected : ''}
-                >
-                  강릉
-                </td>
-              </tr>
-              <tr>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '경주' ? styles.selected : ''}
-                >
-                  경주
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '전주' ? styles.selected : ''}
-                >
-                  전주
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '여수' ? styles.selected : ''}
-                >
-                  여수
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '춘천' ? styles.selected : ''}
-                >
-                  춘천
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '홍천' ? styles.selected : ''}
-                >
-                  홍천
-                </td>
-              </tr>
-              <tr>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '태안' ? styles.selected : ''}
-                >
-                  태안
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '통영' ? styles.selected : ''}
-                >
-                  통영
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '거제' ? styles.selected : ''}
-                >
-                  거제
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '포항' ? styles.selected : ''}
-                >
-                  포항
-                </td>
-                <td
-                  onClick={handleLocationClick}
-                  className={selectedLocation === '안동' ? styles.selected : ''}
-                >
-                  안동
-                </td>
-              </tr>
+              <tbody>
+                <tr>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '서울' ? styles.selected : ''
+                    }
+                  >
+                    서울
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '인천' ? styles.selected : ''
+                    }
+                  >
+                    인천
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '대전' ? styles.selected : ''
+                    }
+                  >
+                    대전
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '대구' ? styles.selected : ''
+                    }
+                  >
+                    대구
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '광주' ? styles.selected : ''
+                    }
+                  >
+                    광주
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '부산' ? styles.selected : ''
+                    }
+                  >
+                    부산
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '울산' ? styles.selected : ''
+                    }
+                  >
+                    울산
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '경기' ? styles.selected : ''
+                    }
+                  >
+                    경기
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '강원' ? styles.selected : ''
+                    }
+                  >
+                    강원
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '충북' ? styles.selected : ''
+                    }
+                  >
+                    충북
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '충남' ? styles.selected : ''
+                    }
+                  >
+                    충남
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '세종' ? styles.selected : ''
+                    }
+                  >
+                    세종
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '경북' ? styles.selected : ''
+                    }
+                  >
+                    경북
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '경남' ? styles.selected : ''
+                    }
+                  >
+                    경남
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '전북' ? styles.selected : ''
+                    }
+                  >
+                    전북
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '전남' ? styles.selected : ''
+                    }
+                  >
+                    전남
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '제주' ? styles.selected : ''
+                    }
+                  >
+                    제주
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '가평' ? styles.selected : ''
+                    }
+                  >
+                    가평
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '양평' ? styles.selected : ''
+                    }
+                  >
+                    양평
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '강릉' ? styles.selected : ''
+                    }
+                  >
+                    강릉
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '경주' ? styles.selected : ''
+                    }
+                  >
+                    경주
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '전주' ? styles.selected : ''
+                    }
+                  >
+                    전주
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '여수' ? styles.selected : ''
+                    }
+                  >
+                    여수
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '춘천' ? styles.selected : ''
+                    }
+                  >
+                    춘천
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '홍천' ? styles.selected : ''
+                    }
+                  >
+                    홍천
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '태안' ? styles.selected : ''
+                    }
+                  >
+                    태안
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '통영' ? styles.selected : ''
+                    }
+                  >
+                    통영
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '거제' ? styles.selected : ''
+                    }
+                  >
+                    거제
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '포항' ? styles.selected : ''
+                    }
+                  >
+                    포항
+                  </td>
+                  <td
+                    onClick={handleLocationClick}
+                    className={
+                      selectedLocation === '안동' ? styles.selected : ''
+                    }
+                  >
+                    안동
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
         )}

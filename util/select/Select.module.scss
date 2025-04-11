@@ -129,7 +129,8 @@
 
 :global(.custom-select-list__option) {
   @include font_size-font_weight-line_height(14px, 600, 100%);
-  color: #c1c4c7 !important;
+  color: black;
+  background-color: #c1c4c7 !important;
 }
 
 :global(.custom-select-calendar__option:hover) {
