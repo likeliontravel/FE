@@ -1,10 +1,13 @@
 @use '../component/mixins.scss' as *;
 @use '../component/display_mixins.scss' as *;
 
+.left_div {
+  margin-left: 300px;
+}
+
 .userbox {
   @include width-height(258px, 167px);
   @include display_flex-justify_content_space_between;
-  margin-left: 300px;
 }
 
 .profile {
@@ -57,4 +60,10 @@
     color: #5d6064;
     opacity: 0.5;
   }
+}
+
+.calendar_div {
+  @include display_flex-flex_direction_column-align_items_center-justify_content_space_around;
+  @include width-height(330px, 360px);
+  background-color: #f4f5fb;
 }
