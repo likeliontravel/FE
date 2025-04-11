@@ -5,18 +5,33 @@ export interface CalendarEvent {
   title: string;
   start: string;
   end?: string;
+  schedule?: string;
+}
+
+export interface ScheduleOption {
+  value: string;
+  label: string;
+  prefix?: string;
+  suffix?: string;
 }
 
 interface CalendarState {
   events: CalendarEvent[];
   mainViewDate: Date;
   selectedSlots: Date[];
+  selectedSchedule: ScheduleOption;
 }
 
 const initialState: CalendarState = {
   events: [],
   mainViewDate: new Date(),
   selectedSlots: [],
+  selectedSchedule: {
+    value: 'default',
+    label: '-',
+    prefix: '내일정',
+    suffix: 'D-',
+  },
 };
 
 const calendarSlice = createSlice({
@@ -54,6 +69,11 @@ const calendarSlice = createSlice({
     clearSelectedSlots(state) {
       state.selectedSlots = [];
     },
+
+    // 드롭다운에서 선택된 일정 업데이트
+    setSelectedSchedule(state, action: PayloadAction<ScheduleOption>) {
+      state.selectedSchedule = action.payload;
+    },
   },
 });
 
@@ -64,6 +84,7 @@ export const {
   addSelectedSlot,
   removeSelectedSlot,
   clearSelectedSlots,
+  setSelectedSchedule,
 } = calendarSlice.actions;
 
 export default calendarSlice.reducer;

@@ -1,18 +1,26 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import Select from 'react-select';
+import { useCallback, useMemo } from 'react';
+import Select, { SingleValue, ActionMeta } from 'react-select';
 import CalendarOption from './CalendarOption';
 import ListOption from './ListOption';
 import CalendarSingleValue from './CalendarSingleValue';
 import ListSingleValue from './ListSingleValue';
 import './Select.module.scss';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import { setSelectedSchedule, ScheduleOption } from '../../store/calendarSlice';
 
 interface UseReactSelectProps {
   type: 'calendar' | 'list';
 }
 
 const UseReactSelect = ({ type }: UseReactSelectProps) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedSchedule = useSelector(
+    (state: RootState) => state.calendar.selectedSchedule
+  );
+
   const { options, customComponents } = useMemo(() => {
     if (type === 'calendar') {
       return {
@@ -51,27 +59,33 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
     }
   }, [type]);
 
-  const [selected, setSelected] = useState(options[0]);
-
-  const handleChange = useCallback((v: any) => {
-    if (v !== null && v !== undefined) {
-      setSelected(v);
-    }
-  }, []);
+  const handleChange = useCallback(
+    (
+      newValue: SingleValue<ScheduleOption>,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _actionMeta: ActionMeta<ScheduleOption>
+    ) => {
+      if (newValue !== null && newValue !== undefined) {
+        dispatch(setSelectedSchedule(newValue));
+      }
+    },
+    [dispatch]
+  );
 
   const filterOptions = useCallback(
     (option: any) =>
-      option.data.value !== 'default' && option.data.value !== selected.value,
-    [selected]
+      option.data.value !== 'default' &&
+      option.data.value !== selectedSchedule.value,
+    [selectedSchedule]
   );
 
   return (
-    <Select
+    <Select<ScheduleOption, false>
       classNamePrefix={
         type === 'calendar' ? 'custom-select-calendar' : 'custom-select-list'
       }
       options={options}
-      value={selected}
+      value={type === 'calendar' ? selectedSchedule : options[0]}
       onChange={handleChange}
       components={customComponents}
       defaultValue={options[0]}

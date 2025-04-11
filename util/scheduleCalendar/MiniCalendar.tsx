@@ -20,6 +20,10 @@ const MiniCalendar: React.FC = () => {
     (state: RootState) => state.calendar
   );
 
+  const selectedSchedule = useSelector(
+    (state: RootState) => state.calendar.selectedSchedule
+  );
+
   const pluginMini = useMemo(() => [dayGridPlugin, interactionPlugin], []);
   const localesArray = useMemo(() => [koLocale], []);
 
@@ -30,15 +34,19 @@ const MiniCalendar: React.FC = () => {
     [dispatch]
   );
 
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => event.schedule === selectedSchedule.value);
+  }, [events, selectedSchedule]);
+
   const dayCellClassNames = useCallback(
     (arg: any): string[] => {
       const cellDateStr = dayjs(arg.date).format('YYYY-MM-DD');
-      const hasEvent = events.some(
+      const hasEvent = filteredEvents.some(
         (ev) => dayjs(ev.start).format('YYYY-MM-DD') === cellDateStr
       );
       return hasEvent ? ['has-event'] : [];
     },
-    [events]
+    [filteredEvents]
   );
 
   const dayCellContent = useCallback((arg: any): React.ReactNode => {
@@ -66,7 +74,7 @@ const MiniCalendar: React.FC = () => {
         height="255px"
         selectable={true}
         select={handleSelect}
-        events={events}
+        events={filteredEvents}
         eventDisplay="none"
         dayCellClassNames={dayCellClassNames}
         dayCellContent={dayCellContent}

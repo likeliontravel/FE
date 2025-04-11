@@ -27,6 +27,14 @@ const WeekCalendar = () => {
   const { events, mainViewDate } = useSelector(
     (state: RootState) => state.calendar
   );
+  const selectedSchedule = useSelector(
+    (state: RootState) => state.calendar.selectedSchedule
+  );
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => event.schedule === selectedSchedule.value);
+  }, [events, selectedSchedule]);
+
   const pluginsMain = useMemo(() => [timeGridPlugin, interactionPlugin], []);
   const localesArray = useMemo(() => [koLocale], []);
 
@@ -70,6 +78,11 @@ const WeekCalendar = () => {
 
   const handleMainSelect = useCallback(
     (arg: DateClickArg) => {
+      if (selectedSchedule.value === 'default') {
+        alert('먼저 일정을 선택해주세요.');
+        return;
+      }
+
       dispatch(addSelectedSlot(arg.date));
       const timeStr = dayjs(arg.date).format('HH:mm:00');
       const dateStr = dayjs(arg.date).format('YYYY-MM-DD');
@@ -92,7 +105,7 @@ const WeekCalendar = () => {
         }
       }
     },
-    [dispatch]
+    [dispatch, selectedSchedule]
   );
 
   const getWeekDates = (baseDate: Date) => {
@@ -207,7 +220,7 @@ const WeekCalendar = () => {
                     // 시간 라벨도 1시간마다
                     slotLabelInterval="01:00:00"
                     // 이벤트
-                    events={events}
+                    events={filteredEvents}
                     eventDidMount={handleEventDidMount}
                     eventWillUnmount={handleEventWillUnmount}
                     dateClick={handleMainSelect}

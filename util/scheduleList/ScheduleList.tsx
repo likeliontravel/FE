@@ -25,6 +25,10 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
       (state: RootState) => state.calendar.selectedSlots
     );
 
+    const selectedSchedule = useSelector(
+      (state: RootState) => state.calendar.selectedSchedule
+    );
+
     const handleClick = useCallback(() => {
       if (selectedSlots.length === 0) {
         alert('먼저 달력에서 시간을 하나 이상 선택하세요.');
@@ -39,6 +43,7 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
           title: item.title,
           start: startTime.toISOString(),
           end: endTime.toISOString(),
+          schedule: selectedSchedule.value,
         };
       });
 
@@ -62,36 +67,6 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
 );
 
 const ScheduleList: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { selectedSlots } = useSelector((state: RootState) => state.calendar);
-
-  useCallback(
-    (item: any) => {
-      if (selectedSlots.length === 0) {
-        alert('먼저 달력에서 시간을 하나 이상 선택하세요.');
-        return;
-      }
-
-      const newEvents: CalendarEvent[] = selectedSlots.map((slot) => {
-        const startTime = dayjs(slot);
-        const endTime = startTime.add(1, 'hour');
-        return {
-          id: String(Date.now()) + Math.random(),
-          title: item.title,
-          start: startTime.toISOString(),
-          end: endTime.toISOString(),
-        } as CalendarEvent;
-      });
-
-      newEvents.forEach((event) => {
-        dispatch(addEvent(event));
-      });
-
-      dispatch(clearSelectedSlots());
-    },
-    [dispatch, selectedSlots]
-  );
-
   const scheduleItems: ScheduleItem[] = [
     {
       id: 'item1',
