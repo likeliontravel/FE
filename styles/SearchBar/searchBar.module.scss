@@ -1,0 +1,68 @@
+.searchBar {
+  width: 62.4%;
+  background-color: #afb2b7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  width: 100%; /* 검색창 너비를 100%로 설정하여 컨텐츠와 맞추기 */
+  max-width: 850px; /* 최대 너비 설정 */
+  padding: 16px 24px;
+  border-radius: 15px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* 검색창에 포커스 시   ./gradlew build   */
+.searchContainer:focus-within {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 500;
+  padding: 8px 12px;
+  padding-right: 40px;
+}
+
+.searchIcon {
+  position: absolute;
+  right: 20px;
+  width: 35px;
+  height: 35px;
+}
+
+.recommendedKeywords {
+  margin-top: 10px;
+  width: 850px; // 검색창과 너비 통일
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-start; // 왼쪽 정렬
+}
+
+.keyword {
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}

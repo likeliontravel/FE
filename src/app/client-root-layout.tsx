@@ -4,6 +4,7 @@ import React from 'react';
 import '../../styles/globals.css';
 import { Provider } from 'react-redux';
 import store from '../../store/store';
+import Header from '@/app/_component/Header';
 
 export default function RootLayout({
   children,
@@ -13,7 +14,10 @@ export default function RootLayout({
   return (
     <Provider store={store}>
       <html lang="ko">
-        <body>{children}</body>
+        <body>
+          <Header />
+          {children}
+        </body>
       </html>
     </Provider>
   );

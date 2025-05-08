@@ -1,0 +1,76 @@
+@mixin width-height($witdh, $height) {
+  width: $witdh;
+  height: $height;
+}
+
+@mixin display-flex_alii-center() {
+  display: flex;
+  align-items: center;
+}
+
+@mixin display-flex_alii-center_juc-spacearound() {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+@mixin back-img($url) {
+  background-image: url($url);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.header {
+  @include display-flex_alii-center();
+  @include width-height(1920px, 80px);
+}
+
+.logo {
+  @include back-img('../../public/imgs/logo.png');
+  @include width-height(100px, 40px);
+  margin-left: 130px;
+}
+
+.navBar {
+  @include display-flex_alii-center();
+}
+
+.navGroup {
+  @include display-flex_alii-center_juc-spacearound();
+  @include width-height(750px, 80px);
+  margin-left: 470px;
+
+  p {
+    font-size: 18px;
+    font-weight: 600;
+    height: 21.78px;
+  }
+}
+
+.userGroup {
+  @include display-flex_alii-center_juc-spacearound();
+  @include width-height(250px, 80px);
+}
+
+.alram {
+  @include back-img('../../public/imgs/alram.png');
+  @include width-height(28px, 28px);
+  margin-top: 5px;
+  margin-left: 50px;
+}
+
+.user {
+  @include display-flex_alii-center_juc-spacearound();
+  @include width-height(80px, 80px);
+
+  p {
+    font-size: 16px;
+    font-weight: 600;
+    height: 19.36px;
+  }
+}
+
+.userImage {
+  @include back-img('../../public/imgs/Ellipse5.png');
+  @include width-height(30px, 30px);
+}

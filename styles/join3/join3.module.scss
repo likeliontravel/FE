@@ -1,0 +1,122 @@
+.subscriptionContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  background: #fff;
+  padding-top: 2rem;
+}
+
+.progressContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  margin-top: 1rem;
+}
+
+.progressBar {
+  width: 60%;
+  height: 100%;
+  background-image: url('/imgs/progress3.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.content {
+  width: 80%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  margin-top: 2rem;
+}
+
+.leftSection {
+  flex: 1;
+  padding-right: 2rem;
+
+  .step {
+    font-size: 1rem;
+    color: #007bff;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: bold;
+
+    .blue {
+      color: #007bff;
+    }
+  }
+}
+
+.rightSection {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.subscriptionOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.option {
+  width: 350px;
+  padding: 2rem;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  background: #f9f9f9;
+
+  h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #666;
+  }
+
+  &:hover {
+    border-color: #007bff;
+  }
+}
+
+.selected {
+  border-color: #007bff;
+  background: rgba(0, 123, 255, 0.1);
+}
+
+.gray {
+  color: #888;
+  opacity: 0.6;
+}
+
+.nextButton {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    width: 70px;
+    height: 70px;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
