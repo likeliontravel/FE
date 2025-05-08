@@ -6,10 +6,9 @@ const BASE_URL = 'http://api.toleave.shop';
 // Axios 인스턴스 설정
 const api = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, // 쿠키 기반 인증 활성화 (RefreshToken을 쿠키에서 읽기 위함)
+  withCredentials: true, // 쿠키 기반 인증 활성화
 });
 
-// Axios 인터셉터 설정 (모든 요청에 accessToken 추가)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
   if (token) {
@@ -226,20 +225,60 @@ export const verifyEmailCode = createAsyncThunk<
   }
 });
 
-// 로그인 비동기 액션 (AccessToken 저장 + 헤더 설정)
+// Axios 요청 인터셉터 - accessToken 자동 갱신
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          throw new Error('Refresh token not available');
+        }
+
+        const refreshResponse = await axios.post<
+          APIResponse<{ accessToken: string }>
+        >(`${BASE_URL}/refresh-token`, { refreshToken });
+
+        const newAccessToken = refreshResponse.data.data?.accessToken;
+        if (newAccessToken) {
+          localStorage.setItem('accessToken', newAccessToken);
+          api.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return axios(originalRequest);
+        }
+      } catch (refreshError) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+// 로그인 비동기 액션 (AccessToken + RefreshToken 저장)
 export const loginUser = createAsyncThunk<
-  APIResponse<{ accessToken: string; user: User }>,
+  APIResponse<{ accessToken: string; refreshToken: string; user: User }>,
   { email: string; password: string }
 >('auth/loginUser', async (credentials, { rejectWithValue }) => {
   try {
     const response = await api.post<
-      APIResponse<{ accessToken: string; user: User }>
+      APIResponse<{ accessToken: string; refreshToken: string; user: User }>
     >('/login', credentials);
 
-    // accessToken 저장 및 헤더 설정
-    const accessToken = response.data.data?.accessToken;
-    if (accessToken) {
+    // accessToken, refreshToken 저장 및 헤더 설정
+    const { accessToken, refreshToken } = response.data.data || {};
+
+    if (accessToken && refreshToken) {
       localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
       api.defaults.headers.Authorization = `Bearer ${accessToken}`;
     }
 

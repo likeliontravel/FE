@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../../../styles/post/postList.module.scss';
@@ -19,23 +21,41 @@ const PostList = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const recommendedKeywords = [
-    '여수 맛집',
-    '여행 코스',
-    '가족 여행',
-    '숙소 추천',
-  ];
-
   useEffect(() => {
     const fetchPosts = async () => {
       try {
+        // 실제 API 호출
         const response = await fetch('/api/posts');
         const data = await response.json();
         setPosts(data);
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error fetching posts:', error); // 콘솔 출력 추가
-        }
+      } catch {
+        const testPosts: PostType[] = [
+          {
+            id: 1,
+            title: '서울 여행',
+            writer: '린님',
+            content:
+              '서울에서의 즐거운 여행이었습니다. 정말 멋진 경험이었어요!',
+            image: '/imgs/sample1.jpg',
+          },
+          {
+            id: 2,
+            title: '부산 바다',
+            writer: '홍길동',
+            content:
+              '부산의 바다는 정말 아름답습니다. 기회가 된다면 꼭 다시 가고 싶어요!',
+            image: '/imgs/sample2.jpg',
+          },
+          {
+            id: 3,
+            title: '제주도에서의 하루',
+            writer: '김철수',
+            content:
+              '제주도에서 하루를 보내며 즐거운 시간을 보냈습니다. 자연이 정말 멋져요!',
+            image: '/imgs/sample3.jpg',
+          },
+        ];
+        setPosts(testPosts);
       } finally {
         setLoading(false);
       }
@@ -77,35 +97,24 @@ const PostList = () => {
 
   return (
     <div className={styles.container}>
+      {/* 검색창 */}
       <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-      <div className={styles.recommendedKeywords}>
-        {recommendedKeywords.map((keyword) => (
-          <span
-            key={keyword}
-            className={styles.keyword}
-            onClick={handleKeywordClick(keyword)}
-          >
-            {keyword}
-          </span>
-        ))}
-      </div>
-
-      <div className={styles.sortOptions}>
-        <label htmlFor="sortSelect">정렬:</label>
-        <select
-          id="sortSelect"
-          value={sortOrder}
-          onChange={handleSortChange}
-          className={styles.sortSelect}
-        >
-          <option value="popular">인기순</option>
-          <option value="recent">최신순</option>
-        </select>
-      </div>
-
       <div className={styles.contentWrapper}>
+        {/* 메인 컨텐츠 */}
         <div className={styles.mainContent}>
+          <div className={styles.sortOptionsInside}>
+            <select
+              id="sortSelect"
+              value={sortOrder}
+              onChange={handleSortChange}
+              className={styles.sortSelect}
+            >
+              <option value="popular">인기순</option>
+              <option value="recent">최신순</option>
+            </select>
+          </div>
+
           {loading ? (
             <p>게시글을 불러오는 중...</p>
           ) : filteredPosts.length > 0 ? (
@@ -130,16 +139,19 @@ const PostList = () => {
           ) : (
             <div className={styles.emptyState}>
               <img
-                src="/images/empty.png"
+                src="/imgs/NoPost.png"
                 alt="게시글 없음"
                 className={styles.emptyImage}
               />
-              <p>앗! 아직 게시글이 없어요</p>
-              <p>즐거운 여행의 추억을 공유해주세요 ✈️</p>
+              <div className={styles.emptyTitle}>앗! 아직 게시글이 없어요</div>
+              <div className={styles.emptySubtitle}>
+                즐거운 여행의 추억을 공유해주세요 ✈️
+              </div>
             </div>
           )}
         </div>
 
+        {/* 사이드바 */}
         <div className={styles.sidebar}>
           <div className={styles.profileCard}>
             <img
@@ -164,6 +176,7 @@ const PostList = () => {
             </div>
           </div>
 
+          {/* 카테고리 */}
           <div className={styles.categoryContainer}>
             <div className={styles.categoryTabs}>
               <span
@@ -182,7 +195,11 @@ const PostList = () => {
 
             <div className={styles.categoryItems}>
               {['서울', '부산', '제주', '여수'].map((region) => (
-                <span key={region} className={styles.categoryItem}>
+                <span
+                  key={region}
+                  className={styles.categoryItem}
+                  onClick={handleKeywordClick(region)}
+                >
                   {region}
                 </span>
               ))}

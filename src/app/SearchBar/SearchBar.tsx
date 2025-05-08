@@ -7,10 +7,23 @@ interface SearchBarProps {
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
 }
 
+const recommendedKeywords = [
+  '잠실 크리스마스✨',
+  '제주🎄',
+  '정동진 해수욕장 일출🌞',
+];
+
 const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, setSearchTerm }) => {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchTerm(e.target.value);
+    },
+    [setSearchTerm]
+  );
+
+  const handleKeywordClick = useCallback(
+    (keyword: string) => () => {
+      setSearchTerm(keyword);
     },
     [setSearchTerm]
   );
@@ -28,10 +41,22 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, setSearchTerm }) => {
         <Image
           src="/imgs/search.png"
           alt="검색 아이콘"
-          width={20}
-          height={20}
+          width={24}
+          height={24}
           className={styles.searchIcon}
         />
+      </div>
+
+      <div className={styles.recommendedKeywords}>
+        {recommendedKeywords.map((keyword) => (
+          <span
+            key={keyword}
+            className={styles.keyword}
+            onClick={handleKeywordClick(keyword)}
+          >
+            {keyword}
+          </span>
+        ))}
       </div>
     </div>
   );

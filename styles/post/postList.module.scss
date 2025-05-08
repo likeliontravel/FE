@@ -2,29 +2,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 90%;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-/* 🔹 추천 검색어 위치 변경 */
-.recommendedKeywords {
-  display: flex;
-  gap: 10px;
-  margin-top: 5px;
-  justify-content: flex-end; /* ✅ 오른쪽 정렬 */
   width: 100%;
+  padding: 20px;
+  background: none; /* 필요시 제거 */
+}
+//2. 핵심 CSS 변경
+
+/* 메인 컨텐츠와 사이드바 배경 색을 동일하게 설정 */
+.mainContent,
+.sidebar {
+  background-color: #f4f5fb; /* 회색 배경 */
 }
 
 .emptyState {
   text-align: center;
-  margin-top: 50px;
-}
-
-.emptyImage {
-  width: 200px;
-  height: auto;
-  margin-bottom: 20px;
+  margin-top: 80px;
+  .emptyImage {
+    width: 150px;
+    height: auto;
+    margin-bottom: 20px;
+  }
+  .emptyTitle {
+    font-size: 20px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  .emptySubtitle {
+    font-size: 16px;
+    font-weight: 400;
+    color: #888;
+  }
 }
 
 .keyword {
@@ -40,34 +48,53 @@
   }
 }
 
-/* 🔹 정렬 선택 바 우측 정렬 */
+/* postList.module.scss */
+
+.sortOptionsInside {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+/* ✅ 정렬 옵션을 메인컨텐츠 안 우측 상단에 배치 */
 .sortOptions {
+  position: absolute;
+  top: 20px;
+  right: 20px;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 20px;
-  justify-content: flex-end; /* ✅ 우측 정렬 */
 
   label {
-    font-size: 14px;
-    font-weight: bold;
+    font-size: 16px;
+    font-weight: 600;
+    color: #444;
   }
 
   .sortSelect {
-    padding: 5px 10px;
+    padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 14px;
   }
 }
 
-.contentWrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
-  max-width: 1200px;
-  gap: 30px;
+.sortSelect {
+  background: #ffffff; /* 밝은 회색 배경 */
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #000;
+  appearance: none; /* 기본 화살표 제거 */
+  background-image: url('/imgs/arrow-down.png'); /* 원하는 화살표 아이콘 */
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  cursor: pointer;
+
+  width: 100px; /* ✅ 너비 추가해서 공간 확보 */
+  min-width: 100px; /* ✅ 최소 너비도 지정 */
 }
 
 .searchBar {
@@ -77,7 +104,7 @@
   align-items: center;
   position: relative;
   margin-bottom: 10px;
-  background-color: #afb2b7; /* ✅ 검색창 배경색 변경 */
+  background-color: #afb2b7;
   padding: 10px;
   border-radius: 30px;
 
@@ -87,8 +114,8 @@
     border: none;
     border-radius: 30px;
     font-size: 16px;
-    background-color: transparent; /* ✅ 배경색 투명 */
-    color: white; /* ✅ 글씨 색상 조정 */
+    background-color: transparent;
+    color: white;
     padding-left: 50px;
   }
 
@@ -100,23 +127,24 @@
   }
 }
 
-/* 🔹 게시글과 사이드바를 정렬 */
 .contentWrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   width: 100%;
-  max-width: 1200px; /* 🔹 전체 너비 조정 */
+  max-width: 1200px;
+  margin: 0 auto; /* 가운데 정렬 */
+  display: flex;
   gap: 30px;
+  background-color: #f4f5fb; /* 회색 배경 전체 */
+  padding: 40px 20px; /* 상하좌우 여유 (원하시는 만큼 조절) */
+  border-radius: 10px; /* 모서리 둥글게 (원하신다면) */
+  box-sizing: border-box;
 }
 
-/* 🔹 게시글 리스트 배경색 변경 */
+/* 메인 컨텐츠 영역 */
 .mainContent {
   width: 70%;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background-color: #f4f5fb; /* ✅ 배경색 변경 */
   padding: 20px;
   border-radius: 10px;
 }
@@ -175,11 +203,14 @@
   margin-top: 5px;
 }
 
+/* 사이드바 영역 */
 .sidebar {
   width: 30%;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding: 20px;
+  border-radius: 10px;
 }
 
 /* 🔹 프로필 카드 스타일 */

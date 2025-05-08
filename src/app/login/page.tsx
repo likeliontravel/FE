@@ -7,6 +7,7 @@ import { AppDispatch, RootState } from '../../../store/store';
 import Link from 'next/link';
 import styles from '../../../styles/login/login.module.scss';
 import { useRouter } from 'next/navigation';
+import { setCookie } from 'cookies-next';
 
 const Login = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -22,7 +23,6 @@ const Login = () => {
 
   const [rememberMe, setRememberMe] = useState(false);
 
-  // ✅ useCallback을 사용하여 함수 메모이제이션
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -35,9 +35,29 @@ const Login = () => {
   }, []);
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
-      dispatch(loginUser(formData));
+      try {
+        const response = await dispatch(loginUser(formData)).unwrap();
+        const { accessToken, refreshToken } = response.data || {};
+
+        if (accessToken && refreshToken) {
+          setCookie('Authorization', accessToken, {
+            path: '/',
+            maxAge: 60 * 60,
+          });
+          setCookie('Refresh-Token', refreshToken, {
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60,
+          });
+
+          localStorage.setItem('Authorization', accessToken);
+          localStorage.setItem('Refresh-Token', refreshToken);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('로그인 실패:', error);
+      }
     },
     [dispatch, formData]
   );
@@ -49,10 +69,27 @@ const Login = () => {
     }
   }, [user, router]);
 
+  const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao') => {
+    window.location.href = `https://api.toleave.shop/auth/${provider}`;
+  }, []);
+
+  const handleKakaoLogin = useCallback(
+    () => handleOAuthLogin('kakao'),
+    [handleOAuthLogin]
+  );
+  const handleNaverLogin = useCallback(
+    () => handleOAuthLogin('naver'),
+    [handleOAuthLogin]
+  );
+
   return (
     <div className={styles.container}>
       <div className={styles.imageSection}>
-        <span>이미지</span>
+        <img
+          src="/imgs/loginMainImg.png"
+          alt="투리브 캐릭터"
+          className={styles.characterImage}
+        />
       </div>
 
       <div className={styles.formSection}>
@@ -69,7 +106,7 @@ const Login = () => {
               id="email"
               name="email"
               value={formData.email}
-              onChange={handleChange} // ✅ JSX 내부에서 새 함수 생성 X
+              onChange={handleChange}
               required
             />
           </div>
@@ -81,7 +118,7 @@ const Login = () => {
               id="password"
               name="password"
               value={formData.password}
-              onChange={handleChange} // ✅ JSX 내부에서 새 함수 생성 X
+              onChange={handleChange}
               required
             />
           </div>
@@ -92,7 +129,7 @@ const Login = () => {
                 type="checkbox"
                 id="rememberMe"
                 checked={rememberMe}
-                onChange={handleCheckboxChange} // ✅ JSX 내부에서 새 함수 생성 X
+                onChange={handleCheckboxChange}
               />
               <label htmlFor="rememberMe">아이디 저장</label>
             </div>
@@ -125,20 +162,20 @@ const Login = () => {
         <div className={styles.socialLogin}>
           <p>소셜 계정으로 로그인</p>
           <div className={styles.socialButtons}>
-            <a href="/auth/kakao">
+            <button onClick={handleKakaoLogin}>
               <img
                 src="../imgs/kakao.png"
                 alt="카카오 로그인"
                 className={styles.kakao}
               />
-            </a>
-            <a href="/auth/naver">
+            </button>
+            <button onClick={handleNaverLogin}>
               <img
                 src="../imgs/naver.png"
                 alt="네이버 로그인"
                 className={styles.naver}
               />
-            </a>
+            </button>
           </div>
         </div>
       </div>
