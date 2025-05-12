@@ -1,3 +1,4 @@
+// components/calendar/MiniCalendar.tsx
 'use client';
 
 import React, { useMemo, useCallback } from 'react';
@@ -6,60 +7,42 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import koLocale from '@fullcalendar/core/locales/ko';
 import { DateSelectArg } from '@fullcalendar/core';
-
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { setMainViewDate } from '../../store/calendarSlice';
-
-import styles from './WeekCalendar.module.scss';
 import dayjs from 'dayjs';
+import styles from './WeekCalendar.module.scss';
 
 const MiniCalendar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { mainViewDate, events } = useSelector(
-    (state: RootState) => state.calendar
-  );
-
-  const selectedSchedule = useSelector(
-    (state: RootState) => state.calendar.selectedSchedule
+  const { mainViewDate, events } = useSelector((s: RootState) => s.calendar);
+  const selectedCalendarSchedule = useSelector(
+    (s: RootState) => s.calendar.selectedCalendarSchedule
   );
 
   const pluginMini = useMemo(() => [dayGridPlugin, interactionPlugin], []);
   const localesArray = useMemo(() => [koLocale], []);
 
   const handleSelect = useCallback(
-    (arg: DateSelectArg) => {
-      dispatch(setMainViewDate(arg.start));
-    },
+    (arg: DateSelectArg) => dispatch(setMainViewDate(arg.start)),
     [dispatch]
   );
 
-  const filteredEvents = useMemo(() => {
-    return events.filter((event) => event.schedule === selectedSchedule.value);
-  }, [events, selectedSchedule]);
-
-  const dayCellClassNames = useCallback(
-    (arg: any): string[] => {
-      const cellDateStr = dayjs(arg.date).format('YYYY-MM-DD');
-      const hasEvent = filteredEvents.some(
-        (ev) => dayjs(ev.start).format('YYYY-MM-DD') === cellDateStr
-      );
-      return hasEvent ? ['has-event'] : [];
-    },
-    [filteredEvents]
+  const filteredEvents = useMemo(
+    () => events.filter((ev) => ev.schedule === selectedCalendarSchedule.value),
+    [events, selectedCalendarSchedule]
   );
 
-  const dayCellContent = useCallback((arg: any): React.ReactNode => {
-    return arg.date.getDate().toString();
-  }, []);
-
-  const headerToolbarConfig = useMemo(
-    () => ({
-      left: 'prev',
-      center: 'title',
-      right: 'next',
-    }),
-    []
+  const dayCellClassNames = useCallback(
+    (arg: any) => {
+      const dateStr = dayjs(arg.date).format('YYYY-MM-DD');
+      return filteredEvents.some(
+        (ev) => dayjs(ev.start).format('YYYY-MM-DD') === dateStr
+      )
+        ? ['has-event']
+        : [];
+    },
+    [filteredEvents]
   );
 
   return (
@@ -70,14 +53,14 @@ const MiniCalendar: React.FC = () => {
         initialDate={mainViewDate}
         locales={localesArray}
         locale="ko"
-        headerToolbar={headerToolbarConfig}
+        headerToolbar={{ left: 'prev', center: 'title', right: 'next' }}
         height="255px"
         selectable={true}
         select={handleSelect}
         events={filteredEvents}
         eventDisplay="none"
         dayCellClassNames={dayCellClassNames}
-        dayCellContent={dayCellContent}
+        dayCellContent={(arg) => arg.date.getDate().toString()}
         fixedWeekCount={false}
       />
     </div>

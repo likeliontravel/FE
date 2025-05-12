@@ -1,3 +1,4 @@
+// components/schedule/ScheduleList.tsx
 'use client';
 
 import React, { useCallback } from 'react';
@@ -5,11 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import UseReactSelect from '../select/UseReactSelect';
 import styles from './ScheduleList.module.scss';
 import { RootState, AppDispatch } from '../../store/store';
-import {
-  addEvent,
-  CalendarEvent,
-  clearSelectedSlots,
-} from '../../store/calendarSlice';
+import { addEvent, clearSelectedSlots } from '../../store/calendarSlice';
 import dayjs from 'dayjs';
 
 interface ScheduleItem {
@@ -23,11 +20,10 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
   ({ item }) => {
     const dispatch = useDispatch<AppDispatch>();
     const selectedSlots = useSelector(
-      (state: RootState) => state.calendar.selectedSlots
+      (s: RootState) => s.calendar.selectedSlots
     );
-
-    const selectedSchedule = useSelector(
-      (state: RootState) => state.calendar.selectedListSchedule
+    const selectedCalendarSchedule = useSelector(
+      (s: RootState) => s.calendar.selectedCalendarSchedule
     );
 
     const handleClick = useCallback(() => {
@@ -35,25 +31,20 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
         alert('먼저 달력에서 시간을 하나 이상 선택하세요.');
         return;
       }
-
-      const newEvents: CalendarEvent[] = selectedSlots.map((slot) => {
-        const startTime = dayjs(slot);
-        const endTime = startTime.add(1, 'hour'); // 1시간 일정 가정
+      const newEvents = selectedSlots.map((slot) => {
+        const start = dayjs(slot);
         return {
-          id: String(Date.now()) + Math.random(),
+          id: Date.now().toString() + Math.random(),
           title: item.title,
-          start: startTime.toISOString(),
-          end: endTime.toISOString(),
-          schedule: selectedSchedule.value,
+          start: start.toISOString(),
+          end: start.add(1, 'hour').toISOString(),
+          schedule: selectedCalendarSchedule.value,
           category: item.category,
         };
       });
-
-      newEvents.forEach((event) => {
-        dispatch(addEvent(event));
-      });
+      newEvents.forEach((ev) => dispatch(addEvent(ev)));
       dispatch(clearSelectedSlots());
-    }, [dispatch, item, selectedSlots]);
+    }, [dispatch, item, selectedSlots, selectedCalendarSchedule]);
 
     return (
       <div className={styles.main} onClick={handleClick}>
@@ -68,7 +59,7 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
   }
 );
 
-const ScheduleList: React.FC = () => {
+export const ScheduleList: React.FC = () => {
   const scheduleItems: ScheduleItem[] = [
     {
       id: 'item1',
@@ -76,6 +67,7 @@ const ScheduleList: React.FC = () => {
       address: '강원 속초시 청초호반로 72',
       category: 'restaurant',
     },
+    // … 추가 아이템
   ];
 
   return (

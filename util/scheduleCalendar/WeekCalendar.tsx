@@ -21,6 +21,7 @@ import MiniCalendar from './MiniCalendar';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { addSelectedSlot, removeSelectedSlot } from '../../store/calendarSlice';
+import GuideOverlay from './GuideOverlay';
 
 const WeekCalendar = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -170,6 +171,8 @@ const WeekCalendar = () => {
     },
     []
   );
+
+  const [showGuide, setShowGuide] = useState(false);
 
   const handleTabClick = createClickHandler(setActiveTab);
   const handleLocationClick = createClickHandler(setSelectedLocation);
@@ -558,8 +561,12 @@ const WeekCalendar = () => {
             </div>
           </div>
         )}
-        <div className={styles.ai_schedule}>AI 맞춤 일정 구성하기</div>
+        <div onClick={() => setShowGuide(true)} className={styles.ai_schedule}>
+          AI 맞춤 일정 구성하기
+        </div>
       </div>
+
+      {showGuide && <GuideOverlay onClose={() => setShowGuide(false)} />}
     </div>
   );
 };

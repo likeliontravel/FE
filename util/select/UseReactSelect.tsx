@@ -1,6 +1,7 @@
+// components/select/UseReactSelect.tsx
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import Select, { SingleValue, ActionMeta } from 'react-select';
 import CalendarOption from './CalendarOption';
 import ListOption from './ListOption';
@@ -22,14 +23,14 @@ interface UseReactSelectProps {
 const UseReactSelect = ({ type }: UseReactSelectProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedCalendarSchedule = useSelector(
-    (state: RootState) => state.calendar.selectedCalendarSchedule
+    (s: RootState) => s.calendar.selectedCalendarSchedule
   );
   const selectedListSchedule = useSelector(
-    (state: RootState) => state.calendar.selectedListSchedule
+    (s: RootState) => s.calendar.selectedListSchedule
   );
 
-  const calendarOptions = useMemo(() => {
-    return [
+  const calendarOptions = useMemo<ScheduleOption[]>(
+    () => [
       { value: 'default', label: '-', prefix: '내일정', suffix: 'D-' },
       {
         value: 'trip_sokcho',
@@ -43,16 +44,18 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
         prefix: '가나다라',
         suffix: 'D-21',
       },
-    ];
-  }, []);
+    ],
+    []
+  );
 
-  const listOptions = useMemo(() => {
-    return [
+  const listOptions = useMemo<ScheduleOption[]>(
+    () => [
       { value: 'restaurant', label: '맛집' },
       { value: 'hotel', label: '숙소' },
       { value: 'tourist_spot', label: '관광지' },
-    ];
-  }, []);
+    ],
+    []
+  );
 
   const { options, customComponents, currentValue, onChangeAction } =
     useMemo(() => {
@@ -63,8 +66,8 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
             Option: CalendarOption,
             SingleValue: CalendarSingleValue,
           },
-          currentValue: selectedCalendarSchedule, // 캘린더 Select의 현재값
-          onChangeAction: setSelectedCalendarSchedule, // 액션
+          currentValue: selectedCalendarSchedule,
+          onChangeAction: setSelectedCalendarSchedule,
         };
       } else {
         return {
@@ -73,8 +76,8 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
             Option: ListOption,
             SingleValue: ListSingleValue,
           },
-          currentValue: selectedListSchedule, // 리스트 Select의 현재값
-          onChangeAction: setSelectedListSchedule, // 액션
+          currentValue: selectedListSchedule,
+          onChangeAction: setSelectedListSchedule,
         };
       }
     }, [
@@ -88,28 +91,22 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
   const handleChange = useCallback(
     (
       newValue: SingleValue<ScheduleOption>,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _actionMeta: ActionMeta<ScheduleOption>
+      _meta: ActionMeta<ScheduleOption>
     ) => {
-      if (newValue !== null && newValue !== undefined) {
-        dispatch(onChangeAction(newValue));
-      }
+      if (newValue) dispatch(onChangeAction(newValue));
     },
     [dispatch, onChangeAction]
   );
 
   const filterOptions = useCallback(
-    (option: any) =>
-      option.data.value !== 'default' &&
-      option.data.value !== currentValue.value,
+    (opt: any) =>
+      opt.data.value !== currentValue.value && opt.data.value !== 'default',
     [currentValue]
   );
 
-  const instanceId = type === 'calendar' ? 'calendar-select' : 'list-select';
-
   return (
     <Select<ScheduleOption, false>
-      instanceId={instanceId}
+      instanceId={type === 'calendar' ? 'calendar-select' : 'list-select'}
       classNamePrefix={
         type === 'calendar' ? 'custom-select-calendar' : 'custom-select-list'
       }
