@@ -1,53 +1,48 @@
-.userbox {
-  width: 258px;
-  height: 167px;
-  display: flex;
-  justify-content: space-between;
+@use '../component/mixins.scss' as *;
+@use '../component/display_mixins.scss' as *;
+
+.left_div {
   margin-left: 300px;
 }
 
+.userbox {
+  @include width-height(258px, 167px);
+  @include display_flex-justify_content_space_between;
+}
+
 .profile {
-  width: 69px;
-  height: 69px;
-  background-image: url('../../public/imgs/Ellipse5.png');
-  background-repeat: no-repeat;
-  background-size: cover;
+  @include width-height(69px, 69px);
+  @include background_image-size_cover-repeat_no_repeat(
+    '../../public/imgs/Ellipse5.png'
+  );
   border-radius: 50%;
 }
 
 .user {
-  width: 100px;
+  @include width-height(100px, auto);
 }
 
 .name {
-  font-size: 26px;
-  font-weight: 700;
+  @include font_size-font_weight-line_height(26px, 700, 31.47px);
   margin: 0;
 }
 
 .email {
+  @include font_size-font_weight-line_height(20px, 700, 28px);
   color: #5d6064;
-  font-size: 20px;
-  font-weight: 700;
   margin: 0;
 }
 
 .account {
+  @include font_size-font_weight-line_height(14px, 500, 16.94px);
   color: #5d6064;
-  font-size: 14px;
-  font-weight: 500;
 }
 
 .oauthbox {
-  width: 85px;
-  height: 95px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  @include width-height(85px, 85px);
+  @include display_flex-flex_direction_column-justify_content_space_between;
   button {
-    line-height: 28px;
-    font-size: 10px;
-    font-weight: 500;
+    @include font_size-font_weight-line_height(10px, 500, 28px);
     padding: 2px 8.5px 2px 8.5px;
     border: none;
     border-radius: 20px;
@@ -56,17 +51,19 @@
 }
 
 .oauth {
-  width: 25px;
-  height: 25px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @include width-height(25px, 25px);
+  @include display_flex-align_items_center-justify_content_center;
   background-color: #dcdfe4;
   border-radius: 50%;
   svg {
-    width: 20px;
-    height: 20px;
+    @include width-height(20px, 20px);
     color: #5d6064;
     opacity: 0.5;
   }
+}
+
+.calendar_div {
+  @include display_flex-flex_direction_column-align_items_center-justify_content_space_around;
+  @include width-height(330px, 360px);
+  background-color: #f4f5fb;
 }

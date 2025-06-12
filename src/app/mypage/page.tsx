@@ -1,7 +1,8 @@
-import style from '../../../styles/mypage/mypage.module.scss';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import CustomCalendar from '../../../util/calendar/CustomCalendar';
+import style from "../../../styles/mypage/mypage.module.scss";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import MiniCalendar from "../../../util/scheduleCalendar/MiniCalendar";
+import UseReactSelect from "../../../util/select/UseReactSelect";
 
 export default function myPage() {
   return (
@@ -9,7 +10,7 @@ export default function myPage() {
       {/* 상단 메뉴 */}
       <div>
         {/* 회원, 미니 캘린더 */}
-        <div>
+        <div className={style.left_div}>
           {/* 회원 */}
           <div className={style.userbox}>
             {/* 프로필 사진 */}
@@ -31,8 +32,9 @@ export default function myPage() {
             </div>
           </div>
           {/* 캘린더 */}
-          <div>
-            <CustomCalendar />
+          <div className={style.calendar_div}>
+            <UseReactSelect type="calendar" />
+            <MiniCalendar />
           </div>
         </div>
 
@@ -40,7 +42,7 @@ export default function myPage() {
         <div></div>
       </div>
 
-      {/* 프로모션 배너 */}
+      {/* 카카오맵 */}
       <div></div>
     </>
   );

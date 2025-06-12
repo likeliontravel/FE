@@ -1,0 +1,163 @@
+@use '../../styles/component/mixins.scss' as *;
+@use '../../styles/component/display_mixins.scss' as *;
+
+/* 컨트롤 스타일 */
+:global(.custom-select-calendar__control),
+:global(.custom-select-list__control) {
+  @include display_flex-align_items_center-justify_content_space_around;
+  cursor: pointer !important;
+}
+
+:global(.custom-select-calendar__control) {
+  @include width-height(235px, 37px);
+}
+
+:global(.custom-select-list__control) {
+  @include width-height(90px, 28px);
+  background-color: #ff9ebf !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:global(.custom-select-list__dropdown-indicator svg) {
+  fill: #fff !important;
+}
+
+/* 인디케이터 및 값 컨테이너 */
+:global(.custom-select-calendar__indicator-separator),
+:global(.custom-select-list__indicator-separator) {
+  display: none;
+}
+
+:global(.custom-select-calendar__value-container--has-value),
+:global(.custom-select-list__value-container--has-value) {
+  padding-right: 0 !important;
+}
+
+/* 공통 flex 설정 */
+%flex-space-between {
+  @include display_flex-align_items_center-justify_content_space_between;
+}
+
+/* 캘린더 옵션 내부 (CalendarOption, CalendarSingleValue) */
+.custom_div {
+  @extend %flex-space-between;
+  @include width-height(186px, 28px);
+}
+
+.show_custom_div {
+  @extend %flex-space-between;
+  @include width-height(180px, 28px);
+}
+
+%prefix-common {
+  @include display_flex-align_items_center-justify_content_center;
+  @include font_size-font_weight-line_height(12px, 700, 100%);
+  border-radius: 4px;
+  padding: 2.5px 4px 2.5px 4px;
+}
+
+.prefix_div {
+  @include display_flex-align_items_center;
+  width: 70px;
+}
+
+.prefix {
+  @extend %prefix-common;
+  @include width-height(auto, 20px);
+  background-color: #27abf1;
+  color: white;
+}
+
+.show_prefix {
+  @extend %prefix-common;
+  @include width-height(41px, 20px);
+  background-color: #eff2f6;
+  color: #9fa2a6;
+}
+
+.label {
+  @include width-height(108px, 28px);
+  @include font_size-font_weight-line_height(16px, 700, 28px);
+}
+
+.show_label {
+  @extend .label;
+  @include display_flex-align_items_center-justify_content_center;
+}
+
+%suffix-common {
+  @include width-height(38px, 28px);
+  @include font_size-font_weight-line_height(14px, 700, 28px);
+  color: #c1c4c7;
+}
+
+.suffix {
+  @extend %suffix-common;
+}
+
+.show_suffix {
+  @extend %suffix-common;
+  @include display_flex-align_items_center-justify_content_center;
+}
+
+/* 메뉴 애니메이션 (공통) */
+:global(.custom-select-calendar__menu),
+:global(.custom-select-list__menu) {
+  animation: slideDown 0.2s ease-out forwards;
+  transform-origin: top;
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 옵션(Option) 관련 */
+:global(.custom-select-calendar__option),
+:global(.custom-select-list__option) {
+  transition:
+    background-color 500ms ease,
+    border-radius 500ms ease;
+}
+
+:global(.custom-select-list__option) {
+  @include font_size-font_weight-line_height(14px, 600, 100%);
+  color: black;
+  background-color: #c1c4c7 !important;
+}
+
+:global(.custom-select-calendar__option:hover) {
+  background-color: #e6e9ee !important;
+  border-radius: 4px;
+  cursor: pointer !important;
+}
+
+:global(.custom-select-list__option:hover) {
+  background-color: #27abf1 !important;
+  color: #fff !important;
+  border-radius: 4px;
+  cursor: pointer !important;
+}
+
+:global(.custom-select-calendar__option--is-focused),
+:global(.custom-select-list__option--is-focused) {
+  background-color: transparent !important;
+}
+
+.show_list_div {
+  @include display_flex-align_items_center-justify_content_center;
+  background-color: #ff9ebf;
+  border-radius: 4px;
+}
+
+.show_list_label {
+  @include font_size-font_weight-line_height(14px, 600, 100%);
+  color: #fff;
+}
