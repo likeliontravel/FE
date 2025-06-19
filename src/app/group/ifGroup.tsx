@@ -1,19 +1,23 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
-import style from '../../../styles/group/groupPage.module.scss';
-import useBetweenScroll from '../../../util/useBetweenScroll';
-import { useRouter } from 'next/navigation';
+import { useRef, useState } from "react";
+import style from "../../../styles/group/groupPage.module.scss";
+import useBetweenScroll from "../../../util/useBetweenScroll";
+import { useRouter } from "next/navigation";
+import GroupCreateModal from "./GroupCreateModal";
 
-const ifGroup = () => {
+const ifGroup = ({ groups }: { groups: any[] }) => {
   const router = useRouter();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const groupId = 1;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   useBetweenScroll(scrollContainerRef);
 
-  const handleGroupClick = () => {
-    router.push(`/group/${groupId}`);
+  const handleGroupClick = (id: number) => {
+    router.push(`/group/${id}`);
   };
 
   return (
@@ -22,26 +26,29 @@ const ifGroup = () => {
       <div className={style.top_div}>
         <div className={style.group_div}>
           <p>나의 그룹</p>
-          <div className={style.group_create_div}>
+          <div className={style.group_create_div} onClick={openModal}>
             <p>그룹 생성</p>
             <div className={style.group_img}></div>
           </div>
         </div>
         {/* 그룹 리스트 */}
         <div className={style.group_list} ref={scrollContainerRef}>
-          <div
-            className={style.group_content}
-            onClick={() => handleGroupClick()}
-          >
-            <div className={style.group_content_title}>
-              <p>멋사</p>
+          {groups.map((group) => (
+            <div
+              key={group.id}
+              className={style.group_content}
+              onClick={() => handleGroupClick(group.id)}
+            >
+              <div className={style.group_content_title}>
+                <p>{group.groupName}</p>
+              </div>
+              <div className={style.group_content_people}>
+                <div className={style.group_img}></div>
+                <p>8명</p>
+              </div>
+              <div className={style.shapes_img}></div>
             </div>
-            <div className={style.group_content_people}>
-              <div className={style.group_img}></div>
-              <p>8명</p>
-            </div>
-            <div className={style.shapes_img}></div>
-          </div>
+          ))}
           {/* 그룹 추가하기 */}
           <div className={style.group_plus}>
             <div></div>
@@ -67,7 +74,7 @@ const ifGroup = () => {
             </div>
           </div>
           <div className={style.commig_div_show}>
-            <p>보러가기 {'>'}</p>
+            <p>보러가기 {">"}</p>
           </div>
         </div>
         {/* 그룹 메인 이미지 */}
@@ -78,6 +85,7 @@ const ifGroup = () => {
           </div>
         </div>
       </div>
+      {isModalOpen && <GroupCreateModal onClose={closeModal} />}
     </>
   );
 };

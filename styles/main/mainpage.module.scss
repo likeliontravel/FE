@@ -1,5 +1,5 @@
-@use '../component/mixins.scss' as *;
-@use '../component/display_mixins.scss' as *;
+@use "../component/mixins.scss" as *;
+@use "../component/display_mixins.scss" as *;
 
 .body,
 .bottom,
@@ -42,7 +42,7 @@
 .main_img {
   @include width-height(497px, 494px);
   @include background_image-size_cover-repeat_no_repeat(
-    '../../public/imgs/main_page_img.png'
+    "../../public/imgs/main_page_img.png"
   );
 }
 
@@ -71,7 +71,7 @@
 .none_img {
   @include width-height(170px, 154px);
   @include background_image-size_cover-repeat_no_repeat(
-    '../../public/imgs/none.png'
+    "../../public/imgs/none.png"
   );
   border-radius: 10px;
 }
@@ -195,18 +195,30 @@
 }
 
 .none_mate_hotplace {
+  position: relative;
   @include width-height(820px, 340px);
-  background-color: black;
+  background-image: url("/imgs/default_main_img.png");
+  border-radius: 10px;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2.5px);
+    z-index: 0;
+    border-radius: 10px;
+  }
 }
 
 .rectangle {
   @include width-height(76px, 42px);
   background-color: white;
   border-radius: 21px;
+  z-index: 1;
   div {
     @include width-height(36px, 8px);
     @include background_image-size_cover-repeat_no_repeat(
-      '../../public/imgs/threepoint.png'
+      "../../public/imgs/threepoint.png"
     );
   }
 }
@@ -214,11 +226,13 @@
 .none_mate_hotplace_title {
   @include font_size-font_weight-line_height(26px, 600, 100%);
   color: white;
+  z-index: 1;
 }
 
 .none_mate_hotplace_text {
   @include font_size-font_weight-line_height(16px, 500, 100%);
   color: white;
+  z-index: 1;
 }
 
 .bottom {

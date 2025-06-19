@@ -26,7 +26,7 @@
 }
 
 .logo {
-  @include back-img('../../public/imgs/logo.png');
+  @include back-img("../../public/imgs/logo.png");
   @include width-height(100px, 40px);
   margin-left: 130px;
 }
@@ -39,6 +39,11 @@
   @include display-flex_alii-center_juc-spacearound();
   @include width-height(750px, 80px);
   margin-left: 470px;
+
+  a {
+    text-decoration: none;
+    color: black;
+  }
 
   p {
     font-size: 18px;
@@ -53,7 +58,7 @@
 }
 
 .alram {
-  @include back-img('../../public/imgs/alram.png');
+  @include back-img("../../public/imgs/alram.png");
   @include width-height(28px, 28px);
   margin-top: 5px;
   margin-left: 50px;
@@ -63,6 +68,11 @@
   @include display-flex_alii-center_juc-spacearound();
   @include width-height(80px, 80px);
 
+  a {
+    text-decoration: none;
+    color: black;
+  }
+
   p {
     font-size: 16px;
     font-weight: 600;
@@ -71,6 +81,6 @@
 }
 
 .userImage {
-  @include back-img('../../public/imgs/Ellipse5.png');
+  @include back-img("../../public/imgs/Ellipse5.png");
   @include width-height(30px, 30px);
 }

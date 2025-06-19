@@ -1,18 +1,38 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import style from '../../../styles/group/groupPage.module.scss';
-import NonGroup from './nonGroup';
-import IfGroup from './ifGroup';
+import { useEffect, useState } from "react";
+import style from "../../../styles/group/groupPage.module.scss";
+import NonGroup from "./nonGroup";
+import IfGroup from "./ifGroup";
 
 const GroupPage = () => {
-  const [hotPlaceList, setHotPlaceList] = useState<any>(true);
+  const [hasGroup, setHasGroup] = useState<boolean | null>(null);
+  const [groups, setGroups] = useState<any[]>([]);
 
-  // setHotPlaceList(true);
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const res = await fetch("/group/user-groups");
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setGroups(json.data);
+          setHasGroup(true);
+        } else {
+          setHasGroup(false);
+        }
+      } catch (error) {
+        console.error("그룹 정보 불러오기 실패:", error);
+        setHasGroup(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
 
   return (
     <div className={style.body}>
-      {hotPlaceList ? <IfGroup /> : <NonGroup />}
+      {hasGroup ? <IfGroup groups={groups} /> : <NonGroup />}
     </div>
   );
 };
