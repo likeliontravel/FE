@@ -62,7 +62,7 @@ const ifGroup = ({ groups }: { groups: any[] }) => {
           <div className={style.commig_div_p_div}>
             <div className={style.commig_div_p_div_flex_div}>
               <div className={style.commig_div_p_div_flex_div_title}>
-                <p>멋사</p>
+                <p>{groups[0].groupName}</p>
               </div>
               <p>의</p>
             </div>
@@ -73,7 +73,10 @@ const ifGroup = ({ groups }: { groups: any[] }) => {
               <div className={style.ellipse}></div>
             </div>
           </div>
-          <div className={style.commig_div_show}>
+          <div
+            className={style.commig_div_show}
+            onClick={() => handleGroupClick(groups[0].id)}
+          >
             <p>보러가기 {">"}</p>
           </div>
         </div>

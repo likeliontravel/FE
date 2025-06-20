@@ -3,12 +3,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import MiniCalendar from "../../../util/scheduleCalendar/MiniCalendar";
 import UseReactSelect from "../../../util/select/UseReactSelect";
+import KakaoMap from "../../../util/KakaoMap";
+import ScheduleCheck from "../../../util/ScheduleCheck";
 
 export default function myPage() {
   return (
-    <>
+    <div className={style.mypage_div}>
       {/* 상단 메뉴 */}
-      <div>
+      <div className={style.mypage_top_div}>
         {/* 회원, 미니 캘린더 */}
         <div className={style.left_div}>
           {/* 회원 */}
@@ -39,11 +41,11 @@ export default function myPage() {
         </div>
 
         {/* 여행 계획 */}
-        <div></div>
+        <ScheduleCheck />
       </div>
 
       {/* 카카오맵 */}
-      <div></div>
-    </>
+      <KakaoMap />
+    </div>
   );
 }

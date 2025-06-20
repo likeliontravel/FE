@@ -1,0 +1,90 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  background: #e9f7ff;
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.dateNav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.date {
+  background-color: #44c6f0;
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.3rem 0.7rem;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.summarySection {
+  display: flex;
+  gap: 1rem;
+}
+
+.groupInfo {
+  width: 250px;
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.cardSection {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+}
+
+.cardColumn {
+  width: 100%;
+}
+
+.card {
+  display: flex;
+  background: #fff;
+  margin-bottom: 0.8rem;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.card img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+}
+
+.cardContent {
+  padding: 0.5rem;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.address,
+.time {
+  font-size: 0.8rem;
+  color: #555;
+}

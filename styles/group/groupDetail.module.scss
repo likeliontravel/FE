@@ -1,0 +1,149 @@
+.group_detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  h1 {
+    width: 76vw;
+    i {
+      font-family: Inter;
+      font-weight: 700;
+      font-size: 40px;
+      line-height: 62px;
+      text-align: center;
+      background-color: #27abf1;
+      color: white;
+      font-style: normal;
+      padding: 0.3% 0.7%;
+      border-radius: 12px;
+      margin-right: 1%;
+    }
+    font-family: Inter;
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 62px;
+  }
+}
+
+.group_detail_top {
+  width: 75vw;
+  height: 15vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #d3f0ff;
+  padding: 2%;
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    h1 {
+      width: 88px;
+      font-family: Inter;
+      font-weight: 700;
+      font-size: 40px;
+      line-height: 62px;
+      margin: 0;
+    }
+    p {
+      font-family: Inter;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 100%;
+    }
+  }
+  p {
+    font-family: Inter;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 100%;
+    margin-bottom: 5%;
+  }
+}
+
+.group_detail_middle {
+  width: 79vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 3% 0;
+}
+
+.group_detail_middle_left {
+  display: flex;
+  align-items: center;
+  width: 418px;
+  height: 80px;
+  background-color: #f4f5fb;
+  border-radius: 10px;
+  margin-left: 22px;
+  padding: 1%;
+  p {
+    background-color: #f83e79;
+    color: white;
+    font-family: Inter;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 26px;
+    text-align: center;
+    border-radius: 4px;
+    padding: 1% 2%;
+    margin-bottom: 9%;
+  }
+  div {
+    margin-left: 10%;
+    h4 {
+      color: #2c2d2e;
+      font-family: Inter;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 26px;
+      margin: 0;
+    }
+    p {
+      background: none;
+      color: #2c2d2e;
+      font-family: Inter;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 26px;
+      margin: 0;
+      padding: 0;
+    }
+  }
+}
+
+.group_detail_middle_right {
+  width: 278px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  div {
+    width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: solid 2px #27abf1;
+    border-radius: 10px;
+    padding: 3% 5%;
+    cursor: pointer;
+    p {
+      height: 24px;
+      font-family: Inter;
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 100%;
+      text-align: center;
+      margin: 0;
+      color: #27abf1;
+    }
+  }
+}
+
+.group_detail_bottom {
+  width: 78vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 1%;
+  margin-bottom: 5%;
+}
