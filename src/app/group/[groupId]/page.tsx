@@ -1,11 +1,15 @@
 "use client";
+
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import style from "../../../../styles/group/groupDetail.module.scss";
 import MiniCalendar from "../../../../util/scheduleCalendar/MiniCalendar";
 import ScheduleCheck from "../../../../util/ScheduleCheck";
 import Footer from "@/app/_component/Footer";
+import GroupNoticeModal from "./GroupNoticeModal";
 
 export default function groupDetail() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const params = useParams();
   const groupId = params.groupId;
 
@@ -20,7 +24,10 @@ export default function groupDetail() {
           <p>린님 외 7명의 멤버가 있어요</p>
         </div>
         <div className={style.group_detail_middle}>
-          <div className={style.group_detail_middle_left}>
+          <div
+            className={style.group_detail_middle_left}
+            onClick={() => setIsModalOpen(true)}
+          >
             <p>공지</p>
             <div>
               <h4>린</h4>
@@ -62,6 +69,9 @@ export default function groupDetail() {
           <ScheduleCheck />
         </div>
       </div>
+      {isModalOpen && (
+        <GroupNoticeModal onClose={() => setIsModalOpen(false)} />
+      )}
       <Footer />
     </>
   );
