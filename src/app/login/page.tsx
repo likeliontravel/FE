@@ -1,18 +1,17 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../../../util/login/authSlice';
+import { loginUser, clearAuthError } from '../../../util/login/authSlice'; // ✅ clearAuthError 추가
 import { AppDispatch, RootState } from '../../../store/store';
 import Link from 'next/link';
 import styles from '../../../styles/login/login.module.scss';
-import { useRouter } from 'next/navigation';
-import { setCookie } from 'cookies-next';
 
 const Login = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { loading, error, successMessage, user } = useSelector(
+  const { loading, error, user } = useSelector(
     (state: RootState) => state.auth
   );
 
@@ -22,6 +21,13 @@ const Login = () => {
   });
 
   const [rememberMe, setRememberMe] = useState(false);
+
+  // ✅ 컴포넌트가 언마운트될 때 에러 메시지 초기화
+  useEffect(() => {
+    return () => {
+      dispatch(clearAuthError());
+    };
+  }, [dispatch]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prevData) => ({
@@ -34,53 +40,34 @@ const Login = () => {
     setRememberMe((prev) => !prev);
   }, []);
 
+  // ✅ 로그인 핸들러 로직 수정
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       try {
-        const response = await dispatch(loginUser(formData)).unwrap();
-        const { accessToken, refreshToken } = response.data || {};
+        // unwrap()을 사용하여 성공/실패를 구분하고, 성공 시 payload를 받아옴
+        const resultAction = await dispatch(loginUser(formData)).unwrap();
+        
+        // 로그인 성공 시 로직
+        alert(`${resultAction.user.name}님, 환영합니다!`);
+        router.push('/dashboard'); // 로그인 후 이동할 페이지 (예: 대시보드 또는 메인)
 
-        if (accessToken && refreshToken) {
-          setCookie('Authorization', accessToken, {
-            path: '/',
-            maxAge: 60 * 60,
-          });
-          setCookie('Refresh-Token', refreshToken, {
-            path: '/',
-            maxAge: 7 * 24 * 60 * 60,
-          });
-
-          localStorage.setItem('Authorization', accessToken);
-          localStorage.setItem('Refresh-Token', refreshToken);
-        }
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('로그인 실패:', error);
+      } catch (err) {
+        // unwrap()은 thunk가 rejected될 때 에러를 던지므로, 여기서 캐치
+        // alert(`로그인 실패: ${err}`); // 에러 메시지는 아래 error 상태로 표시
+        console.error('로그인 실패:', err);
       }
     },
-    [dispatch, formData]
+    [dispatch, formData, router]
   );
-
-  useEffect(() => {
-    if (user) {
-      alert('로그인 성공!');
-      router.push('/dashboard');
-    }
-  }, [user, router]);
 
   const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao') => {
-    window.location.href = `https://api.toleave.shop/auth/${provider}`;
+    // 외부 인증 페이지로의 이동은 window.location.href가 적합합니다.
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorization/${provider}`;
   }, []);
 
-  const handleKakaoLogin = useCallback(
-    () => handleOAuthLogin('kakao'),
-    [handleOAuthLogin]
-  );
-  const handleNaverLogin = useCallback(
-    () => handleOAuthLogin('naver'),
-    [handleOAuthLogin]
-  );
+  const handleKakaoLogin = useCallback(() => handleOAuthLogin('kakao'), [handleOAuthLogin]);
+  const handleNaverLogin = useCallback(() => handleOAuthLogin('naver'), [handleOAuthLogin]);
 
   return (
     <div className={styles.container}>
@@ -107,6 +94,7 @@ const Login = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
+              placeholder="이메일을 입력해주세요"
               required
             />
           </div>
@@ -119,6 +107,7 @@ const Login = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
+              placeholder="비밀번호를 입력해주세요"
               required
             />
           </div>
@@ -141,11 +130,9 @@ const Login = () => {
             </div>
           </div>
 
+          {/* ✅ Redux 상태의 error를 사용하여 에러 메시지 표시 */}
           {error && <p className={styles.errorMessage}>{error}</p>}
-          {successMessage && (
-            <p className={styles.successMessage}>{successMessage}</p>
-          )}
-
+          
           <button
             type="submit"
             disabled={loading}
@@ -163,18 +150,10 @@ const Login = () => {
           <p>소셜 계정으로 로그인</p>
           <div className={styles.socialButtons}>
             <button onClick={handleKakaoLogin}>
-              <img
-                src="../imgs/kakao.png"
-                alt="카카오 로그인"
-                className={styles.kakao}
-              />
+              <img src="/imgs/kakao.png" alt="카카오 로그인" className={styles.kakao} />
             </button>
             <button onClick={handleNaverLogin}>
-              <img
-                src="../imgs/naver.png"
-                alt="네이버 로그인"
-                className={styles.naver}
-              />
+              <img src="/imgs/naver.png" alt="네이버 로그인" className={styles.naver} />
             </button>
           </div>
         </div>

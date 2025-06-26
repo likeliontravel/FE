@@ -1,3 +1,5 @@
+/* searchBar.module.scss */
+
 .searchBar {
   width: 100%;
   max-width: 680px;
@@ -33,12 +35,22 @@
   }
 }
 
-.searchIcon {
+.searchIconWrapper {
   position: absolute;
   right: 28px;
-  width: 24px;
-  height: 24px;
+  top: 50%;
+  transform: translateY(-50%);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
 }
 
 .recommendedKeywords {

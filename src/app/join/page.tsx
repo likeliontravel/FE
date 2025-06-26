@@ -1,20 +1,28 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSignUpData } from '../../../util/login/authSlice';
+import {
+  setSignUpData,
+  requestEmailCode,
+  verifyEmailCode,
+} from '../../../util/login/authSlice';
 import { RootState, AppDispatch } from '../../../store/store';
 import styles from '../../../styles/join/join.module.scss';
 import Image from 'next/image';
-import rightArrow from '../../../public/imgs/right.png';
 
 const SignUp = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const signUpData = useSelector((state: RootState) => state.auth.signUpData);
+  const { signUpData, isEmailVerified } = useSelector(
+    (state: RootState) => state.auth
+  );
 
-  // 입력 변경 핸들러
+  const [code, setCode] = useState('');
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [isCodeInputVisible, setIsCodeInputVisible] = useState(false);
+
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       dispatch(setSignUpData({ ...signUpData, [e.target.id]: e.target.value }));
@@ -22,13 +30,46 @@ const SignUp = () => {
     [dispatch, signUpData]
   );
 
-  // 다음 단계로 이동
+  const handleRequestCode = useCallback(async () => {
+    if (!signUpData.email) {
+      alert('이메일을 입력해주세요.');
+      return;
+    }
+    try {
+      await dispatch(requestEmailCode({ email: signUpData.email })).unwrap();
+      alert('인증 코드가 이메일로 발송되었습니다. 스팸 메일함을 확인해주세요!');
+      setIsCodeSent(true);
+      setIsCodeInputVisible(true);
+    } catch (error) {
+      alert(`코드 발송 실패: ${error}`);
+    }
+  }, [dispatch, signUpData.email]);
+
+  const handleVerifyCode = useCallback(async () => {
+    if (!code) {
+      alert('인증 코드를 입력해주세요.');
+      return;
+    }
+    try {
+      await dispatch(
+        verifyEmailCode({ email: signUpData.email, code })
+      ).unwrap();
+      alert('이메일 인증에 성공했습니다!');
+    } catch (error) {
+      alert(`인증 실패: ${error}`);
+    }
+  }, [dispatch, signUpData.email, code]);
+
   const goToNext = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
+      if (!isEmailVerified) {
+        alert('이메일 인증을 완료해주세요.');
+        return;
+      }
       router.push('/join2');
     },
-    [router]
+    [router, isEmailVerified]
   );
 
   return (
@@ -76,12 +117,42 @@ const SignUp = () => {
                   onChange={handleChange}
                   placeholder="이메일을 입력해주세요"
                   required
+                  disabled={isEmailVerified}
                 />
-                <button type="button" className={styles.verifyButton}>
-                  중복 확인
+                <button
+                  type="button"
+                  className={styles.verifyButton}
+                  onClick={handleRequestCode}
+                  disabled={isCodeSent}
+                >
+                  {isCodeSent ? '재전송' : '인증 요청'}
                 </button>
               </div>
             </div>
+
+            {isCodeInputVisible && !isEmailVerified && (
+              <div className={styles.inputGroup}>
+                <label htmlFor="code">
+                  인증 코드<span className={styles.required}>*</span>
+                </label>
+                <div className={styles.emailField}>
+                  <input
+                    type="text"
+                    id="code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="인증 코드를 입력해주세요"
+                  />
+                  <button
+                    type="button"
+                    className={styles.verifyButton}
+                    onClick={handleVerifyCode}
+                  >
+                    인증 확인
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className={styles.inputGroup}>
               <label htmlFor="password">
@@ -100,7 +171,7 @@ const SignUp = () => {
 
             <div className={styles.nextButton}>
               <button type="submit">
-                <Image src={rightArrow} alt="다음" width={50} height={50} />
+                <Image src="/imgs/right.png" alt="다음" width={50} height={50} />
               </button>
             </div>
           </form>
