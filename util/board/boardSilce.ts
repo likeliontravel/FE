@@ -57,7 +57,6 @@ const initialState: BoardState = {
   error: null,
 };
 
-// --- 비동기 Thunks ---
 
 // 전체/정렬된 게시글 목록 조회 (파라미터 추가)
 export const fetchBoards = createAsyncThunk(
@@ -108,7 +107,7 @@ export const fetchBoardDetail = createAsyncThunk(
   }
 );
 
-// 게시글 작성 (인증 API 사용 및 필드 추가)
+// 게시글 작성
 export const createBoard = createAsyncThunk(
   'board/createBoard',
   async (newPost: { title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }, { rejectWithValue }) => {
@@ -122,7 +121,7 @@ export const createBoard = createAsyncThunk(
   }
 );
 
-// 게시글 수정 (인증 API 사용 및 필드 추가)
+// 게시글 수정
 export const updateBoard = createAsyncThunk(
   'board/updateBoard',
   async (updatedPost: { id: number; title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }, { rejectWithValue }) => {
@@ -136,7 +135,7 @@ export const updateBoard = createAsyncThunk(
   }
 );
 
-// 게시글 삭제 (인증 API 사용)
+// 게시글 삭제
 export const deleteBoard = createAsyncThunk(
   'board/deleteBoard',
   async (id: number, { rejectWithValue }) => {
@@ -164,7 +163,7 @@ export const fetchComments = createAsyncThunk(
     }
 );
 
-// 댓글 작성 (인증 API 사용 및 필드 수정)
+// 댓글 작성 
 export const createComment = createAsyncThunk(
   'board/createComment',
   async (commentData: { commentContent: string; boardId: number; parentCommentId?: number }, { rejectWithValue }) => {
@@ -178,7 +177,7 @@ export const createComment = createAsyncThunk(
   }
 );
 
-// 댓글 수정 (인증 API 사용 및 필드 수정)
+// 댓글 수정 
 export const updateComment = createAsyncThunk(
   'board/updateComment',
   async (commentData: { id: number; commentContent: string; boardId: number }, { rejectWithValue }) => {
@@ -192,7 +191,7 @@ export const updateComment = createAsyncThunk(
   }
 );
 
-// 댓글 삭제 (인증 API 사용)
+// 댓글 삭제 
 export const deleteComment = createAsyncThunk(
   'board/deleteComment',
   async (id: number, { rejectWithValue }) => {

@@ -102,12 +102,12 @@ const PostDetail = () => {
                         <div className={styles.commentMeta}>
                            <button>
                                 <Image src="/imgs/message-square.png" alt="댓글 수" width={16} height={16} />
-                                <span>0</span> {/* 대댓글 기능은 별도 구현 필요 */}
+                                <span>0</span> {/* 대댓글 기능은 별도 구현 중*/}
                            </button>
                         </div>
                       </div>
                     </div>
-                    {/* 대댓글 렌더링 로직 추가 필요 */}
+                    {/* 대댓글 렌더링 로직 추가 중 */}
                   </Fragment>
                 ))}
               </div>

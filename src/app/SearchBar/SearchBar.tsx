@@ -4,7 +4,6 @@ import React, { useCallback } from 'react';
 import Image from 'next/image';
 import styles from '../../../styles/SearchBar/searchBar.module.scss';
 
-// onSearch prop을 선택적으로 만듭니다.
 interface SearchBarProps {
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
@@ -28,7 +27,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, setSearchTerm, onSear
   const handleKeywordClick = useCallback(
     (keyword: string) => () => {
       setSearchTerm(keyword);
-      // 키워드 클릭 시에도 검색을 실행하도록 onSearch 호출
       if (onSearch) {
         onSearch(keyword);
       }
@@ -36,7 +34,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, setSearchTerm, onSear
     [setSearchTerm, onSearch]
   );
   
-  // 엔터 키를 눌렀을 때 검색 실행
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter' && onSearch) {
@@ -46,7 +43,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, setSearchTerm, onSear
     [onSearch, searchTerm]
   );
 
-  // 검색 아이콘 클릭 시 검색 실행
   const handleSearchClick = useCallback(() => {
     if (onSearch) {
       onSearch(searchTerm);
@@ -65,7 +61,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, setSearchTerm, onSear
           placeholder="여행지를 검색하세요..."
           className={styles.searchInput}
         />
-        {/* Image 컴포넌트에 onClick 이벤트 추가 */}
         <div onClick={handleSearchClick} className={styles.searchIconWrapper}>
           <Image
             src="/imgs/search.png"

@@ -3,13 +3,11 @@ import axios from 'axios';
 
 const BASE_URL = 'http://api.toleave.shop';
 
-// Axios 인스턴스 설정
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
 });
 
-// 요청 인터셉터: 모든 요청에 AccessToken 추가
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
@@ -20,7 +18,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// 응답 인터셉터: 토큰 만료 시 자동 갱신
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -31,7 +28,6 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('Refresh token not available');
 
-        // 실제 API 경로로 수정해야 합니다. (예: /auth/refresh)
         const { data } = await axios.post<{ data: { accessToken: string } }>(
           `${BASE_URL}/refresh-token`,
           { refreshToken }
@@ -43,7 +39,6 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
-        // 리프레시 실패 시 모든 토큰 제거 및 로그인 페이지로 이동
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         delete api.defaults.headers.common.Authorization;
@@ -236,8 +231,7 @@ export const fetchUserProfile = createAsyncThunk<User>(
   }
 );
 
-// (이하 다른 Thunk들은 생략 없이 포함)
-// ...
+
 
 // Redux Slice 생성
 const authSlice = createSlice({
