@@ -9,7 +9,7 @@ export default function GroupNoticeModal({ onClose }: { onClose: () => void }) {
   );
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const notices = [];
+  const notices: any[] = [];
 
   return (
     <div className={styles.modal_overlay} onClick={onClose}>

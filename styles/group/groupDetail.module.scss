@@ -203,6 +203,78 @@
   }
 }
 
+.modal_link {
+  display: flex;
+  align-items: center;
+  width: 90%;
+  p {
+    font-family: Inter;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 28px;
+  }
+  img {
+    width: 24px;
+    height: 24px;
+    margin-left: 0.5rem;
+    cursor: pointer;
+  }
+}
+
+.modal_input {
+  display: flex;
+  align-items: center;
+  width: 90%;
+  input {
+    width: 70%;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    background-color: #f4f5fb;
+    padding: 0% 3%;
+  }
+  button {
+    width: 20%;
+    height: 40px;
+    margin-left: 3%;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    background-color: #27abf1;
+    font-family: Inter;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 28px;
+    cursor: pointer;
+  }
+}
+
+.copy_success {
+  width: 90%;
+  margin: 2% 0% 10% 0%;
+  font-family: Inter;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 100%;
+  color: #27abf1;
+  cursor: default;
+  img {
+    margin-right: 1.5%;
+  }
+}
+
+.copy_default {
+  width: 90%;
+  margin: 2% 0% 10% 0%;
+  font-family: Inter;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 100%;
+  color: #bc8e9d;
+  cursor: default;
+}
+
 .modal_bottom {
   display: flex;
   flex-direction: column;

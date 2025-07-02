@@ -7,9 +7,12 @@ import MiniCalendar from "../../../../util/scheduleCalendar/MiniCalendar";
 import ScheduleCheck from "../../../../util/ScheduleCheck";
 import Footer from "@/app/_component/Footer";
 import GroupNoticeModal from "./GroupNoticeModal";
+import GroupInviteModal from "./GroupInviteModal";
 
 export default function groupDetail() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<
+    null | "notice" | "invite" | "chat"
+  >(null);
   const params = useParams();
   const groupId = params.groupId;
 
@@ -26,7 +29,7 @@ export default function groupDetail() {
         <div className={style.group_detail_middle}>
           <div
             className={style.group_detail_middle_left}
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsModalOpen("notice")}
           >
             <p>공지</p>
             <div>
@@ -35,11 +38,11 @@ export default function groupDetail() {
             </div>
           </div>
           <div className={style.group_detail_middle_right}>
-            <div>
+            <div onClick={() => setIsModalOpen("invite")}>
               <p>멤버 초대</p>
               <img src="/imgs/mail.png" alt="mail" />
             </div>
-            <div>
+            <div onClick={() => setIsModalOpen("chat")}>
               <p>그룹 채팅</p>
               <img src="/imgs/chat.png" alt="chat" />
             </div>
@@ -69,8 +72,14 @@ export default function groupDetail() {
           <ScheduleCheck />
         </div>
       </div>
-      {isModalOpen && (
-        <GroupNoticeModal onClose={() => setIsModalOpen(false)} />
+      {isModalOpen === "notice" && (
+        <GroupNoticeModal onClose={() => setIsModalOpen(null)} />
+      )}
+      {isModalOpen === "invite" && (
+        <GroupInviteModal onClose={() => setIsModalOpen(null)} />
+      )}
+      {isModalOpen === "chat" && (
+        <GroupChatModal onClose={() => setIsModalOpen(null)} />
       )}
       <Footer />
     </>
