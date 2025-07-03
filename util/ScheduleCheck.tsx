@@ -1,23 +1,52 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import styles from './ScheduleCheck.module.scss';
+import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/store";
+import { setMainViewDate } from "../store/calendarSlice";
+import { useState } from "react";
+import styles from "./ScheduleCheck.module.scss";
 
 const ScheduleCheck = () => {
+  const dispatch = useDispatch();
+  const mainViewDate = useSelector(
+    (state: RootState) => state.calendar.mainViewDate
+  );
+
+  const handleDateClick = (date: Date) => {
+    dispatch(setMainViewDate(date));
+  };
+
+  const events = useSelector((state: RootState) => state.calendar.events);
+
+  const dayEvents = events.filter((event) => {
+    const eventDate = new Date(event.start).toDateString();
+    const selectedDate = mainViewDate.toDateString();
+    return eventDate === selectedDate;
+  });
+
+  const categories = ["restaurant", "hotel", "tourist_spot"] as const;
+
   return (
     <div className={styles.container}>
       {/* 상단 날짜 및 타이틀 */}
       <div className={styles.header}>
         <div className={styles.dateNav}>
-          <span>12월</span>
-          <span>2주차</span>
-          <button className={styles.date}>27</button>
-          <button className={styles.date}>28</button>
-          <button className={styles.date}>29</button>
+          <div className={styles.deteWeek}>
+            <span>12월</span>
+            <span>2주차</span>
+          </div>
+          <div className={styles.dateDay}>
+            <button className={styles.date}>27</button>
+            <button className={styles.date}>28</button>
+            <button className={styles.date}>29</button>
+          </div>
         </div>
         <div className={styles.controls}>
           <button className={styles.btn}>🛠 일정 관리</button>
-          <button className={styles.btn}>📅 타임테이블</button>
+          <Link href={"/schedule"}>
+            <button className={styles.btn}>📅 타임테이블</button>
+          </Link>
         </div>
       </div>
 
@@ -28,18 +57,15 @@ const ScheduleCheck = () => {
             <i>멋사</i> 그룹과 <br />
             <i>속초</i> 에서의 여정
           </p>
-          <div className={styles.people}>
-            <div className={styles.profile}></div>
-            <p>린님 외 3명이 함께해요</p>
-          </div>
+          <p className={styles.together}>린님 외 3명이 함께해요</p>
           <div className={styles.schedule}>
             <div className={styles.activeTime}>
               <span className={styles.location}>📍 속초</span>
-              <span className={styles.time}>14:00~17:00</span>
+              <span className={styles.scheduleTime}>14:00~17:00</span>
             </div>
             <div className={styles.inactiveTime}>
-              <span>📍 속초</span>
-              <span>14:00~17:00</span>
+              <span className={styles.location}>📍 속초</span>
+              <span className={styles.scheduleTime}>14:00~17:00</span>
             </div>
           </div>
         </div>

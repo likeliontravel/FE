@@ -1,3 +1,4 @@
+import Link from "next/link";
 import style from "../../../styles/mypage/mypage.module.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -27,7 +28,9 @@ export default function myPage() {
             </div>
             {/* 회원 정보 수정 및 소셜 계정 */}
             <div className={style.oauthbox}>
-              <button>회원 정보 수정</button>
+              <Link href="/mypage/modify">
+                <button>회원 정보 수정</button>
+              </Link>
               <div className={style.oauth}>
                 <FontAwesomeIcon icon={faPlus} />
               </div>

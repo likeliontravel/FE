@@ -1,6 +1,6 @@
-import style from '../../../styles/mypage/modify.module.scss';
+import style from "../../../../styles/mypage/modify.module.scss";
 
-export default function Modify() {
+export default function Page() {
   return (
     <div className={style.container}>
       <div className={style.big_div}>
@@ -77,15 +77,19 @@ export default function Modify() {
                   </div>
                 </div>
               </div>
-              <div>
+              <div className={style.agree}>
                 <p>이용 약관 동의 여부</p>
                 <div>약관보기 &gt;</div>
               </div>
-              <div>
-                <p>구독 플랜 여부</p>
-                <p>현재 구독플랜을 이용중이에요</p>
-                <p>다음 결제일 : 2025/3/2</p>
-                <div>구독하기 &gt;</div>
+              <div className={style.subscription}>
+                <div className={style.subscription_left}>
+                  <p className={style.isPlan}>구독 플랜 여부</p>
+                  <p className={style.isPlan_answer}>
+                    현재 구독플랜을 이용중이에요
+                  </p>
+                  <p className={style.next_plan}>다음 결제일 : 2025/3/2</p>
+                </div>
+                <div className={style.subscription_right}>구독하기 &gt;</div>
               </div>
             </div>
           </div>
