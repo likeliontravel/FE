@@ -1,3 +1,6 @@
+@use "../component/mixins.scss" as *;
+@use "../component/display_mixins.scss" as *;
+
 .group_detail {
   display: flex;
   flex-direction: column;
@@ -126,6 +129,27 @@
     border: solid 2px #27abf1;
     border-radius: 10px;
     padding: 3% 5%;
+    cursor: pointer;
+    p {
+      height: 24px;
+      font-family: Inter;
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 100%;
+      text-align: center;
+      margin: 0;
+      color: #27abf1;
+    }
+  }
+  a {
+    width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: solid 2px #27abf1;
+    border-radius: 10px;
+    padding: 3% 5%;
+    text-decoration: none;
     cursor: pointer;
     p {
       height: 24px;
@@ -417,4 +441,11 @@
   font-size: 18px;
   line-height: 100%;
   cursor: pointer;
+}
+
+.calendar_div {
+  @include display_flex-flex_direction_column-align_items_center-justify_content_space_around;
+  @include width-height(330px, 360px);
+  background-color: #f4f5fb;
+  border-radius: 10px;
 }

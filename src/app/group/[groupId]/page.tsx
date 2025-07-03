@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import style from "../../../../styles/group/groupDetail.module.scss";
@@ -8,11 +9,12 @@ import ScheduleCheck from "../../../../util/ScheduleCheck";
 import Footer from "@/app/_component/Footer";
 import GroupNoticeModal from "./GroupNoticeModal";
 import GroupInviteModal from "./GroupInviteModal";
+import UseReactSelect from "../../../../util/select/UseReactSelect";
 
 export default function groupDetail() {
-  const [isModalOpen, setIsModalOpen] = useState<
-    null | "notice" | "invite" | "chat"
-  >(null);
+  const [isModalOpen, setIsModalOpen] = useState<null | "notice" | "invite">(
+    null
+  );
   const params = useParams();
   const groupId = params.groupId;
 
@@ -42,31 +44,18 @@ export default function groupDetail() {
               <p>멤버 초대</p>
               <img src="/imgs/mail.png" alt="mail" />
             </div>
-            <div onClick={() => setIsModalOpen("chat")}>
+            <Link href={`/group/${groupId}/chat`}>
               <p>그룹 채팅</p>
               <img src="/imgs/chat.png" alt="chat" />
-            </div>
+            </Link>
           </div>
         </div>
         <h1>
           <i>멋사</i>의 여행 일정
         </h1>
         <div className={style.group_detail_bottom}>
-          <div>
-            <div>
-              <div>
-                <p>2024</p>
-                <div>
-                  <img src="/imgs/calendar.png" alt="" />
-                  <p>11/27</p> - <p>11/29</p>
-                </div>
-              </div>
-              <div>
-                <p>2일간</p>
-                <p>속초</p>
-                <p>3명</p>
-              </div>
-            </div>
+          <div className={style.calendar_div}>
+            <UseReactSelect type="calendar" />
             <MiniCalendar />
           </div>
           <ScheduleCheck />
@@ -77,9 +66,6 @@ export default function groupDetail() {
       )}
       {isModalOpen === "invite" && (
         <GroupInviteModal onClose={() => setIsModalOpen(null)} />
-      )}
-      {isModalOpen === "chat" && (
-        <GroupChatModal onClose={() => setIsModalOpen(null)} />
       )}
       <Footer />
     </>

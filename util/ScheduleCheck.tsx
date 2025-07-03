@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { setMainViewDate } from "../store/calendarSlice";
 import { useState } from "react";
+import ScheduleModal from "./ScheduleModal";
 import styles from "./ScheduleCheck.module.scss";
 
 const ScheduleCheck = () => {
@@ -27,6 +28,8 @@ const ScheduleCheck = () => {
 
   const categories = ["restaurant", "hotel", "tourist_spot"] as const;
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className={styles.container}>
       {/* 상단 날짜 및 타이틀 */}
@@ -43,7 +46,9 @@ const ScheduleCheck = () => {
           </div>
         </div>
         <div className={styles.controls}>
-          <button className={styles.btn}>🛠 일정 관리</button>
+          <button className={styles.btn} onClick={() => setIsModalOpen(true)}>
+            🛠 일정 관리
+          </button>
           <Link href={"/schedule"}>
             <button className={styles.btn}>📅 타임테이블</button>
           </Link>
@@ -128,6 +133,7 @@ const ScheduleCheck = () => {
           </div>
         </div>
       </div>
+      {isModalOpen && <ScheduleModal onClose={() => setIsModalOpen(false)} />}
     </div>
   );
 };
