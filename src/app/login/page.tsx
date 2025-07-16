@@ -3,26 +3,22 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, clearAuthError } from '../../../util/login/authSlice'; // ✅ clearAuthError 추가
-import { AppDispatch, RootState } from '../../../store/store';
+import { loginUser, clearAuthError } from '../../../util/login/authSlice'; // 실제 경로로 수정해주세요.
+import { AppDispatch, RootState } from '../../../store/store'; // 실제 경로로 수정해주세요.
 import Link from 'next/link';
 import styles from '../../../styles/login/login.module.scss';
+import Image from 'next/image';
 
 const Login = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { loading, error, user } = useSelector(
+  const { loading, error } = useSelector(
     (state: RootState) => state.auth
   );
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [rememberMe, setRememberMe] = useState(false);
 
-  // ✅ 컴포넌트가 언마운트될 때 에러 메시지 초기화
   useEffect(() => {
     return () => {
       dispatch(clearAuthError());
@@ -30,31 +26,23 @@ const Login = () => {
   }, [dispatch]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }, []);
 
   const handleCheckboxChange = useCallback(() => {
     setRememberMe((prev) => !prev);
   }, []);
 
-  // ✅ 로그인 핸들러 로직 수정
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       try {
-        // unwrap()을 사용하여 성공/실패를 구분하고, 성공 시 payload를 받아옴
-        const resultAction = await dispatch(loginUser(formData)).unwrap();
+        const user = await dispatch(loginUser(formData)).unwrap();
         
-        // 로그인 성공 시 로직
-        alert(`${resultAction.user.name}님, 환영합니다!`);
-        router.push('/dashboard'); // 로그인 후 이동할 페이지 (예: 대시보드 또는 메인)
+        alert(`${user.name}님, 환영합니다!`);
+        router.push('/');
 
-      } catch (err) {
-        // unwrap()은 thunk가 rejected될 때 에러를 던지므로, 여기서 캐치
-        // alert(`로그인 실패: ${err}`); // 에러 메시지는 아래 error 상태로 표시
+      } catch (err: any) {
         console.error('로그인 실패:', err);
       }
     },
@@ -62,10 +50,9 @@ const Login = () => {
   );
 
   const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao') => {
-    // 외부 인증 페이지로의 이동은 window.location.href가 적합합니다.
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorization/${provider}`;
   }, []);
-
+  
   const handleKakaoLogin = useCallback(() => handleOAuthLogin('kakao'), [handleOAuthLogin]);
   const handleNaverLogin = useCallback(() => handleOAuthLogin('naver'), [handleOAuthLogin]);
 
@@ -122,15 +109,13 @@ const Login = () => {
               />
               <label htmlFor="rememberMe">아이디 저장</label>
             </div>
-
             <div className={styles.links}>
               <Link href="/forgot-username">아이디 찾기</Link>
               <span> | </span>
               <Link href="/forgot-password">비밀번호 찾기</Link>
             </div>
           </div>
-
-          {/* ✅ Redux 상태의 error를 사용하여 에러 메시지 표시 */}
+          
           {error && <p className={styles.errorMessage}>{error}</p>}
           
           <button

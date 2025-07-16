@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const BASE_URL = 'http://api.toleave.shop';
+const BASE_URL = 'https://localhost:8080';
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
