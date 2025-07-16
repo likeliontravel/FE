@@ -3,8 +3,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, clearAuthError } from '../../../util/login/authSlice'; // 실제 경로로 수정해주세요.
-import { AppDispatch, RootState } from '../../../store/store'; // 실제 경로로 수정해주세요.
+import { loginUser, clearAuthError } from '../../../util/login/authSlice'; 
+import { AppDispatch, RootState } from '../../../store/store';
 import Link from 'next/link';
 import styles from '../../../styles/login/login.module.scss';
 import Image from 'next/image';
