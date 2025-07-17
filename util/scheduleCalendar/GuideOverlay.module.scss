@@ -1,0 +1,76 @@
+.slideContainer {
+  position: absolute;
+  top: 82px;
+  left: 340px;
+  width: 855px;
+  height: 570px;
+  padding: 24px;
+  background: #f4f5fb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: #eee;
+  border-radius: 50px;
+  margin-bottom: 12px;
+}
+
+.progress {
+  height: 100%;
+  background: #00aaff;
+  border-radius: 50px;
+  transition: width 0.3s ease;
+}
+
+.title {
+  color: #27abf1;
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.desc {
+  width: 210px;
+  font-size: 36px;
+  font-weight: 700;
+  margin-top: 0px;
+  margin-bottom: 16px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.controls > .btn_right:only-child {
+  margin-left: auto;
+}
+
+.btn_left,
+.btn_right {
+  width: 60px;
+  height: 60px;
+  padding: 13px;
+  border: none;
+  border-radius: 50%;
+  background: #7dd4ff;
+  cursor: pointer;
+}
+
+.btn_left {
+  background-image: url('../../public/imgs/leftArrow.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 70%;
+}
+
+.btn_right {
+  background-image: url('../../public/imgs/rightArrow.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+}

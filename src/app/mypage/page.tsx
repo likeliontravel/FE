@@ -1,15 +1,19 @@
-import style from '../../../styles/mypage/mypage.module.scss';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import CustomCalendar from '../../../util/calendar/CustomCalendar';
+import Link from "next/link";
+import style from "../../../styles/mypage/mypage.module.scss";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import MiniCalendar from "../../../util/scheduleCalendar/MiniCalendar";
+import UseReactSelect from "../../../util/select/UseReactSelect";
+import KakaoMap from "../../../util/KakaoMap";
+import ScheduleCheck from "../../../util/ScheduleCheck";
 
 export default function myPage() {
   return (
-    <>
+    <div className={style.mypage_div}>
       {/* 상단 메뉴 */}
-      <div>
+      <div className={style.mypage_top_div}>
         {/* 회원, 미니 캘린더 */}
-        <div>
+        <div className={style.left_div}>
           {/* 회원 */}
           <div className={style.userbox}>
             {/* 프로필 사진 */}
@@ -24,24 +28,27 @@ export default function myPage() {
             </div>
             {/* 회원 정보 수정 및 소셜 계정 */}
             <div className={style.oauthbox}>
-              <button>회원 정보 수정</button>
+              <Link href="/mypage/modify">
+                <button>회원 정보 수정</button>
+              </Link>
               <div className={style.oauth}>
                 <FontAwesomeIcon icon={faPlus} />
               </div>
             </div>
           </div>
           {/* 캘린더 */}
-          <div>
-            <CustomCalendar />
+          <div className={style.calendar_div}>
+            <UseReactSelect type="calendar" />
+            <MiniCalendar />
           </div>
         </div>
 
         {/* 여행 계획 */}
-        <div></div>
+        <ScheduleCheck />
       </div>
 
-      {/* 프로모션 배너 */}
-      <div></div>
-    </>
+      {/* 카카오맵 */}
+      <KakaoMap />
+    </div>
   );
 }

@@ -1,12 +1,285 @@
+@use "../component/mixins.scss" as *;
+@use "../component/display_mixins.scss" as *;
+
+.body,
+.bottom,
+.none_mate_hotplace {
+  @include display_flex-flex_direction_column-align_items_center-justify_content_center;
+}
+
+.top,
+.middle,
+.mate_hotplace,
+.bottom_place,
+.middle_content_profile {
+  @include display_flex-align_items_center;
+}
+
+.middle_text,
+.middle_content_user {
+  @include display_flex-flex_direction_column-justify_content_space_around;
+}
+
+.middle_show,
+.middle_content_category,
+.rectangle {
+  @include display_flex-align_items_center-justify_content_center;
+}
+
+.bottom_text,
+.middle_content_details {
+  @include display_flex-flex_direction_column-justify_content_space_between;
+}
+
+.body {
+  @include width-height(100%, auto);
+}
+
 .top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include width-height(1280px, auto);
 }
 
 .main_img {
-  width: 497px;
-  height: 494px;
-  margin-left: 340px;
+  @include width-height(497px, 494px);
+  @include background_image-size_cover-repeat_no_repeat(
+    "../../public/imgs/main_page_img.png"
+  );
+}
+
+.top_main {
+  @include width-height(593px, 494px);
+  @include display_flex-flex_direction_column;
+  margin-left: 80px;
+}
+
+.main_title {
+  @include width-height(100%, 175px);
+  p {
+    @include font_size-font_weight-line_height(40px, 700, 62px);
+    margin: 0;
+  }
+}
+
+.my_group_news {
+  @include font_size-font_weight-line_height(26px, 700, 40px);
+}
+
+.no_group_news {
+  @include font_size-font_weight-line_height(20px, 500, 40px);
+}
+
+.none_img {
+  @include width-height(170px, 154px);
+  @include background_image-size_cover-repeat_no_repeat(
+    "../../public/imgs/none.png"
+  );
   border-radius: 10px;
+}
+
+.middle {
+  @include width-height(1300px, 340px);
+  margin-top: 110px;
+  margin-left: 20px;
+}
+
+.middle_text {
+  @include width-height(356px, 100%);
+  margin-right: 44px;
+}
+
+.middle_title_text {
+  p {
+    @include font_size-font_weight-line_height(40px, 700, 62px);
+    margin: 0;
+  }
+}
+
+.middle_title_content_text {
+  p {
+    @include font_size-font_weight-line_height(20px, 500, 30px);
+    margin: 0;
+  }
+}
+
+.middle_show {
+  @include width-height(150px, 54px);
+  border-radius: 50px;
+  background-color: #27abf1;
+  p {
+    @include width-height(112px, 32px);
+    @include font_size-font_weight-line_height(22px, 700, 32px);
+    color: white;
+    padding: 12px 14px 12px 20px;
+  }
+}
+
+.mate_hotplace,
+.none_mate_hotplace {
+  @include width-height(820px, 100%);
+  overflow-x: auto;
+  gap: 8px;
+  padding: 10px;
+}
+
+.mate_hotplace::-webkit-scrollbar,
+.bottom_place::-webkit-scrollbar {
+  display: none;
+}
+
+.middle_content {
+  @include width-height(308px, 98%);
+  @include display_flex-flex_direction_column-align_items_center-justify_content_space_between;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: solid 1px;
+  border-radius: 10px;
+  background-color: #f4f5fb;
+}
+
+.middle_content_img {
+  @include width-height(308px, 180px);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.middle_content_details {
+  @include width-height(287px, 140px);
+  margin: 10px;
+}
+
+.middle_content_category {
+  @include width-height(84px, 22px);
+  @include font_size-font_weight-line_height(12px, 500, 14.52px);
+  border-radius: 5px;
+}
+
+.middle_content_title {
+  @include width-height(100%, 26px);
+  @include font_size-font_weight-line_height(20px, 700, 28px);
+}
+
+.middle_content_user {
+  @include width-height(100%, 76px);
+}
+
+.middle_content_profile {
+  @include width-height(30%, 20px);
+}
+
+.middle_content_profile_img {
+  @include width-height(20px, 100%);
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.middle_content_profile_name {
+  @include width-height(55px, 100%);
+  margin-left: 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.middle_content_text {
+  @include width-height(100%, 50px);
+  @include font_size-font_weight-line_height(14px, 500, 22px);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-height: calc(1.5em * 2);
+  text-overflow: ellipsis;
+}
+
+.none_mate_hotplace {
+  position: relative;
+  @include width-height(820px, 340px);
+  background-image: url("/imgs/default_main_img.png");
+  border-radius: 10px;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2.5px);
+    z-index: 0;
+    border-radius: 10px;
+  }
+}
+
+.rectangle {
+  @include width-height(76px, 42px);
+  background-color: white;
+  border-radius: 21px;
+  z-index: 1;
+  div {
+    @include width-height(36px, 8px);
+    @include background_image-size_cover-repeat_no_repeat(
+      "../../public/imgs/threepoint.png"
+    );
+  }
+}
+
+.none_mate_hotplace_title {
+  @include font_size-font_weight-line_height(26px, 600, 100%);
+  color: white;
+  z-index: 1;
+}
+
+.none_mate_hotplace_text {
+  @include font_size-font_weight-line_height(16px, 500, 100%);
+  color: white;
+  z-index: 1;
+}
+
+.bottom {
+  @include width-height(1920px, 494px);
+  background-color: #f4f5fb;
+  margin-top: 80px;
+}
+
+.bottom_text {
+  @include width-height(1220px, 100px);
+  margin-left: 40px;
+  p {
+    margin: 0;
+  }
+}
+
+.bottom_text_title {
+  @include font_size-font_weight-line_height(40px, 700, 62px);
+}
+
+.bottom_text_content {
+  @include font_size-font_weight-line_height(20px, 500, 30px);
+}
+
+.bottom_place {
+  @include width-height(1220px, 279px);
+  margin-top: 20px;
+  margin-left: 40px;
+  overflow-x: auto;
+  gap: 8px;
+  padding: 10px;
+}
+
+.bottom_content {
+  @include width-height(451px, 98%);
+  @include display_flex-flex_direction_column-align_items_center-justify_content_space_around;
+  flex-shrink: 0;
+  border: solid 1px;
+  border-radius: 10px;
+}
+
+.bottom_content_title {
+  @include width-height(346px, 100px);
+  @include font_size-font_weight-line_height(34px, 700, 52px);
+}
+
+.bottom_content_text {
+  @include width-height(352px, 70px);
+  @include font_size-font_weight-line_height(18px, 500, 28px);
 }

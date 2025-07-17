@@ -1,0 +1,145 @@
+@use "../../styles/component/mixins.scss" as *;
+@use "../../styles/component/display_mixins.scss" as *;
+
+%flex-col-center-space-between {
+  @include display_flex-flex_direction_column-align_items_center-justify_content_space_between;
+}
+
+%flex-center-space-between {
+  @include display_flex-align_items_center-justify_content_space_between;
+}
+
+%flex-center-space-around {
+  @include display_flex-align_items_center-justify_content_space_around;
+}
+
+.body {
+  @include width-height(1240px, 500px);
+  margin: auto;
+}
+
+.top {
+  @include width-height(100%, 38px);
+  @extend %flex-center-space-between;
+  margin-top: 28px;
+}
+
+.top_left {
+  @include width-height(340px, 100%);
+  @extend %flex-center-space-between;
+}
+
+.select_div {
+  @include width-height(80px, 100%);
+}
+
+.search_div {
+  @include width-height(230px, 100%);
+  @extend %flex-center-space-around;
+  background-color: #eff2f6;
+  border-radius: 4px;
+
+  input {
+    @include width-height(180px, 100%);
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0;
+  }
+
+  div {
+    @include width-height(20px, 20px);
+    @include background_image-size_cover-repeat_no_repeat(
+      "../../public/imgs/search.png"
+    );
+    cursor: pointer;
+  }
+}
+
+.list_change {
+  @include width-height(72px, 32px);
+  @include display_flex-align_items_center-justify_content_space_between;
+  cursor: pointer;
+}
+
+.list_change_left_arrow {
+  @include background_image-size_cover-repeat_no_repeat(
+    "../../public/imgs/leftArrow.png"
+  );
+  @include width-height(36px, 32px);
+  background-color: #eff2f6;
+  border-radius: 4px;
+  border-right: solid 1px #d5d8de;
+}
+
+.list_change_right_arrow {
+  @include background_image-size_cover-repeat_no_repeat(
+    "../../public/imgs/rightArrow.png"
+  );
+  @include width-height(36px, 32px);
+  background-color: #eff2f6;
+  border-radius: 4px;
+  border-left: solid 1px #d5d8de;
+}
+
+.main_list {
+  @include width-height(100%, 270px);
+  @include display_flex-align_items_center-justify_content_space_between;
+  gap: 8px;
+}
+
+.main {
+  @include width-height(242px, 254px);
+  margin-top: 16px;
+  cursor: pointer;
+  position: relative;
+}
+
+.overlay {
+  @include width-height(58px, 58px);
+  @include background_image-size_cover-repeat_no_repeat(
+    "../../public/imgs/plus_Img.png"
+  );
+  position: absolute;
+  top: 25%;
+  left: 35%;
+  opacity: 0;
+  z-index: 1;
+}
+
+.main:hover .list_img,
+.main:hover .list_content {
+  filter: blur(2px);
+}
+
+.main:hover .overlay {
+  opacity: 1;
+}
+
+.list_img {
+  @include width-height(242px, 170px);
+  @include background_image-size_cover-repeat_no_repeat(
+    "../../public/imgs/816.png"
+  );
+  z-index: 0;
+}
+
+.list_content {
+  @include width-height(242px, 88px);
+  background-color: #f4f5fb;
+  border-radius: 10px;
+
+  p {
+    margin: 0;
+    padding: 8px 12px;
+  }
+}
+
+.content_title {
+  @include font_size-font_weight-line_height(20px, 700, 28px);
+}
+
+.content_address {
+  @include font_size-font_weight-line_height(14px, 500, 28px);
+  color: #5d6064;
+}
