@@ -13,7 +13,7 @@ import styles from '../../../styles/join/join.module.scss';
 import Image from 'next/image';
 
 const SignUp = () => {
-  console.log('--- SignUp 컴포넌트 렌더링 ---'); // 1. 렌더링 확인
+  console.log('--- SignUp 컴포넌트 렌더링 ---');
 
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -27,30 +27,29 @@ const SignUp = () => {
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      console.log(`handleChange: ${e.target.id} = ${e.target.value}`); // 2. 입력값 변경 확인
+      console.log(`handleChange: ${e.target.id} = ${e.target.value}`); 
       dispatch(setSignUpData({ ...signUpData, [e.target.id]: e.target.value }));
     },
     [dispatch, signUpData]
   );
 
   const handleRequestCode = useCallback(async () => {
-    console.log('--- "인증 요청" 버튼 클릭 ---'); // 3. 버튼 클릭 확인
+    console.log('--- "인증 요청" 버튼 클릭 ---'); 
     if (!signUpData.email) {
       alert('이메일을 입력해주세요.');
       console.error('이메일이 비어있음');
       return;
     }
     
-    console.log(`[디버그] requestEmailCode 액션 디스패치 시작. 이메일: ${signUpData.email}`); // 4. 액션 디스패치 확인
-
+    console.log(`[디버깅]  이메일: ${signUpData.email}`);
     try {
       const result = await dispatch(requestEmailCode({ email: signUpData.email })).unwrap();
-      console.log('[디버그] requestEmailCode 성공:', result); // 5. 성공 시 결과 확인
+      console.log('[디버그] requestEmailCode 성공:', result);
       alert('인증 코드가 이메일로 발송되었습니다. 스팸 메일함을 확인해주세요!');
       setIsCodeSent(true);
       setIsCodeInputVisible(true);
     } catch (err) {
-      console.error('[디버그] requestEmailCode 실패:', err); // 6. 실패 시 에러 확인
+      console.error('[디버그] requestEmailCode 실패:', err); 
       alert(`코드 발송 실패: ${err}`);
     }
   }, [dispatch, signUpData.email]);
