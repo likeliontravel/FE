@@ -1,5 +1,5 @@
-@use '../../styles/component/mixins.scss' as *;
-@use '../../styles/component/display_mixins.scss' as *;
+@use "../../styles/component/mixins.scss" as *;
+@use "../../styles/component/display_mixins.scss" as *;
 
 .container {
   @include display_flex-align_items_center-justify_content_space_between;
@@ -109,18 +109,6 @@
     outline: none !important;
   }
 
-  .fc-day-today .fc-daygrid-day-frame {
-    background-color: #f0f8ff;
-  }
-
-  .fc-daygrid-day-frame:hover {
-    background-color: #eee;
-  }
-
-  .fc-day-other .fc-daygrid-day-frame {
-    color: #ccc;
-  }
-
   :global(.fc-theme-standard .fc-scrollgrid) {
     border: none !important;
   }
@@ -144,6 +132,18 @@
     display: none;
   }
 
+  .fc-day-today .fc-daygrid-day-frame {
+    background-color: #f0f8ff;
+  }
+
+  .fc-daygrid-day-frame:hover {
+    background-color: #eee;
+  }
+
+  .fc-day-other .fc-daygrid-day-frame {
+    color: #ccc;
+  }
+
   .fc-scroller.fc-scroller-liquid-absolute {
     display: none;
   }
@@ -165,6 +165,61 @@
 
   .fc-scroller fc-scroller-liquid-absolute {
     display: none;
+  }
+
+  :global(.fc .fc-day-today),
+  :global(.fc .fc-col-today) {
+    background: none !important;
+  }
+
+  :global(.fc .fc-timegrid) table,
+  :global(.fc .fc-timegrid) td {
+    border: none;
+    box-shadow: none;
+  }
+
+  :global(.fc .fc-timegrid-slots table) {
+    border-collapse: separate;
+    border-spacing: 0 5px;
+  }
+
+  :global(.fc .fc-timegrid-slot) {
+    @include width-height(auto, 44px);
+    @include font_size-font_weight-line_height(14px, 600, 100%);
+    background-color: #f4f5fb;
+    color: #9fa2a6;
+    cursor: pointer;
+  }
+
+  :global(.fc .fc-timegrid-slot-label) {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+  }
+
+  :global(.fc .fc-timegrid-slot-lane) {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+
+  :global(.fc .fc-timegrid-cols .fc-timegrid-event) {
+    position: relative;
+    background: none;
+    color: #fff;
+    border: none;
+    box-shadow: none;
+    border-radius: 6px;
+    padding-top: 12px;
+    cursor: pointer;
+    div {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  :global(.fc .fc-timegrid-slot-lane.has-event),
+  :global(.fc .fc-timegrid-slot-label.has-event) {
+    background-color: #e6e9ee;
   }
 }
 
@@ -193,11 +248,6 @@
   grid-template-columns: repeat(7, 1fr);
   transition: grid-template-columns 0.1s ease;
   overflow: hidden;
-}
-
-:global(.fc .fc-day-today),
-:global(.fc .fc-col-today) {
-  background: none !important;
 }
 
 .dayColumn {
@@ -229,54 +279,4 @@
   font-weight: bold;
   margin-bottom: 8px;
   cursor: pointer;
-}
-
-:global(.fc .fc-timegrid) table,
-:global(.fc .fc-timegrid) td {
-  border: none;
-  box-shadow: none;
-}
-
-:global(.fc .fc-timegrid-slots table) {
-  border-collapse: separate;
-  border-spacing: 0 5px;
-}
-
-:global(.fc .fc-timegrid-slot) {
-  @include width-height(auto, 44px);
-  @include font_size-font_weight-line_height(14px, 600, 100%);
-  background-color: #f4f5fb;
-  color: #9fa2a6;
-  cursor: pointer;
-}
-
-:global(.fc .fc-timegrid-slot-label) {
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
-}
-
-:global(.fc .fc-timegrid-slot-lane) {
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
-}
-
-:global(.fc .fc-timegrid-cols .fc-timegrid-event) {
-  position: relative;
-  background: none;
-  color: #fff;
-  border: none;
-  box-shadow: none;
-  border-radius: 6px;
-  padding-top: 12px;
-  cursor: pointer;
-  div {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-}
-
-:global(.fc .fc-timegrid-slot-lane.has-event),
-:global(.fc .fc-timegrid-slot-label.has-event) {
-  background-color: #e6e9ee;
 }
