@@ -1,0 +1,282 @@
+@use '../../styles/component/mixins.scss' as *;
+@use '../../styles/component/display_mixins.scss' as *;
+
+.container {
+  @include display_flex-align_items_center-justify_content_space_between;
+  width: 1240px;
+  margin: 0 auto;
+}
+
+.content {
+  @include display_flex-flex_direction_column-justify_content_space_between;
+  height: 625px;
+  background-color: #f4f5fb;
+  border-radius: 10px;
+  margin-left: 20px;
+}
+
+.switch {
+  @include display_flex-align_items_center-justify_content_space_between;
+  @include width-height(100px, 33px);
+  margin-left: 12px;
+  div {
+    padding: 3px 6px;
+    border-radius: 4px;
+    @include font_size-font_weight-line_height(16px, 700, 24px);
+    cursor: pointer;
+  }
+}
+
+.active {
+  background-color: #27abf1;
+  color: white;
+}
+
+.non_active {
+  color: #9fa2a6;
+}
+
+.locate {
+  margin-left: 2px;
+  table {
+    @include width-height(100%, 160px);
+    border-collapse: collapse;
+    td {
+      @include font_size-font_weight-line_height(14px, 600, 100%);
+      text-align: center;
+      box-sizing: border-box;
+      cursor: pointer;
+    }
+  }
+}
+
+.theme {
+  @include display_flex-flex_direction_column-justify_content_space_between;
+  @include width-height(100%, 160px);
+  @include font_size-font_weight-line_height(14px, 600, 100%);
+  padding: 10px 0px;
+  margin-left: 20px;
+  cursor: pointer;
+}
+
+.selected {
+  color: #007bff;
+}
+
+.ai_schedule {
+  @include display_flex-align_items_center-justify_content_center;
+  @include width-height(100%, 65px);
+  @include font_size-font_weight-line_height(20px, 700, 28px);
+  background-color: #27abf1;
+  color: white;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────
+   미니 달력
+   ───────────────────────────────────────── */
+.miniCalendar {
+  width: 280px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 9px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+  :global(.fc-daygrid-day-frame) {
+    @include display_flex-align_items_center-justify_content_center;
+    @include font_size-font_weight-line_height(13px, 600, 100%);
+    border-radius: 10px;
+    cursor: pointer !important;
+  }
+
+  :global(.fc-button),
+  :global(.fc-button:active) {
+    color: black !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  :global(.fc-button:hover) {
+    color: black;
+    background-color: transparent !important;
+  }
+
+  :global(.fc-button:focus) {
+    outline: none !important;
+  }
+
+  .fc-day-today .fc-daygrid-day-frame {
+    background-color: #f0f8ff;
+  }
+
+  .fc-daygrid-day-frame:hover {
+    background-color: #eee;
+  }
+
+  .fc-day-other .fc-daygrid-day-frame {
+    color: #ccc;
+  }
+
+  :global(.fc-theme-standard .fc-scrollgrid) {
+    border: none !important;
+  }
+
+  :global(.fc-theme-standard td),
+  :global(.fc-theme-standard th) {
+    border: none !important;
+  }
+
+  :global(.fc-col-header-cell) {
+    color: #9fa2a6;
+  }
+
+  :global(.fc-daygrid-day.has-event .fc-daygrid-day-top) {
+    background-color: #007bff;
+    border-radius: 10%;
+    color: #fff;
+  }
+
+  :global(.fc-daygrid-day-events) {
+    display: none;
+  }
+
+  .fc-scroller.fc-scroller-liquid-absolute {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────
+   메인 스케줄 (요일별)
+   ───────────────────────────────────────── */
+
+.mainScheduleDays {
+  @include display_flex-flex_direction_column-justify_content_space_between;
+  @include width-height(990px, 598px);
+  position: relative;
+  gap: 6px;
+  overflow-x: auto;
+  background: #f4f5fb;
+  padding: 13px 10px 13px 8px;
+  border-radius: 10px;
+
+  .fc-scroller fc-scroller-liquid-absolute {
+    display: none;
+  }
+}
+
+.mainScheduleDays::-webkit-scrollbar {
+  display: none;
+}
+
+.daySelect {
+  @include display_flex-align_items_center;
+  @include width-height(auto, 36px);
+  margin: 5px 12px 31px 12px;
+  p {
+    @include font_size-font_weight-line_height(16px, 600, 100%);
+    margin-right: 274px;
+    border-radius: 6px;
+    padding: 8px;
+    background-color: white;
+  }
+}
+
+.dayColumnDiv {
+  @include display_flex-align_items_center-justify_content_space_between;
+  height: 100%;
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(7, 1fr);
+  transition: grid-template-columns 0.1s ease;
+  overflow: hidden;
+}
+
+:global(.fc .fc-day-today),
+:global(.fc .fc-col-today) {
+  background: none !important;
+}
+
+.dayColumn {
+  min-height: 510px;
+  height: 100%;
+  margin-right: 8px;
+  background-color: #ffffff;
+  padding: 5px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  &.collapsed {
+    cursor: default;
+  }
+
+  &.expanded {
+    cursor: pointer;
+  }
+}
+
+.dayColumn::-webkit-scrollbar {
+  display: none;
+}
+
+.dayHeader {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+:global(.fc .fc-timegrid) table,
+:global(.fc .fc-timegrid) td {
+  border: none;
+  box-shadow: none;
+}
+
+:global(.fc .fc-timegrid-slots table) {
+  border-collapse: separate;
+  border-spacing: 0 5px;
+}
+
+:global(.fc .fc-timegrid-slot) {
+  @include width-height(auto, 44px);
+  @include font_size-font_weight-line_height(14px, 600, 100%);
+  background-color: #f4f5fb;
+  color: #9fa2a6;
+  cursor: pointer;
+}
+
+:global(.fc .fc-timegrid-slot-label) {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+:global(.fc .fc-timegrid-slot-lane) {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+:global(.fc .fc-timegrid-cols .fc-timegrid-event) {
+  position: relative;
+  background: none;
+  color: #fff;
+  border: none;
+  box-shadow: none;
+  border-radius: 6px;
+  padding-top: 12px;
+  cursor: pointer;
+  div {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+:global(.fc .fc-timegrid-slot-lane.has-event),
+:global(.fc .fc-timegrid-slot-label.has-event) {
+  background-color: #e6e9ee;
+}

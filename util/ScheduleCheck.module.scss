@@ -1,0 +1,190 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  background-color: #8fd9ff;
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.dateNav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.deteWeek {
+  width: 80px;
+  display: flex;
+  justify-content: space-around;
+  background-color: white;
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-family: Inter;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 100%;
+}
+
+.dateDay {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 120px;
+  border-radius: 6px;
+  background-color: white;
+  button {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 6px;
+  }
+}
+
+.date {
+  background-color: #27abf1;
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.3rem 0.7rem;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.summarySection {
+  display: flex;
+  background-color: white;
+  border-radius: 10px;
+  gap: 1rem;
+}
+
+.groupInfo {
+  width: 250px;
+  padding: 1rem;
+  p {
+    font-family: Inter;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 220%;
+    color: #5d6064;
+    i {
+      background-color: #27abf1;
+      color: white;
+      font-style: normal;
+      padding: 0.3rem;
+      border-radius: 6px;
+    }
+  }
+  .together {
+    font-family: Inter;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 100%;
+  }
+}
+
+.activeTime,
+.inactiveTime {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 80%;
+  height: 50px;
+  border-radius: 8px;
+  .location {
+    font-family: Inter;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 100%;
+  }
+  .scheduleTime {
+    font-family: Inter;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 100%;
+  }
+}
+
+.activeTime {
+  background-color: #27abf1;
+  color: white;
+  margin-bottom: 3%;
+}
+
+.inactiveTime {
+  background-color: #afb2b7;
+  color: #c1c4c7;
+}
+
+.cardSection {
+  display: flex;
+  gap: 1rem;
+  padding: 2%;
+}
+
+.cardColumn {
+  width: 206px;
+  background-color: #f4f5fb;
+  border-radius: 10px;
+  padding: 0rem 1rem;
+  h3 {
+    font-family: Inter;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 100%;
+    color: #5d6064;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  margin-bottom: 0.8rem;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.card img {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+}
+
+.cardContent {
+  padding: 0.5rem;
+}
+
+.title {
+  font-family: Inter;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 100%;
+  margin: 0;
+}
+
+.address,
+.time {
+  font-family: Inter;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 100%;
+  color: #5d6064;
+  margin: 0.3rem 0rem;
+}
