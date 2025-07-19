@@ -36,14 +36,19 @@ const Login = () => {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      console.log('1. handleSubmit 시작');
+
       try {
+        console.log('2.보낼 데이터:', formData); 
+        
         const user = await dispatch(loginUser(formData)).unwrap();
         
+        console.log('3. 받은 user:', user); 
         alert(`${user.name}님, 환영합니다!`);
         router.push('/');
 
       } catch (err: any) {
-        console.error('로그인 실패:', err);
+        console.error('4. catch, 에러:', err);
       }
     },
     [dispatch, formData, router]

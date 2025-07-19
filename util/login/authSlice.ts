@@ -1,3 +1,5 @@
+'use client';
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
@@ -53,10 +55,13 @@ api.interceptors.response.use(
 
 // 타입 정의
 interface User {
-  id: string;
+  id: number;
   email: string;
+  password: string | null;
   name: string;
-  isSubscribed: boolean;
+  role: string;
+  policy: boolean;
+  subscribe: boolean;
 }
 interface SignUpData {
   name: string; email: string; password: string;
@@ -128,13 +133,14 @@ export const signUpUser = createAsyncThunk<APIResponse, Omit<SignUpData, 'termsA
 );
 
 export const loginUser = createAsyncThunk<
-  User, 
+  User,
   { email: string; password: string }
 >('auth/loginUser', async (credentials, { rejectWithValue }) => {
   try {
     const response = await axios.post<APIResponse<User>>(
       `${BASE_URL}/login`, 
-      credentials
+      credentials,
+      { withCredentials: true }
     );
 
     const accessToken = response.headers['authorization']?.replace('Bearer ', '');
@@ -160,7 +166,7 @@ export const loginUser = createAsyncThunk<
       return rejectWithValue(error.response.data.message || '로그인에 실패했습니다.');
     }
     if (error instanceof Error) {
-        return rejectWithValue(error.message);
+      return rejectWithValue(error.message);
     }
     return rejectWithValue('로그인 중 알 수 없는 오류가 발생했습니다.');
   }
