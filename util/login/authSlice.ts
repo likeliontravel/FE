@@ -10,16 +10,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -27,22 +17,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) throw new Error('Refresh token not available');
-        
-        const { data } = await axios.post<{ data: { accessToken: string } }>(
-          `${BASE_URL}/auth/refresh`, { refreshToken }
-        );
-        
-        const newAccessToken = data.data.accessToken;
-        localStorage.setItem('accessToken', newAccessToken);
-        api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return api(originalRequest);
+        await api.post('/auth/refresh'); 
+        return api(originalRequest); 
       } catch (refreshError) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        delete api.defaults.headers.common.Authorization;
         if (typeof window !== 'undefined') {
             window.location.href = '/login';
         }
@@ -121,7 +98,7 @@ export const signUpUser = createAsyncThunk<APIResponse, Omit<SignUpData, 'termsA
   'auth/signUpUser',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await api.post<APIResponse>('/general-user/signup', userData);
+      const response = await axios.post<APIResponse>(`${BASE_URL}/general-user/signup`, userData);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -143,21 +120,11 @@ export const loginUser = createAsyncThunk<
       { withCredentials: true }
     );
 
-    const accessToken = response.headers['authorization']?.replace('Bearer ', '');
-    const refreshToken = response.headers['refresh-token']?.replace('Bearer ', '');
     const user = response.data.data;
 
     if (!response.data.success || !user) {
       throw new Error(response.data.message || '로그인 응답 데이터가 올바르지 않습니다.');
     }
-
-    if (!accessToken || !refreshToken) {
-      throw new Error('응답 헤더에 토큰이 포함되지 않았습니다.');
-    }
-
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-    api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
     return user;
 
@@ -177,9 +144,6 @@ export const logoutUser = createAsyncThunk<APIResponse>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.post<APIResponse>('/logout');
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      delete api.defaults.headers.common.Authorization;
       return response.data;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {

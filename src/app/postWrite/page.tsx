@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
 import { createBoard } from '../../../util/board/boardSilce';
+
+// TipTap 관련 hook과 컴포넌트, 타입 import
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -18,10 +20,14 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Heading from '@tiptap/extension-heading';
 
 import styles from '../../../styles/postWrite/postWrite.module.scss';
-import SearchBar from '../../app/SearchBar/SearchBar';
+import SearchBar from '../../app/SearchBar/SearchBar'; // ✅ 경로 수정
+import MapModal from '../../app/postWrite/MapModal';     // ✅ 경로 수정
 
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
-const themeKeywords = ['힐링', '액티비티', '맛집', '문화'];
+const themeKeywords = [
+    '자연 속에서 힐링', '미식 여행 및 먹방 중심', '체험 및 액티비티',
+    '문화예술 및 역사탐방', '기타'
+];
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -30,9 +36,11 @@ interface MenuBarProps {
   selectedTheme: string;
   onThemeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onSubmit: () => void;
+  onMapClick: () => void;
+  loading: boolean;
 }
 
-const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThemeChange, onSubmit }: MenuBarProps) => {
+const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThemeChange, onSubmit, onMapClick, loading }: MenuBarProps) => {
   if (!editor) { return null; }
 
   const addImage = useCallback(() => {
@@ -65,7 +73,7 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
     <div className={styles.toolbar}>
       <div className={styles.toolGroupLeft}>
         <button className={styles.mediaButton} onClick={addImage}><img src="/imgs/post_img.png" alt="사진" /><span>사진</span></button>
-        <button className={styles.mediaButton}><img src="/imgs/post_place.png" alt="지도" /><span>지도</span></button>
+        <button className={styles.mediaButton} onClick={onMapClick}><img src="/imgs/post_place.png" alt="지도" /><span>지도</span></button>
         <div className={styles.divider}></div>
         <div className={styles.textStyleGroup}>
           <select className={styles.fontSelect} value={editor.getAttributes('textStyle').fontFamily || ''} onChange={handleFontFamilyChange}>
@@ -96,7 +104,9 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
         </select>
       </div>
       <div className={styles.toolGroupRight}>
-        <button className={styles.submitButton} onClick={onSubmit}>등록하기</button>
+        <button className={styles.submitButton} onClick={onSubmit} disabled={loading}>
+          {loading ? '등록 중...' : '등록하기'}
+        </button>
       </div>
     </div>
   );
@@ -108,16 +118,17 @@ const WritePage: React.FC = () => {
   const { loading, error } = useSelector((state: RootState) => state.board);
   
   const [title, setTitle] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('');
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: false }),
       Heading.configure({ levels: [1, 2, 3] }),
       Underline, Strike, TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      TextStyle, FontFamily, Color, Image,
+      TextStyle, FontFamily, Color,
+      Image.configure({ inline: false, allowBase64: true }),
       Placeholder.configure({ placeholder: '오늘은 어떤 즐거운 여정을 떠났나요?' }),
     ],
     content: '',
@@ -127,24 +138,53 @@ const WritePage: React.FC = () => {
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { setTitle(e.target.value); }, []);
   const handleRegionChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => { setSelectedRegion(e.target.value); }, []);
   const handleThemeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => { setSelectedTheme(e.target.value); }, []);
-
+  
+  const openMapModal = useCallback(() => { setIsMapModalOpen(true); }, []);
+  const closeMapModal = useCallback(() => { setIsMapModalOpen(false); }, []);
+  
+  const handleSelectPlace = useCallback((place: { name: string; address: string; lat: number; lng: number }) => {
+    if (editor) {
+        const KAKAO_APP_KEY = '705ecc4de821b5770092b4aeff178932';
+        const staticMapUrl = `https://dapi.kakao.com/v2/staticmap?center=${place.lat},${place.lng}&level=4&marker=(${place.lng},${place.lat})&w=600&h=200&appkey=${KAKAO_APP_KEY}`;
+        const placeHtml = `
+            <div data-place-name="${place.name}" style="border:1px solid #ddd; padding:10px; border-radius:8px; margin:10px 0; overflow:hidden;">
+                <img src="${staticMapUrl}" alt="${place.name} 지도" style="width:100%; height:150px; object-fit:cover; border-bottom:1px solid #eee; margin-bottom:10px;" />
+                <strong>${place.name}</strong><br/>
+                <p style="font-size: 14px; color: #888; margin: 4px 0 0 0;">${place.address}</p>
+            </div>
+        `;
+        editor.chain().focus().insertContent(placeHtml, { parseOptions: { preserveWhitespace: false } }).run();
+    }
+  }, [editor]);
+  
   const handleSubmit = useCallback(async () => {
-    if (!title.trim() || !editor?.getHTML() || !selectedRegion || !selectedTheme) {
+    const content = editor?.getHTML() || '';
+    
+    if (!title.trim() || content === '<p></p>' || !selectedRegion || !selectedTheme) {
       alert('제목, 내용, 지역, 테마를 모두 입력해주세요.');
       return;
     }
+
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    const firstImage = tempDiv.querySelector('img');
+    const thumbnailPublicUrl = firstImage ? firstImage.src : '';
+
+    const newPost = {
+      title,
+      content,
+      region: selectedRegion,
+      theme: selectedTheme,
+      thumbnailPublicUrl,
+    };
+
     try {
-      const newPost = {
-        title,
-        content: editor.getHTML(),
-        region: selectedRegion,
-        theme: selectedTheme,
-      };
       await dispatch(createBoard(newPost)).unwrap();
       alert('게시글이 성공적으로 등록되었습니다.');
       router.push('/post');
-    } catch (err) {
+    } catch (err: any) {
       alert(`게시글 등록 실패: ${err}`);
+      console.error('게시글 등록 실패:', err);
     }
   }, [dispatch, router, title, editor, selectedRegion, selectedTheme]);
 
@@ -152,7 +192,8 @@ const WritePage: React.FC = () => {
     <div className={styles.pageContainer}>
       <div className={styles.centeredContainer}>
         <section className={styles.searchSection}>
-          <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} onSearch={() => {}} />
+          {/* ✅ SearchBar props 문제를 해결하기 위해 내부 상태 관리 방식으로 변경 */}
+          <SearchBar onSearch={(term) => console.log('검색:', term)} />
         </section>
         <div className={styles.editorBackground}>
           <MenuBar
@@ -162,6 +203,8 @@ const WritePage: React.FC = () => {
             selectedTheme={selectedTheme}
             onThemeChange={handleThemeChange}
             onSubmit={handleSubmit}
+            onMapClick={openMapModal}
+            loading={loading}
           />
           <main className={styles.editorWrapper}>
             <input
@@ -180,6 +223,13 @@ const WritePage: React.FC = () => {
         </div>
       </div>
       <footer className={styles.footer}></footer>
+
+      {isMapModalOpen && (
+          <MapModal 
+            onClose={closeMapModal} 
+            onSelectPlace={handleSelectPlace} 
+          />
+      )}
     </div>
   );
 };

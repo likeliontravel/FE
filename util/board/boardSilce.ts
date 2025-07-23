@@ -2,10 +2,12 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const BASE_URL = 'https://localhost:8080';
+
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
 });
+
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
@@ -14,8 +16,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-
-// 타입 정의 (API 명세서에 맞춰 수정)
+// 타입 정의 (최신 API 명세서 기준)
 export interface Board {
   id: number;
   title: string;
@@ -57,18 +58,14 @@ const initialState: BoardState = {
   error: null,
 };
 
+// --- 비동기 Thunks ---
 
-// 전체/정렬된 게시글 목록 조회 (파라미터 추가)
-export const fetchBoards = createAsyncThunk(
+// 전체/정렬된 게시글 목록 조회
+export const fetchBoards = createAsyncThunk<Board[], { page?: number; size?: number; sortType?: 'POPULAR' | 'RECENT' }>(
   'board/fetchBoards',
-  async (
-    { page = 0, size = 30, sortType = 'POPULAR' }: { page?: number; size?: number; sortType?: 'POPULAR' | 'RECENT' },
-    { rejectWithValue }
-  ) => {
+  async ({ page = 0, size = 30, sortType = 'POPULAR' }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/board/all`, {
-        params: { page, size, sortType },
-      });
+      const response = await axios.get(`${BASE_URL}/board/all`, { params: { page, size, sortType } });
       return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '게시글 목록 조회 실패');
@@ -77,14 +74,12 @@ export const fetchBoards = createAsyncThunk(
   }
 );
 
-// 게시글 검색 기능 추가
-export const searchBoards = createAsyncThunk(
+// 게시글 키워드 검색
+export const searchBoards = createAsyncThunk<Board[], { searchKeyword: string; sortType?: 'POPULAR' | 'RECENT' }>(
   'board/searchBoards',
-  async ({ searchKeyword, sortType = 'POPULAR' }: { searchKeyword: string; sortType?: 'POPULAR' | 'RECENT' }, { rejectWithValue }) => {
+  async ({ searchKeyword, sortType = 'POPULAR' }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/board/search`, {
-        params: { searchKeyword, sortType },
-      });
+      const response = await axios.get(`${BASE_URL}/board/search`, { params: { searchKeyword, sortType } });
       return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '게시글 검색 실패');
@@ -93,10 +88,38 @@ export const searchBoards = createAsyncThunk(
   }
 );
 
+// 테마별 게시글 검색
+export const fetchBoardsByTheme = createAsyncThunk<Board[], { theme: string; sortType?: 'POPULAR' | 'RECENT' }>(
+  'board/fetchBoardsByTheme',
+  async ({ theme, sortType = 'POPULAR' }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/board/byTheme`, { params: { theme, sortType } });
+      return response.data.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '테마별 게시글 조회 실패');
+      return rejectWithValue('알 수 없는 오류가 발생했습니다.');
+    }
+  }
+);
+
+// 지역별 게시글 검색
+export const fetchBoardsByRegion = createAsyncThunk<Board[], { region: string; sortType?: 'POPULAR' | 'RECENT' }>(
+  'board/fetchBoardsByRegion',
+  async ({ region, sortType = 'POPULAR' }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/board/byRegion`, { params: { region, sortType } });
+      return response.data.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '지역별 게시글 조회 실패');
+      return rejectWithValue('알 수 없는 오류가 발생했습니다.');
+    }
+  }
+);
+
 // 게시글 상세 조회
-export const fetchBoardDetail = createAsyncThunk(
+export const fetchBoardDetail = createAsyncThunk<Board, number>(
   'board/fetchBoardDetail',
-  async (id: number, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${BASE_URL}/board/${id}`);
       return response.data.data;
@@ -122,12 +145,12 @@ export const createBoard = createAsyncThunk(
 );
 
 // 게시글 수정
-export const updateBoard = createAsyncThunk(
+export const updateBoard = createAsyncThunk<Board, { id: number; title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }>(
   'board/updateBoard',
-  async (updatedPost: { id: number; title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }, { rejectWithValue }) => {
+  async (updatedPost, { rejectWithValue }) => {
     try {
       const response = await api.put('/board/update', updatedPost);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '게시글 수정 실패');
       return rejectWithValue('알 수 없는 오류가 발생했습니다.');
@@ -136,9 +159,9 @@ export const updateBoard = createAsyncThunk(
 );
 
 // 게시글 삭제
-export const deleteBoard = createAsyncThunk(
+export const deleteBoard = createAsyncThunk<number, number>(
   'board/deleteBoard',
-  async (id: number, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       await api.delete(`/board/delete/${id}`);
       return id;
@@ -149,13 +172,13 @@ export const deleteBoard = createAsyncThunk(
   }
 );
 
-// 댓글 조회 기능 추가
-export const fetchComments = createAsyncThunk(
+// 댓글 조회
+export const fetchComments = createAsyncThunk<Comment[], number>(
     'board/fetchComments',
-    async (boardId: number, { rejectWithValue }) => {
+    async (boardId, { rejectWithValue }) => {
         try {
             const response = await axios.get(`${BASE_URL}/comment/${boardId}`);
-            return response.data.data;
+            return response.data.data || [];
         } catch (error) {
             if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '댓글 조회 실패');
             return rejectWithValue('알 수 없는 오류가 발생했습니다.');
@@ -182,7 +205,8 @@ export const updateComment = createAsyncThunk(
   'board/updateComment',
   async (commentData: { id: number; commentContent: string; boardId: number }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/comment/${commentData.id}`, { commentContent: commentData.commentContent, boardId: commentData.boardId });
+      const { id, commentContent, boardId } = commentData;
+      const response = await api.put(`/comment/${id}`, { commentContent, boardId });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '댓글 수정 실패');
@@ -192,9 +216,9 @@ export const updateComment = createAsyncThunk(
 );
 
 // 댓글 삭제 
-export const deleteComment = createAsyncThunk(
+export const deleteComment = createAsyncThunk<number, number>(
   'board/deleteComment',
-  async (id: number, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       await api.delete(`/comment/${id}`);
       return id;
@@ -211,7 +235,7 @@ const boardSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // --- 게시글 목록 조회 ---
+      // --- fetchBoards (목록 조회) ---
       .addCase(fetchBoards.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -225,7 +249,7 @@ const boardSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // --- 게시글 검색 ---
+      // --- searchBoards (검색) ---
       .addCase(searchBoards.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -238,8 +262,36 @@ const boardSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      
+      // --- fetchBoardsByTheme (테마별 조회) ---
+      .addCase(fetchBoardsByTheme.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBoardsByTheme.fulfilled, (state, action: PayloadAction<Board[]>) => {
+        state.loading = false;
+        state.posts = action.payload;
+      })
+      .addCase(fetchBoardsByTheme.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
 
-      // --- 게시글 상세 조회 ---
+      // --- fetchBoardsByRegion (지역별 조회) ---
+      .addCase(fetchBoardsByRegion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBoardsByRegion.fulfilled, (state, action: PayloadAction<Board[]>) => {
+        state.loading = false;
+        state.posts = action.payload;
+      })
+      .addCase(fetchBoardsByRegion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // --- fetchBoardDetail (상세 조회) ---
       .addCase(fetchBoardDetail.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -253,7 +305,48 @@ const boardSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // --- 댓글 조회 ---
+      // --- createBoard (게시글 생성) ---
+      .addCase(createBoard.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createBoard.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(createBoard.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      
+      // --- updateBoard (게시글 수정) ---
+      .addCase(updateBoard.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateBoard.fulfilled, (state, action: PayloadAction<Board>) => {
+        state.loading = false;
+        state.post = action.payload;
+      })
+      .addCase(updateBoard.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // --- deleteBoard (게시글 삭제) ---
+      .addCase(deleteBoard.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteBoard.fulfilled, (state, action: PayloadAction<number>) => {
+        state.loading = false;
+        state.posts = state.posts.filter(post => post.id !== action.payload);
+      })
+      .addCase(deleteBoard.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // --- fetchComments (댓글 조회) ---
       .addCase(fetchComments.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -267,47 +360,7 @@ const boardSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // --- 게시글 생성 ---
-      .addCase(createBoard.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createBoard.fulfilled, (state) => {
-        state.loading = false;
-        // 목록에 바로 추가하는 대신, 목록을 새로고침(refetch)하는 것을 권장합니다.
-      })
-      .addCase(createBoard.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-
-      // --- 게시글 수정 ---
-      .addCase(updateBoard.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateBoard.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(updateBoard.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-
-      // --- 게시글 삭제 ---
-      .addCase(deleteBoard.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteBoard.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(deleteBoard.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-
-      // --- 댓글 생성, 수정, 삭제 (로딩 및 에러 상태만 관리) ---
+      // --- 댓글 생성 ---
       .addCase(createComment.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -319,6 +372,8 @@ const boardSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+
+      // --- 댓글 수정 ---
       .addCase(updateComment.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -330,12 +385,15 @@ const boardSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+
+      // --- 댓글 삭제 ---
       .addCase(deleteComment.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteComment.fulfilled, (state) => {
+      .addCase(deleteComment.fulfilled, (state, action: PayloadAction<number>) => {
         state.loading = false;
+        state.comments = state.comments.filter(comment => comment.id !== action.payload);
       })
       .addCase(deleteComment.rejected, (state, action) => {
         state.loading = false;
