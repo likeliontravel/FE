@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from '../../../styles/postWrite/mapModal.module.scss';
-import PostWriteMap from './PostWriteMap'; // 경로를 실제 파일 위치에 맞게 수정해주세요.
+import PostWriteMap from './PostWriteMap';
 
 interface Place {
   name: string;
@@ -24,9 +24,7 @@ const MapModal: React.FC<MapModalProps> = ({ onClose, onSelectPlace }) => {
   const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
-    // 모달이 열릴 때 지도 컴포넌트를 렌더링하도록 상태를 변경
     setShowMap(true);
-    // 모달이 닫힐 때(unmount) 지도 컴포넌트를 DOM에서 제거
     return () => setShowMap(false);
   }, []);
 

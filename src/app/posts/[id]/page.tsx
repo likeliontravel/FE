@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../../../store/store'; // 실제 경로로 수정
-import { fetchBoardDetail, fetchComments, createComment } from '../../../../util/board/boardSilce'; // 실제 경로로 수정
+import { AppDispatch, RootState } from '../../../../store/store'; 
+import { fetchBoardDetail, fetchComments, createComment } from '../../../../util/board/boardSilce';
 import styles from '../../../../styles/postDetail/postDetail.module.scss';
-import SearchBar from '../../SearchBar/SearchBar'; // 실제 경로로 수정
+import SearchBar from '../../SearchBar/SearchBar'; 
 import Image from 'next/image';
 
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
@@ -18,14 +18,12 @@ const PostDetail = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { post, comments, loading, error } = useSelector((state: RootState) => state.board);
   
-  // URL의 id가 문자열 배열일 수 있으므로, 첫 번째 값만 사용하고 숫자로 변환
   const id = params.id ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id, 10) : 0;
   
   const [activeTab, setActiveTab] = useState<'지역' | '테마'>('지역');
   const [comment, setComment] = useState('');
 
   useEffect(() => {
-    // id가 유효한 숫자인지 확인 후 데이터 요청
     if (id && !isNaN(id)) {
       dispatch(fetchBoardDetail(id));
       dispatch(fetchComments(id));
@@ -36,8 +34,8 @@ const PostDetail = () => {
     if (!comment.trim() || !id) return;
     try {
       await dispatch(createComment({ boardId: id, commentContent: comment })).unwrap();
-      setComment(''); // 입력창 비우기
-      dispatch(fetchComments(id)); // 댓글 목록 새로고침
+      setComment(''); 
+      dispatch(fetchComments(id)); 
     } catch (err) {
       alert(`댓글 작성 실패: ${err}`);
       console.error('댓글 작성 실패:', err);
@@ -52,8 +50,6 @@ const PostDetail = () => {
 
   const postBodyContent = useMemo(() => {
     if (!post?.content) return { __html: '' };
-    // 백엔드에서 이미 HTML로 제공하므로, 줄바꿈 처리는 필요 없을 수 있습니다.
-    // 만약 일반 텍스트로 온다면 .replace(/\n/g, '<br />')를 사용합니다.
     return { __html: post.content };
   }, [post?.content]);
 
@@ -67,7 +63,6 @@ const PostDetail = () => {
     <div className={styles.pageContainer}>
       <div className={styles.centeredContainer}>
         <section className={styles.searchSection}>
-          {/* ✅ onSearch prop이 필수가 아닌 SearchBar를 사용합니다. */}
           <SearchBar onSearch={() => {}}/>
         </section>
 
@@ -79,7 +74,6 @@ const PostDetail = () => {
               <span className={styles.authorName}>{post.writer}</span>
             </div>
             <div className={styles.imageGrid}>
-              {/* API 응답에 이미지가 하나이므로 일단 하나만 표시, 추후 확장 가능 */}
               <img src={post.thumbnailPublicUrl || '/imgs/default-thumbnail.png'} alt={post.title} />
             </div>
             <p className={styles.postBody} dangerouslySetInnerHTML={postBodyContent} />
@@ -105,12 +99,11 @@ const PostDetail = () => {
                         <div className={styles.commentMeta}>
                            <button>
                                 <Image src="/imgs/message-square.png" alt="댓글 수" width={16} height={16} />
-                                <span>0</span> {/* 대댓글 기능은 추후 구현 */}
+                                <span>0</span> 
                            </button>
                         </div>
                       </div>
                     </div>
-                    {/* 대댓글 렌더링 로직 (parentCommentId를 기준으로 그룹핑 필요) */}
                   </Fragment>
                 )) : <p>아직 댓글이 없습니다. 첫 댓글을 남겨주세요!</p>}
               </div>

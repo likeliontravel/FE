@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
 import { createBoard } from '../../../util/board/boardSilce';
 
-// TipTap 관련 hook과 컴포넌트, 타입 import
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -20,8 +19,8 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Heading from '@tiptap/extension-heading';
 
 import styles from '../../../styles/postWrite/postWrite.module.scss';
-import SearchBar from '../../app/SearchBar/SearchBar'; // ✅ 경로 수정
-import MapModal from '../../app/postWrite/MapModal';     // ✅ 경로 수정
+import SearchBar from '../../app/SearchBar/SearchBar'; 
+import MapModal from '../../app/postWrite/MapModal';
 
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
 const themeKeywords = [
@@ -192,7 +191,6 @@ const WritePage: React.FC = () => {
     <div className={styles.pageContainer}>
       <div className={styles.centeredContainer}>
         <section className={styles.searchSection}>
-          {/* ✅ SearchBar props 문제를 해결하기 위해 내부 상태 관리 방식으로 변경 */}
           <SearchBar onSearch={(term) => console.log('검색:', term)} />
         </section>
         <div className={styles.editorBackground}>

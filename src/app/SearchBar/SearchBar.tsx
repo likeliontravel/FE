@@ -2,10 +2,10 @@
 
 import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
-import styles from '../../../styles/SearchBar/searchBar.module.scss'; // 실제 경로로 수정해주세요
+import styles from '../../../styles/SearchBar/searchBar.module.scss'; 
 
 interface SearchBarProps {
-  onSearch?: (term: string) => void; // 물음표(?)를 추가하여 선택적 prop으로 변경
+  onSearch?: (term: string) => void; 
 }
 
 const recommendedKeywords = [
@@ -21,7 +21,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     setInternalSearchTerm(e.target.value);
   }, []);
 
-  // onSearch prop이 있을 때만 호출하도록 수정
   const handleSearchAction = (term: string) => {
     if (onSearch) {
       onSearch(term);

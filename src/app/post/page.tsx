@@ -26,14 +26,12 @@ const PostList = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { posts, loading, error } = useSelector((state: RootState) => state.board);
 
-  // ✅ searchTerm 상태를 currentQuery로 변경하여 검색어, 지역, 테마를 모두 관리
   const [currentQuery, setCurrentQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'POPULAR' | 'RECENT'>('POPULAR');
   const [activeTab, setActiveTab] = useState<'지역' | '테마'>('지역');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    // API 호출 로직을 검색어(currentQuery)와 카테고리(activeCategory) 기준으로 변경
     const loadPosts = () => {
       if (currentQuery) {
         dispatch(searchBoards({ searchKeyword: currentQuery, sortType: sortOrder }));
@@ -76,7 +74,6 @@ const PostList = () => {
     <div className={styles.pageContainer}>
       <div className={styles.centeredContainer}>
         <section className={styles.searchSection}>
-            {/* ✅ 수정: 이제 onSearch prop만 전달합니다. */}
             <SearchBar onSearch={handleSearch} />
          </section>
 

@@ -64,7 +64,6 @@ export default function PostWriteMap({ searchKeyword, onSelectPlace, setPlaceLis
 
   const initMap = () => {
     if (window.kakao && window.kakao.maps && mapContainerRef.current) {
-      // API 로드가 완료되었고, 지도를 그릴 div가 준비되었을 때
       window.kakao.maps.load(() => {
         const mapOption = {
           center: new window.kakao.maps.LatLng(37.5665, 126.978),
@@ -82,7 +81,7 @@ export default function PostWriteMap({ searchKeyword, onSelectPlace, setPlaceLis
         id="kakao-map-script"
         src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=705ecc4de821b5770092b4aeff178932&libraries=services&autoload=false`}
         strategy="afterInteractive"
-        onReady={initMap} // 스크립트가 준비되면 initMap 호출
+        onReady={initMap}
       />
       <div ref={mapContainerRef} id="post-write-map" style={{ width: '100%', height: '100%' }}></div>
       <MapLogic 
