@@ -2,6 +2,7 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { getCookie } from 'cookies-next';
 
 const BASE_URL = 'https://localhost:8080';
 
@@ -10,6 +11,27 @@ const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.request.use(
+  (config) => {
+    if (typeof window !== 'undefined') {
+      let token = localStorage.getItem('accessToken');
+      
+      if (!token) {
+        const cookieToken = getCookie('Authorization');
+        if (typeof cookieToken === 'string') {
+            token = cookieToken;
+        }
+      }
+      
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -17,9 +39,22 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        await api.post('/auth/refresh'); 
-        return api(originalRequest); 
+        const refreshToken = localStorage.getItem('refreshToken') || getCookie('RefreshToken');
+        if (!refreshToken) throw new Error('Refresh token not available');
+        
+        const response = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+        
+        const newAccessToken = response.headers['authorization']?.replace('Bearer ', '');
+        if (newAccessToken) {
+            localStorage.setItem('accessToken', newAccessToken);
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return api(originalRequest);
+        } else {
+            throw new Error('New access token not received');
+        }
       } catch (refreshError) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         if (typeof window !== 'undefined') {
             window.location.href = '/login';
         }
@@ -34,31 +69,47 @@ api.interceptors.response.use(
 interface User {
   id: number;
   email: string;
-  password: string | null;
   name: string;
-  role: string;
   policy: boolean;
   subscribe: boolean;
+  role: string;
+  password?: string | null;
 }
 interface SignUpData {
-  name: string; email: string; password: string;
-  termsAccepted: boolean[]; selectedPlan: string | null;
+  name: string;
+  email: string;
+  password: string;
+  termsAccepted: boolean[];
+  selectedPlan: string | null;
 }
 interface AuthState {
-  user: User | null; loading: boolean; error: string | null;
-  successMessage: string | null; signUpData: SignUpData; isEmailVerified: boolean;
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+  successMessage: string | null;
+  signUpData: SignUpData;
+  isEmailVerified: boolean;
 }
 interface APIResponse<T = unknown> {
-  message: string; data?: T; success: boolean; status: number;
+  message: string;
+  data?: T;
+  success: boolean;
+  status: number;
 }
 
 // 초기 상태
 const initialState: AuthState = {
-  user: null, loading: false, error: null, successMessage: null,
+  user: null,
+  loading: false,
+  error: null,
+  successMessage: null,
   isEmailVerified: false,
   signUpData: {
-    name: '', email: '', password: '',
-    termsAccepted: [false, false, false], selectedPlan: null,
+    name: '',
+    email: '',
+    password: '',
+    termsAccepted: [false, false, false],
+    selectedPlan: null,
   },
 };
 
@@ -120,12 +171,20 @@ export const loginUser = createAsyncThunk<
       { withCredentials: true }
     );
 
+    const accessToken = response.headers['authorization']?.replace('Bearer ', '');
+    const refreshToken = response.headers['refresh-token']?.replace('Bearer ', '');
     const user = response.data.data;
 
     if (!response.data.success || !user) {
       throw new Error(response.data.message || '로그인 응답 데이터가 올바르지 않습니다.');
     }
+    if (!accessToken || !refreshToken) {
+      throw new Error('응답 헤더에 토큰이 포함되지 않았습니다.');
+    }
 
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    
     return user;
 
   } catch (error) {
@@ -144,6 +203,8 @@ export const logoutUser = createAsyncThunk<APIResponse>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.post<APIResponse>('/logout');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       return response.data;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {

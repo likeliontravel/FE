@@ -45,7 +45,7 @@ const Login = () => {
         
         console.log('3. 받은 user:', user); 
         alert(`${user.name}님, 환영합니다!`);
-        router.push('/');
+        router.push('/main');
 
       } catch (err: any) {
         console.error('4. catch, 에러:', err);
