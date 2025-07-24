@@ -16,8 +16,8 @@ const ifGroup = ({ groups }: { groups: any[] }) => {
 
   useBetweenScroll(scrollContainerRef);
 
-  const handleGroupClick = (id: number) => {
-    router.push(`/group/${id}`);
+  const handleGroupClick = (groupName: string) => {
+    router.push(`/group/${groupName}`);
   };
 
   return (
@@ -37,7 +37,7 @@ const ifGroup = ({ groups }: { groups: any[] }) => {
             <div
               key={group.id}
               className={style.group_content}
-              onClick={() => handleGroupClick(group.id)}
+              onClick={() => handleGroupClick(group.groupName)}
             >
               <div className={style.group_content_title}>
                 <p>{group.groupName}</p>
@@ -50,7 +50,7 @@ const ifGroup = ({ groups }: { groups: any[] }) => {
             </div>
           ))}
           {/* 그룹 추가하기 */}
-          <div className={style.group_plus}>
+          <div className={style.group_plus} onClick={openModal}>
             <div></div>
             <p>그룹 추가하기</p>
           </div>

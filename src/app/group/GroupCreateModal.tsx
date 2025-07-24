@@ -16,7 +16,7 @@ export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
     try {
       setIsSubmitting(true);
 
-      const res = await fetch("/group/create", {
+      const res = await fetch("https://localhost:8080/group/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

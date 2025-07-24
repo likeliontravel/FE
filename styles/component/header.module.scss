@@ -81,6 +81,5 @@
 }
 
 .userImage {
-  @include back-img("../../public/imgs/Ellipse5.png");
   @include width-height(30px, 30px);
 }

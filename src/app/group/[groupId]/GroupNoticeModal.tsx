@@ -1,15 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../../../../styles/group/groupDetail.module.scss";
 
-export default function GroupNoticeModal({ onClose }: { onClose: () => void }) {
+export default function GroupNoticeModal({
+  onClose,
+  groupName,
+}: {
+  onClose: () => void;
+  groupName: string | string[] | undefined;
+}) {
   const [selectedNoticeIndex, setSelectedNoticeIndex] = useState<number | null>(
     null
   );
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notices, setNotices] = useState<any | null>(null);
 
-  const notices: any[] = [];
+  useEffect(() => {
+    const fetchNotice = async () => {
+      try {
+        const res = await fetch(
+          `https://localhost:8080/group/announcement/getAllAnnouncement?groupName=${groupName}`
+        );
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setNotices(json.data);
+        }
+      } catch (error) {
+        console.error("공지 정보 불러오기 실패:", error);
+      }
+    };
+
+    fetchNotice();
+  }, []);
+
+  const handleCreateNotice = async () => {
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+
+      const res = await fetch(
+        "https://localhost:8080/group/announcement/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            groupName: groupName,
+            title: title.trim(),
+            content: content.trim(),
+          }),
+        }
+      );
+
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        alert("공지가 성공적으로 생성되었습니다!");
+        onClose();
+      } else {
+        alert("공지 생성 실패: " + result.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("요청 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className={styles.modal_overlay} onClick={onClose}>
@@ -30,12 +94,11 @@ export default function GroupNoticeModal({ onClose }: { onClose: () => void }) {
             </div>
             <div className={styles.modal_detail}>
               <div>
-                <strong>{notices[selectedNoticeIndex].author}</strong>{" "}
-                {notices[selectedNoticeIndex].content}
+                <strong>{notices[selectedNoticeIndex].writerName}</strong>{" "}
+                {notices[selectedNoticeIndex].title}
               </div>
               <div className={styles.modal_detail_content}>
-                낼 날씨 많이 추우니 다들 따뜻한 옷차림으로 입구 오시오
-                영하랍니다...{" "}
+                {notices[selectedNoticeIndex].content}
               </div>
             </div>
           </>
@@ -54,13 +117,23 @@ export default function GroupNoticeModal({ onClose }: { onClose: () => void }) {
               <input
                 className={styles.edit_title}
                 placeholder="제목을 입력하세요"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
               <textarea
                 className={styles.edit_content}
                 placeholder="내용을 입력해주세요"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
               />
             </div>
-            <button className={styles.edit_btn}>등록하기</button>
+            <button
+              className={styles.edit_btn}
+              disabled={isSubmitting}
+              onClick={handleCreateNotice}
+            >
+              등록하기
+            </button>
           </>
         ) : (
           <>
@@ -70,10 +143,13 @@ export default function GroupNoticeModal({ onClose }: { onClose: () => void }) {
             </div>
             <ul className={styles.modal_bottom}>
               {notices.length > 0 ? (
-                notices.map((notice, index) => (
-                  <li key={index} onClick={() => setSelectedNoticeIndex(index)}>
+                notices.map((notice: any) => (
+                  <li
+                    key={notice.id}
+                    onClick={() => setSelectedNoticeIndex(notice.id - 1)}
+                  >
                     <div>
-                      <strong>{notice.author}</strong> {notice.content}
+                      <strong>{notice.writerName}</strong> {notice.title}
                     </div>
                     <img src="/imgs/right-arrow.png" alt="right-arrow" />
                   </li>
