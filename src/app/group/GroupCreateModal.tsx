@@ -4,6 +4,7 @@ import { useState } from "react";
 import style from "../../../styles/group/groupPage.module.scss";
 
 export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
+  const token = localStorage.getItem("accessToken");
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,6 +21,7 @@ export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           groupName: groupName.trim(),

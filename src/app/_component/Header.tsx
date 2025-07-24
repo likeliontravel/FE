@@ -5,12 +5,17 @@ import Link from "next/link";
 import style from "../../../styles/component/header.module.scss";
 
 export default function Header() {
+  const token = localStorage.getItem("accessToken");
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch("https://localhost:8080/user/getProfile/");
+        const res = await fetch("https://localhost:8080/user/getProfile/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const json = await res.json();
 
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -53,11 +58,11 @@ export default function Header() {
               {/* 사진 */}
               <div
                 className={style.userImage}
-                style={{ backgroundImage: `url(${user.profileImageUrl})` }}
+                style={{ backgroundImage: `url(${user?.profileImageUrl})` }}
               ></div>
               {/* 이름 */}
               <Link href="/mypage">
-                <p>{user.name}</p>
+                <p>{user?.name}</p>
               </Link>
             </div>
           </div>

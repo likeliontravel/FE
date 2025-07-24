@@ -6,13 +6,18 @@ import NonGroup from "./nonGroup";
 import IfGroup from "./ifGroup";
 
 const GroupPage = () => {
+  const token = localStorage.getItem("accessToken");
   const [hasGroup, setHasGroup] = useState<boolean | null>(null);
   const [groups, setGroups] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const res = await fetch("https://localhost:8080/group/user-groups");
+        const res = await fetch("https://localhost:8080/group/user-groups", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const json = await res.json();
 
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
