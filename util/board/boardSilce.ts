@@ -16,7 +16,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// 타입 정의 (최신 API 명세서 기준)
 export interface Board {
   id: number;
   title: string;
@@ -48,6 +47,7 @@ interface BoardState {
   comments: Comment[];
   loading: boolean;
   error: string | null;
+  successMessage: string | null;
 }
 
 const initialState: BoardState = {
@@ -56,11 +56,11 @@ const initialState: BoardState = {
   comments: [],
   loading: false,
   error: null,
+  successMessage: null,
 };
 
 // --- 비동기 Thunks ---
 
-// 전체/정렬된 게시글 목록 조회
 export const fetchBoards = createAsyncThunk<Board[], { page?: number; size?: number; sortType?: 'POPULAR' | 'RECENT' }>(
   'board/fetchBoards',
   async ({ page = 0, size = 30, sortType = 'POPULAR' }, { rejectWithValue }) => {
@@ -74,7 +74,6 @@ export const fetchBoards = createAsyncThunk<Board[], { page?: number; size?: num
   }
 );
 
-// 게시글 키워드 검색
 export const searchBoards = createAsyncThunk<Board[], { searchKeyword: string; sortType?: 'POPULAR' | 'RECENT' }>(
   'board/searchBoards',
   async ({ searchKeyword, sortType = 'POPULAR' }, { rejectWithValue }) => {
@@ -88,7 +87,6 @@ export const searchBoards = createAsyncThunk<Board[], { searchKeyword: string; s
   }
 );
 
-// 테마별 게시글 검색
 export const fetchBoardsByTheme = createAsyncThunk<Board[], { theme: string; sortType?: 'POPULAR' | 'RECENT' }>(
   'board/fetchBoardsByTheme',
   async ({ theme, sortType = 'POPULAR' }, { rejectWithValue }) => {
@@ -102,7 +100,6 @@ export const fetchBoardsByTheme = createAsyncThunk<Board[], { theme: string; sor
   }
 );
 
-// 지역별 게시글 검색
 export const fetchBoardsByRegion = createAsyncThunk<Board[], { region: string; sortType?: 'POPULAR' | 'RECENT' }>(
   'board/fetchBoardsByRegion',
   async ({ region, sortType = 'POPULAR' }, { rejectWithValue }) => {
@@ -116,7 +113,6 @@ export const fetchBoardsByRegion = createAsyncThunk<Board[], { region: string; s
   }
 );
 
-// 게시글 상세 조회
 export const fetchBoardDetail = createAsyncThunk<Board, number>(
   'board/fetchBoardDetail',
   async (id, { rejectWithValue }) => {
@@ -130,7 +126,28 @@ export const fetchBoardDetail = createAsyncThunk<Board, number>(
   }
 );
 
-// 게시글 작성
+export const uploadImage = createAsyncThunk<string, File>(
+  'board/uploadImage',
+  async (imageFile, { rejectWithValue }) => {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    try {
+      const response = await api.post('/api/images/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(error.response?.data?.message || '이미지 업로드 실패');
+      }
+      return rejectWithValue('알 수 없는 오류가 발생했습니다.');
+    }
+  }
+);
+
 export const createBoard = createAsyncThunk(
   'board/createBoard',
   async (newPost: { title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }, { rejectWithValue }) => {
@@ -144,7 +161,6 @@ export const createBoard = createAsyncThunk(
   }
 );
 
-// 게시글 수정
 export const updateBoard = createAsyncThunk<Board, { id: number; title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }>(
   'board/updateBoard',
   async (updatedPost, { rejectWithValue }) => {
@@ -158,7 +174,6 @@ export const updateBoard = createAsyncThunk<Board, { id: number; title: string; 
   }
 );
 
-// 게시글 삭제
 export const deleteBoard = createAsyncThunk<number, number>(
   'board/deleteBoard',
   async (id, { rejectWithValue }) => {
@@ -172,7 +187,6 @@ export const deleteBoard = createAsyncThunk<number, number>(
   }
 );
 
-// 댓글 조회
 export const fetchComments = createAsyncThunk<Comment[], number>(
     'board/fetchComments',
     async (boardId, { rejectWithValue }) => {
@@ -186,7 +200,6 @@ export const fetchComments = createAsyncThunk<Comment[], number>(
     }
 );
 
-// 댓글 작성 
 export const createComment = createAsyncThunk(
   'board/createComment',
   async (commentData: { commentContent: string; boardId: number; parentCommentId?: number }, { rejectWithValue }) => {
@@ -200,7 +213,6 @@ export const createComment = createAsyncThunk(
   }
 );
 
-// 댓글 수정 
 export const updateComment = createAsyncThunk(
   'board/updateComment',
   async (commentData: { id: number; commentContent: string; boardId: number }, { rejectWithValue }) => {
@@ -215,7 +227,6 @@ export const updateComment = createAsyncThunk(
   }
 );
 
-// 댓글 삭제 
 export const deleteComment = createAsyncThunk<number, number>(
   'board/deleteComment',
   async (id, { rejectWithValue }) => {
@@ -235,167 +246,124 @@ const boardSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // --- fetchBoards (목록 조회) ---
       .addCase(fetchBoards.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(fetchBoards.fulfilled, (state, action: PayloadAction<Board[]>) => {
-        state.loading = false;
-        state.posts = action.payload;
+        state.loading = false; state.posts = action.payload;
       })
       .addCase(fetchBoards.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-
-      // --- searchBoards (검색) ---
       .addCase(searchBoards.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(searchBoards.fulfilled, (state, action: PayloadAction<Board[]>) => {
-        state.loading = false;
-        state.posts = action.payload;
+        state.loading = false; state.posts = action.payload;
       })
       .addCase(searchBoards.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-      
-      // --- fetchBoardsByTheme (테마별 조회) ---
       .addCase(fetchBoardsByTheme.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(fetchBoardsByTheme.fulfilled, (state, action: PayloadAction<Board[]>) => {
-        state.loading = false;
-        state.posts = action.payload;
+        state.loading = false; state.posts = action.payload;
       })
       .addCase(fetchBoardsByTheme.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-
-      // --- fetchBoardsByRegion (지역별 조회) ---
       .addCase(fetchBoardsByRegion.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(fetchBoardsByRegion.fulfilled, (state, action: PayloadAction<Board[]>) => {
-        state.loading = false;
-        state.posts = action.payload;
+        state.loading = false; state.posts = action.payload;
       })
       .addCase(fetchBoardsByRegion.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-
-      // --- fetchBoardDetail (상세 조회) ---
       .addCase(fetchBoardDetail.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(fetchBoardDetail.fulfilled, (state, action: PayloadAction<Board>) => {
-        state.loading = false;
-        state.post = action.payload;
+        state.loading = false; state.post = action.payload;
       })
       .addCase(fetchBoardDetail.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-
-      // --- createBoard (게시글 생성) ---
       .addCase(createBoard.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(createBoard.fulfilled, (state) => {
         state.loading = false;
       })
       .addCase(createBoard.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-      
-      // --- updateBoard (게시글 수정) ---
       .addCase(updateBoard.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(updateBoard.fulfilled, (state, action: PayloadAction<Board>) => {
-        state.loading = false;
-        state.post = action.payload;
+        state.loading = false; state.post = action.payload;
       })
       .addCase(updateBoard.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-
-      // --- deleteBoard (게시글 삭제) ---
       .addCase(deleteBoard.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(deleteBoard.fulfilled, (state, action: PayloadAction<number>) => {
         state.loading = false;
         state.posts = state.posts.filter(post => post.id !== action.payload);
       })
       .addCase(deleteBoard.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-
-      // --- fetchComments (댓글 조회) ---
       .addCase(fetchComments.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(fetchComments.fulfilled, (state, action: PayloadAction<Comment[]>) => {
-        state.loading = false;
-        state.comments = action.payload;
+        state.loading = false; state.comments = action.payload;
       })
       .addCase(fetchComments.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-
-      // --- 댓글 생성 ---
       .addCase(createComment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(createComment.fulfilled, (state) => {
         state.loading = false;
       })
       .addCase(createComment.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-
-      // --- 댓글 수정 ---
       .addCase(updateComment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(updateComment.fulfilled, (state) => {
         state.loading = false;
       })
       .addCase(updateComment.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        state.loading = false; state.error = action.payload as string;
       })
-
-      // --- 댓글 삭제 ---
       .addCase(deleteComment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = true; state.error = null;
       })
       .addCase(deleteComment.fulfilled, (state, action: PayloadAction<number>) => {
         state.loading = false;
         state.comments = state.comments.filter(comment => comment.id !== action.payload);
       })
       .addCase(deleteComment.rejected, (state, action) => {
+        state.loading = false; state.error = action.payload as string;
+      })
+      .addCase(uploadImage.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(uploadImage.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(uploadImage.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

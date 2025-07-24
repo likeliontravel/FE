@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
-import { createBoard } from '../../../util/board/boardSilce';
+import { createBoard, uploadImage } from '../../../util/board/boardSilce';
 
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -19,13 +19,17 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Heading from '@tiptap/extension-heading';
 
 import styles from '../../../styles/postWrite/postWrite.module.scss';
-import SearchBar from '../../app/SearchBar/SearchBar'; 
-import MapModal from '../../app/postWrite/MapModal';
+import SearchBar from '../../app//SearchBar/SearchBar'; 
+import MapModal from '../../app/postWrite/MapModal';     
 
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
+
 const themeKeywords = [
-    '자연 속에서 힐링', '미식 여행 및 먹방 중심', '체험 및 액티비티',
-    '문화예술 및 역사탐방', '기타'
+    '자연 속에서 힐링',
+    '미식 여행 및 먹방 중심',
+    '체험 및 액티비티',
+    '문화예술 및 역사탐방',
+    '기타'
 ];
 
 interface MenuBarProps {
@@ -41,19 +45,27 @@ interface MenuBarProps {
 
 const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThemeChange, onSubmit, onMapClick, loading }: MenuBarProps) => {
   if (!editor) { return null; }
+  const dispatch = useDispatch<AppDispatch>();
 
   const addImage = useCallback(() => {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
     input.setAttribute('accept', 'image/*');
     input.click();
-    input.onchange = () => {
+    input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
-      const url = URL.createObjectURL(file);
-      editor.chain().focus().setImage({ src: url }).run();
+      try {
+        const imageUrl = await dispatch(uploadImage(file)).unwrap();
+        if (imageUrl) {
+          editor.chain().focus().setImage({ src: imageUrl }).run();
+        }
+      } catch (error) {
+        console.error('이미지 업로드 실패:', error);
+        alert(`이미지 업로드 실패: ${error}`);
+      }
     };
-  }, [editor]);
+  }, [editor, dispatch]);
 
   const handleFontFamilyChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => { editor.chain().focus().setFontFamily(e.target.value).run(); }, [editor]);
   const handleFontSizeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
