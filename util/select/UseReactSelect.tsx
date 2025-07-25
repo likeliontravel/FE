@@ -1,23 +1,24 @@
 // components/select/UseReactSelect.tsx
-'use client';
+"use client";
 
-import React, { useCallback, useMemo } from 'react';
-import Select, { SingleValue, ActionMeta } from 'react-select';
-import CalendarOption from './CalendarOption';
-import ListOption from './ListOption';
-import CalendarSingleValue from './CalendarSingleValue';
-import ListSingleValue from './ListSingleValue';
-import './Select.module.scss';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/store';
+import React, { useCallback, useMemo } from "react";
+import Select, { SingleValue, ActionMeta } from "react-select";
+import CalendarOption from "./CalendarOption";
+import ListOption from "./ListOption";
+import CalendarSingleValue from "./CalendarSingleValue";
+import ListSingleValue from "./ListSingleValue";
+import "./Select.module.scss";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "../../store/store";
 import {
-  setSelectedCalendarSchedule,
+  setSelectedCalendarSchedule, 
   setSelectedListSchedule,
   ScheduleOption,
-} from '../../store/calendarSlice';
+} from "../../store/calendarSlice";
+import style from "./Select.module.scss";
 
 interface UseReactSelectProps {
-  type: 'calendar' | 'list';
+  type: "calendar" | "list";
 }
 
 const UseReactSelect = ({ type }: UseReactSelectProps) => {
@@ -31,18 +32,18 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
 
   const calendarOptions = useMemo<ScheduleOption[]>(
     () => [
-      { value: 'default', label: '-', prefix: '내일정', suffix: 'D-' },
+      { value: "default", label: "-", prefix: "내일정", suffix: "D-" },
       {
-        value: 'trip_sokcho',
-        label: '속초 여행',
-        prefix: '멋사',
-        suffix: 'D-21',
+        value: "trip_sokcho",
+        label: "속초 여행",
+        prefix: "멋사",
+        suffix: "D-21",
       },
       {
-        value: 'trip_jeju',
-        label: '제주도 여행',
-        prefix: '가나다라',
-        suffix: 'D-21',
+        value: "trip_jeju",
+        label: "제주도 여행",
+        prefix: "가나다라",
+        suffix: "D-21",
       },
     ],
     []
@@ -50,16 +51,16 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
 
   const listOptions = useMemo<ScheduleOption[]>(
     () => [
-      { value: 'restaurant', label: '맛집' },
-      { value: 'hotel', label: '숙소' },
-      { value: 'tourist_spot', label: '관광지' },
+      { value: "restaurant", label: "맛집" },
+      { value: "hotel", label: "숙소" },
+      { value: "tourist_spot", label: "관광지" },
     ],
     []
   );
 
   const { options, customComponents, currentValue, onChangeAction } =
     useMemo(() => {
-      if (type === 'calendar') {
+      if (type === "calendar") {
         return {
           options: calendarOptions,
           customComponents: {
@@ -100,16 +101,17 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
 
   const filterOptions = useCallback(
     (opt: any) =>
-      opt.data.value !== currentValue.value && opt.data.value !== 'default',
+      opt.data.value !== currentValue.value && opt.data.value !== "default",
     [currentValue]
   );
 
   return (
     <Select<ScheduleOption, false>
-      instanceId={type === 'calendar' ? 'calendar-select' : 'list-select'}
+      instanceId={type === "calendar" ? "calendar-select" : "list-select"}
       classNamePrefix={
-        type === 'calendar' ? 'custom-select-calendar' : 'custom-select-list'
+        type === "calendar" ? "custom-select-calendar" : "custom-select-list"
       }
+      className={style.selectWrapper}
       options={options}
       value={currentValue}
       onChange={handleChange}

@@ -7,14 +7,12 @@ import { setSignUpData } from '../../../util/login/authSlice';
 import { RootState } from '../../../store/store';
 import styles from '../../../styles/join2/join2.module.scss';
 import Image from 'next/image';
-import rightArrow from '../../../public/imgs/right.png';
 
 const Terms = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const signUpData = useSelector((state: RootState) => state.auth.signUpData);
 
-  // termsAccepted가 undefined일 경우 기본값 설정
   const termsAccepted = signUpData.termsAccepted || [];
   const [allChecked, setAllChecked] = useState(termsAccepted.every(Boolean));
   const [openDropdown, setOpenDropdown] = useState(
@@ -55,8 +53,13 @@ const Terms = () => {
   }, []);
 
   const handleNext = useCallback(() => {
+    const allRequiredAgreed = termsAccepted.every((term) => term === true);
+    if (!allRequiredAgreed) {
+      alert('모든 필수 약관에 동의해야 합니다.');
+      return;
+    }
     router.push('/join3');
-  }, [router]);
+  }, [router, termsAccepted]);
 
   return (
     <div className={styles.termsContainer}>
@@ -91,7 +94,7 @@ const Terms = () => {
                 <input
                   type="checkbox"
                   checked={checked}
-                  onChange={handleCheck(index)} // ✅ 최적화된 핸들러 사용
+                  onChange={handleCheck(index)}
                 />
                 <span className={styles.required}>[필수]</span> 이용약관
               </label>
@@ -112,7 +115,7 @@ const Terms = () => {
 
         <div className={styles.nextButton}>
           <button type="button" onClick={handleNext}>
-            <Image src={rightArrow} alt="다음" width={50} height={50} />
+            <Image src="/imgs/right.png" alt="다음" width={50} height={50} />
           </button>
         </div>
       </div>

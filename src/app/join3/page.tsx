@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -11,12 +11,13 @@ import {
 import { RootState, AppDispatch } from '../../../store/store';
 import styles from '../../../styles/join3/join3.module.scss';
 import Image from 'next/image';
-import rightArrow from '../../../public/imgs/right.png';
 
 const Subscription: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const signUpData = useSelector((state: RootState) => state.auth.signUpData);
+  const { signUpData, loading } = useSelector(
+    (state: RootState) => state.auth
+  );
 
   const handleSelectPlan = useCallback(
     (plan: string) => {
@@ -26,13 +27,24 @@ const Subscription: React.FC = () => {
   );
 
   const handleSubmit = useCallback(async () => {
+    if (!signUpData.selectedPlan) {
+      alert('구독 플랜을 선택해주세요.');
+      return;
+    }
+
+    const finalUserData = {
+      email: signUpData.email,
+      password: signUpData.password,
+      name: signUpData.name,
+    };
+
     try {
-      await dispatch(signUpUser(signUpData)).unwrap();
-      alert('회원가입이 완료되었습니다!');
+      await dispatch(signUpUser(finalUserData)).unwrap();
+      alert('회원가입이 완료되었습니다! 환영 페이지로 이동합니다.');
       dispatch(resetSignUpData());
       router.push('/join4');
-    } catch (error) {
-      alert('회원가입 실패: ' + error);
+    } catch (err) {
+      alert(`회원가입 실패: ${err}`);
     }
   }, [dispatch, signUpData, router]);
 
@@ -97,9 +109,13 @@ const Subscription: React.FC = () => {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={!signUpData.selectedPlan}
+            disabled={!signUpData.selectedPlan || loading}
           >
-            <Image src={rightArrow} alt="다음" width={50} height={50} />
+            {loading ? (
+              '가입 중...'
+            ) : (
+              <Image src="/imgs/right.png" alt="다음" width={50} height={50} />
+            )}
           </button>
         </div>
       </div>

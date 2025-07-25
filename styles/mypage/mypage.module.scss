@@ -27,9 +27,6 @@
 
 .profile {
   @include width-height(69px, 69px);
-  @include background_image-size_cover-repeat_no_repeat(
-    "../../public/imgs/Ellipse5.png"
-  );
   border-radius: 50%;
 }
 

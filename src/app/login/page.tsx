@@ -1,33 +1,32 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../../../util/login/authSlice';
+import { loginUser, clearAuthError } from '../../../util/login/authSlice'; 
 import { AppDispatch, RootState } from '../../../store/store';
 import Link from 'next/link';
 import styles from '../../../styles/login/login.module.scss';
-import { useRouter } from 'next/navigation';
-import { setCookie } from 'cookies-next';
+import Image from 'next/image';
 
 const Login = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { loading, error, successMessage, user } = useSelector(
+  const { loading, error } = useSelector(
     (state: RootState) => state.auth
   );
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [rememberMe, setRememberMe] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      dispatch(clearAuthError());
+    };
+  }, [dispatch]);
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }, []);
 
   const handleCheckboxChange = useCallback(() => {
@@ -37,50 +36,30 @@ const Login = () => {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      console.log('1. handleSubmit 시작');
+
       try {
-        const response = await dispatch(loginUser(formData)).unwrap();
-        const { accessToken, refreshToken } = response.data || {};
+        console.log('2.보낼 데이터:', formData); 
+        
+        const user = await dispatch(loginUser(formData)).unwrap();
+        
+        console.log('3. 받은 user:', user); 
+        alert(`${user.name}님, 환영합니다!`);
+        router.push('/main');
 
-        if (accessToken && refreshToken) {
-          setCookie('Authorization', accessToken, {
-            path: '/',
-            maxAge: 60 * 60,
-          });
-          setCookie('Refresh-Token', refreshToken, {
-            path: '/',
-            maxAge: 7 * 24 * 60 * 60,
-          });
-
-          localStorage.setItem('Authorization', accessToken);
-          localStorage.setItem('Refresh-Token', refreshToken);
-        }
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('로그인 실패:', error);
+      } catch (err: any) {
+        console.error('4. catch, 에러:', err);
       }
     },
-    [dispatch, formData]
+    [dispatch, formData, router]
   );
-
-  useEffect(() => {
-    if (user) {
-      alert('로그인 성공!');
-      router.push('/dashboard');
-    }
-  }, [user, router]);
 
   const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao') => {
-    window.location.href = `https://api.toleave.shop/auth/${provider}`;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorization/${provider}`;
   }, []);
-
-  const handleKakaoLogin = useCallback(
-    () => handleOAuthLogin('kakao'),
-    [handleOAuthLogin]
-  );
-  const handleNaverLogin = useCallback(
-    () => handleOAuthLogin('naver'),
-    [handleOAuthLogin]
-  );
+  
+  const handleKakaoLogin = useCallback(() => handleOAuthLogin('kakao'), [handleOAuthLogin]);
+  const handleNaverLogin = useCallback(() => handleOAuthLogin('naver'), [handleOAuthLogin]);
 
   return (
     <div className={styles.container}>
@@ -107,6 +86,7 @@ const Login = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
+              placeholder="이메일을 입력해주세요"
               required
             />
           </div>
@@ -119,6 +99,7 @@ const Login = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
+              placeholder="비밀번호를 입력해주세요"
               required
             />
           </div>
@@ -133,19 +114,15 @@ const Login = () => {
               />
               <label htmlFor="rememberMe">아이디 저장</label>
             </div>
-
             <div className={styles.links}>
               <Link href="/forgot-username">아이디 찾기</Link>
               <span> | </span>
               <Link href="/forgot-password">비밀번호 찾기</Link>
             </div>
           </div>
-
+          
           {error && <p className={styles.errorMessage}>{error}</p>}
-          {successMessage && (
-            <p className={styles.successMessage}>{successMessage}</p>
-          )}
-
+          
           <button
             type="submit"
             disabled={loading}
@@ -163,18 +140,10 @@ const Login = () => {
           <p>소셜 계정으로 로그인</p>
           <div className={styles.socialButtons}>
             <button onClick={handleKakaoLogin}>
-              <img
-                src="../imgs/kakao.png"
-                alt="카카오 로그인"
-                className={styles.kakao}
-              />
+              <img src="/imgs/kakao.png" alt="카카오 로그인" className={styles.kakao} />
             </button>
             <button onClick={handleNaverLogin}>
-              <img
-                src="../imgs/naver.png"
-                alt="네이버 로그인"
-                className={styles.naver}
-              />
+              <img src="/imgs/naver.png" alt="네이버 로그인" className={styles.naver} />
             </button>
           </div>
         </div>
