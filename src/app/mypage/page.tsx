@@ -11,12 +11,17 @@ import KakaoMap from "../../../util/KakaoMap";
 import ScheduleCheck from "../../../util/ScheduleCheck";
 
 export default function myPage() {
+  let token = localStorage.getItem("accessToken");
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch("https://localhost:8080/user/getProfile/");
+        const res = await fetch("https://localhost:8080/user/getProfile/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const json = await res.json();
 
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {

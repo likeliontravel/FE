@@ -59,6 +59,7 @@
   border-radius: 10px;
   background-color: #27abf1;
   padding: 5px 10px 5px 10px;
+  cursor: pointer;
   p {
     @include width-height(100px, 24px);
     @include font_size-font_weight-line_height(20px, 700, 24.2px);
@@ -171,6 +172,7 @@
   @include width-height(270px, 100%);
   flex-shrink: 0;
   border-radius: 10px;
+  cursor: pointer;
 }
 
 .group_content {
@@ -197,12 +199,12 @@
 .group_content_title {
   @include width-height(100px, 60px);
   position: relative;
-  top: 20;
-  left: 20;
+  margin-top: 20px;
+  margin-left: 20px;
   border-radius: 12px;
   background-color: white;
   p {
-    @include font_size-font_weight-line_height(40px, 700, 62px);
+    @include font_size-font_weight-line_height(20px, 700, 62px);
     color: #27abf1;
     margin: 0;
   }
@@ -210,8 +212,8 @@
 
 .group_content_people {
   position: relative;
-  top: 30;
-  left: 28;
+  margin-top: 10px;
+  margin-left: 20px;
   p {
     @include font_size-font_weight-line_height(16px, 700, 19.36px);
     color: white;
@@ -225,9 +227,7 @@
   @include background_image-size_cover-repeat_no_repeat(
     "../../public/imgs/Vector.png"
   );
-  position: relative;
-  top: 25;
-  left: 100;
+  margin-left: 38%;
 }
 
 .schedule_div,
@@ -264,7 +264,7 @@
 
 .commig_div_p_div_flex_div {
   p {
-    @include font_size-font_weight-line_height(40px, 700, 62px);
+    @include font_size-font_weight-line_height(20px, 700, 62px);
     margin: 0;
   }
 }
@@ -275,7 +275,7 @@
   border-radius: 12px;
   margin-right: 12px;
   p {
-    @include font_size-font_weight-line_height(40px, 700, 62px);
+    @include font_size-font_weight-line_height(15px, 700, 62px);
     color: white;
     margin: 0;
   }
