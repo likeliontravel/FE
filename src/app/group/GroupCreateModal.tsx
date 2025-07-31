@@ -33,6 +33,7 @@ export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
 
       if (res.ok && result.success) {
         alert("그룹이 성공적으로 생성되었습니다!");
+        window.location.reload();
         onClose();
       } else {
         alert("그룹 생성 실패: " + result.message);

@@ -18,6 +18,7 @@ export default function GroupNoticeModal({
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notices, setNotices] = useState<any | null>(null);
+  const token = localStorage.getItem("accessToken");
 
   useEffect(() => {
     const fetchNotice = async () => {
@@ -50,6 +51,7 @@ export default function GroupNoticeModal({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             groupName: groupName,
@@ -128,8 +130,12 @@ export default function GroupNoticeModal({
               />
             </div>
             <button
-              className={styles.edit_btn}
-              disabled={isSubmitting}
+              className={
+                title.trim() && content.trim()
+                  ? styles.edit_btn
+                  : styles.edit_btn_disabled
+              }
+              disabled={isSubmitting || (!title.trim() && !content.trim())}
               onClick={handleCreateNotice}
             >
               등록하기
@@ -142,7 +148,7 @@ export default function GroupNoticeModal({
               <button onClick={onClose}>×</button>
             </div>
             <ul className={styles.modal_bottom}>
-              {notices.length > 0 ? (
+              {Array.isArray(notices) && notices.length > 0 ? (
                 notices.map((notice: any) => (
                   <li
                     key={notice.id}

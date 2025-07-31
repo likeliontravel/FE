@@ -10,6 +10,7 @@ export default function GroupInviteModal({
   onClose: () => void;
   groupName: string | string[] | undefined;
 }) {
+  const token = localStorage.getItem("accessToken");
   const [copyStatus, setCopyStatus] = useState<null | "success" | "fail">(null);
   const [inviteLink, setInviteLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +36,7 @@ export default function GroupInviteModal({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({}),
         }

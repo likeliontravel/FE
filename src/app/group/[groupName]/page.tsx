@@ -19,7 +19,7 @@ export default function groupDetail() {
   const [group, setGroup] = useState<any | null>(null);
   const [notice, setNotice] = useState<any | null>(null);
   const params = useParams();
-  const groupName = params.groupName;
+  const groupName = params.groupName as string;
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -34,9 +34,8 @@ export default function groupDetail() {
         );
         const json = await res.json();
 
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setGroup(json.data[0]);
-        } else {
+        if (json.success) {
+          setGroup(json.data);
         }
       } catch (error) {
         console.error("그룹 정보 불러오기 실패:", error);
@@ -93,7 +92,12 @@ export default function groupDetail() {
                 <p>멤버 초대</p>
                 <img src="/imgs/mail.png" alt="mail" />
               </div>
-              <Link href={`/group/${groupName}/chat`}>
+              <Link
+                href={{
+                  pathname: `/group/${groupName}/chat`,
+                  query: { groupDescription: group.groupDescription },
+                }}
+              >
                 <p>그룹 채팅</p>
                 <img src="/imgs/chat.png" alt="chat" />
               </Link>

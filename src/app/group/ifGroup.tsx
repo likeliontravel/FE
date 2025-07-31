@@ -42,10 +42,6 @@ const ifGroup = ({ groups }: { groups: any[] }) => {
               <div className={style.group_content_title}>
                 <p>{group.groupName}</p>
               </div>
-              <div className={style.group_content_people}>
-                <div className={style.group_img}></div>
-                <p>8명</p>
-              </div>
               <div className={style.shapes_img}></div>
             </div>
           ))}

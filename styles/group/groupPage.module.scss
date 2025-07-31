@@ -176,6 +176,9 @@
 }
 
 .group_content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
   overflow: hidden;
   background-color: #27abf1;
 }
@@ -199,12 +202,11 @@
 .group_content_title {
   @include width-height(100px, 60px);
   position: relative;
-  margin-top: 20px;
   margin-left: 20px;
   border-radius: 12px;
   background-color: white;
   p {
-    @include font_size-font_weight-line_height(20px, 700, 62px);
+    @include font_size-font_weight-line_height(15px, 700, 62px);
     color: #27abf1;
     margin: 0;
   }

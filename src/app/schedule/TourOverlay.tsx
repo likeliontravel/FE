@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import styles from './TourOverlay.module.css';
+import styles from "./TourOverlay.module.css";
 
 export default function TourOverlay({ onClose }) {
   return (
@@ -23,7 +23,8 @@ export default function TourOverlay({ onClose }) {
       <div className={`${styles.tooltip} ${styles.step3}`}>
         <div className={styles.label}>STEP.3</div>
         <div className={styles.text}>
-          맛집/숙소 정보가 여기 표시됩니다. 드래그해 추가하세요.
+          돋보기를 클릭 시 맛집/숙소 정보가 여기 표시됩니다. + 버튼을 클릭해서
+          추가하세요.
         </div>
       </div>
       <button className={styles.closeBtn} onClick={onClose}>
