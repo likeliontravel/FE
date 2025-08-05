@@ -76,7 +76,6 @@ export default function RandomTravelPicker() {
 
   return (
     <div className={styles.container}>
-      {/* 제목 + 파란 공 */}
       <div className={styles.pageTitleWrapper}>
         <div className={styles.ballWrapper}>
           <Image

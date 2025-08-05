@@ -305,13 +305,10 @@
 
 .repliesContainer {
   position: relative;
-  padding-left: 56px;
-  margin-top: 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   &::before {
-    content: '↳';
     position: absolute;
     left: 12px;
     top: -5px;
@@ -320,3 +317,15 @@
     font-weight: bold;
   }
 }
+
+.replyItem {
+  display: flex;
+  padding-left: 20px; 
+  margin-top: 15px;
+  .replyArrow {
+    margin-right: 8px;
+    color: #888;
+    font-size: 1.2rem;
+  }
+}
+

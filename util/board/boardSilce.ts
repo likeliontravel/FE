@@ -30,7 +30,7 @@ export interface Board {
   writerProfileImageUrl?: string | null;
 }
 
-interface Comment {
+export interface Comment {
   id: number;
   commentWriter: string;
   commentWriterIdentifier: string;
@@ -193,7 +193,12 @@ export const fetchComments = createAsyncThunk<Comment[], number>(
             const response = await api.get(`/comment/${boardId}`);
             return response.data.data || [];
         } catch (error) {
-            if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '댓글 조회 실패');
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 404) {
+                    return []; 
+                }
+                return rejectWithValue(error.response?.data?.message || '댓글 조회 실패');
+            }
             return rejectWithValue('알 수 없는 오류가 발생했습니다.');
         }
     }
@@ -319,13 +324,16 @@ const boardSlice = createSlice({
         state.loading = false; state.error = action.payload as string;
       })
       .addCase(fetchComments.pending, (state) => {
-        state.loading = true; state.error = null;
+        state.loading = true; // 댓글 로딩 시에도 에러는 초기화
+        state.error = null;
       })
       .addCase(fetchComments.fulfilled, (state, action: PayloadAction<Comment[]>) => {
-        state.loading = false; state.comments = action.payload;
+        state.loading = false; 
+        state.comments = action.payload;
       })
       .addCase(fetchComments.rejected, (state, action) => {
-        state.loading = false; state.error = action.payload as string;
+        state.loading = false; 
+        state.error = action.payload as string;
       })
       .addCase(createComment.pending, (state) => {
         state.loading = true; state.error = null;
