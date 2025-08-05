@@ -46,8 +46,12 @@ export default function Header() {
             <Link href="/group">
               <p>나의 그룹</p>
             </Link>
+            <Link href="/RandomHome">
             <p>여행지 추천</p>
+             </Link>
+             <Link href="/post">
             <p>지역별 여행 게시판</p>
+            </Link>
           </div>
           {/* 회원 그룹 */}
           <div className={style.userGroup}>

@@ -30,7 +30,6 @@ export default function RandomLoading() {
     { left: '150px', top: '165px' },
   ];
 
-  // 🔧 transition 배열을 useMemo로 메모이제이션
   const transitions = useMemo(
     () =>
       balls.map((_, index) => ({
@@ -56,7 +55,7 @@ export default function RandomLoading() {
             key={index}
             className={styles.ball}
             animate={animationSettings}
-            transition={transitions[index]} // ✅ 메모이제이션된 transition 사용
+            transition={transitions[index]}
             style={ballPositions[index]}
           >
             <Image

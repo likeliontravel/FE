@@ -59,13 +59,12 @@ const initialState: BoardState = {
   successMessage: null,
 };
 
-// --- 비동기 Thunks ---
 
 export const fetchBoards = createAsyncThunk<Board[], { page?: number; size?: number; sortType?: 'POPULAR' | 'RECENT' }>(
   'board/fetchBoards',
   async ({ page = 0, size = 30, sortType = 'POPULAR' }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/board/all`, { params: { page, size, sortType } });
+      const response = await api.get('/board/all', { params: { page, size, sortType } });
       return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '게시글 목록 조회 실패');
@@ -78,7 +77,7 @@ export const searchBoards = createAsyncThunk<Board[], { searchKeyword: string; s
   'board/searchBoards',
   async ({ searchKeyword, sortType = 'POPULAR' }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/board/search`, { params: { searchKeyword, sortType } });
+      const response = await api.get('/board/search', { params: { searchKeyword, sortType } });
       return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '게시글 검색 실패');
@@ -91,7 +90,7 @@ export const fetchBoardsByTheme = createAsyncThunk<Board[], { theme: string; sor
   'board/fetchBoardsByTheme',
   async ({ theme, sortType = 'POPULAR' }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/board/byTheme`, { params: { theme, sortType } });
+      const response = await api.get('/board/byTheme', { params: { theme, sortType } });
       return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '테마별 게시글 조회 실패');
@@ -104,7 +103,7 @@ export const fetchBoardsByRegion = createAsyncThunk<Board[], { region: string; s
   'board/fetchBoardsByRegion',
   async ({ region, sortType = 'POPULAR' }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/board/byRegion`, { params: { region, sortType } });
+      const response = await api.get('/board/byRegion', { params: { region, sortType } });
       return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '지역별 게시글 조회 실패');
@@ -117,7 +116,7 @@ export const fetchBoardDetail = createAsyncThunk<Board, number>(
   'board/fetchBoardDetail',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/board/${id}`);
+      const response = await api.get(`/board/${id}`);
       return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '게시글 상세 조회 실패');
@@ -191,7 +190,7 @@ export const fetchComments = createAsyncThunk<Comment[], number>(
     'board/fetchComments',
     async (boardId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`${BASE_URL}/comment/${boardId}`);
+            const response = await api.get(`/comment/${boardId}`);
             return response.data.data || [];
         } catch (error) {
             if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '댓글 조회 실패');

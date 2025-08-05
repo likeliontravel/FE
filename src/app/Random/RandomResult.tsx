@@ -31,7 +31,6 @@ export default function RandomResult({
   const matchedKey = Object.keys(imageMap).find((key) => travelName === key);
   const imageUrl = matchedKey ? imageMap[matchedKey] : '/imgs/default.png';
 
-  // ⚙️ ESLint 오류 해결: useMemo로 객체 고정
   const motionInitial = useMemo(() => ({ opacity: 0, scale: 0.8 }), []);
   const motionAnimate = useMemo(() => ({ opacity: 1, scale: 1 }), []);
   const motionTransition = useMemo(() => ({ duration: 0.6 }), []);

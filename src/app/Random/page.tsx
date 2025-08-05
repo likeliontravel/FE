@@ -50,7 +50,6 @@ export default function RandomTravelPicker() {
     pickRandomTravel();
   }, [pickRandomTravel]);
 
-  // ✅ 클릭 이벤트도 useCallback으로 정의
   const handleBallClick = useCallback(() => {
     setShowResult(true);
   }, []);
