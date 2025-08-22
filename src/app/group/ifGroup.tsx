@@ -71,7 +71,7 @@ const ifGroup = ({ groups }: { groups: any[] }) => {
           </div>
           <div
             className={style.commig_div_show}
-            onClick={() => handleGroupClick(groups[0].id)}
+            onClick={() => handleGroupClick(groups[0].groupName)}
           >
             <p>보러가기 {">"}</p>
           </div>
