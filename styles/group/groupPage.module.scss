@@ -305,6 +305,7 @@
   @include width-height(150px, 54px);
   border-radius: 50px;
   background-color: #27abf1;
+  cursor: pointer;
   p {
     @include width-height(112px, 32px);
     @include font_size-font_weight-line_height(22px, 700, 32px);
