@@ -1,4 +1,3 @@
-// components/schedule/ScheduleList.tsx
 "use client";
 
 import React, { useCallback, useState } from "react";
@@ -14,6 +13,11 @@ interface ScheduleItem {
   title: string;
   address: string;
   category: "restaurant" | "hotel" | "tourist_spot";
+}
+
+interface ScheduleListProps {
+  selectedLocation: string;
+  selectedTheme: string;
 }
 
 const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
@@ -59,22 +63,18 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
   }
 );
 
-export const ScheduleList: React.FC = () => {
+export const ScheduleList: React.FC<ScheduleListProps> = ({
+  selectedLocation,
+  selectedTheme,
+}) => {
   const token = localStorage.getItem("accessToken");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedListSchedule = useSelector(
     (s: RootState) => s.calendar.selectedListSchedule
   );
 
-  const scheduleItems: ScheduleItem[] = [
-    {
-      id: "item1",
-      title: "만석 닭강정",
-      address: "강원 속초시 청초호반로 72",
-      category: "restaurant",
-    },
-    // … 추가 아이템
-  ];
+  const [keyword, setKeyword] = useState("");
+  const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
 
   const handleFetchTouristSpots = async () => {
     if (isSubmitting) return;
@@ -83,58 +83,40 @@ export const ScheduleList: React.FC = () => {
       setIsSubmitting(true);
 
       const category = selectedListSchedule.value;
+      const categoryMap: Record<string, string> = {
+        restaurant: "restaurants",
+        hotel: "accommodations",
+        tourist_spot: "touristspots",
+      };
+      const endpoint = categoryMap[category] || "touristspots";
 
-      if (category == "restaurant") {
-        const res = await fetch(`https://localhost:8080/places/restaurants`, {
+      const params = new URLSearchParams({
+        regions: selectedLocation,
+        themes: selectedTheme,
+        keyword: keyword.trim(),
+        page: "0",
+        size: "10",
+        sortType: "latest",
+      });
+
+      const res = await fetch(
+        `https://localhost:8080/places/${endpoint}?${params.toString()}`,
+        {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        });
-
-        const result = await res.json();
-
-        if (res.ok && result.success) {
-          alert("맛집 조회가 성공적으로 되었습니다!");
-        } else {
-          alert("맛집 조회 실패: " + result.message);
         }
-      } else if (category == "hotel") {
-        const res = await fetch(
-          `https://localhost:8080/places/accommodations`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+      );
 
-        const result = await res.json();
+      const result = await res.json();
 
-        if (res.ok && result.success) {
-          alert("숙소 조회가 성공적으로 되었습니다!");
-        } else {
-          alert("숙소 조회 실패: " + result.message);
-        }
-      } else if (category == "tourist_spot") {
-        const res = await fetch(`https://localhost:8080/places/touristspots`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const result = await res.json();
-
-        if (res.ok && result.success) {
-          alert("관광지 조회가 성공적으로 되었습니다!");
-        } else {
-          alert("관광지 조회 실패: " + result.message);
-        }
+      if (res.ok && result.success) {
+        alert("데이터 조회가 성공적으로 되었습니다!");
+        setScheduleItems(result.data);
+      } else {
+        alert("데이터 조회 실패: " + result.message);
       }
     } catch (err) {
       console.error(err);
@@ -152,7 +134,11 @@ export const ScheduleList: React.FC = () => {
             <UseReactSelect type="list" />
           </div>
           <div className={styles.search_div}>
-            <input type="text" />
+            <input
+              type="text"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
             <div onClick={handleFetchTouristSpots}></div>
           </div>
         </div>
