@@ -24,7 +24,12 @@ export default function GroupNoticeModal({
     const fetchNotice = async () => {
       try {
         const res = await fetch(
-          `https://localhost:8080/group/announcement/getAllAnnouncement?groupName=${groupName}`
+          `https://localhost:8080/group/announcement/getAllAnnouncement?groupName=${groupName}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         const json = await res.json();
 

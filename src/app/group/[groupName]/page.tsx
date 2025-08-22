@@ -45,7 +45,12 @@ export default function groupDetail() {
     const fetchNotice = async () => {
       try {
         const res = await fetch(
-          `https://localhost:8080/group/announcement/latestOne?groupName=${groupName}`
+          `https://localhost:8080/group/announcement/latestOne?groupName=${groupName}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         const json = await res.json();
 
@@ -82,10 +87,16 @@ export default function groupDetail() {
               onClick={() => setIsModalOpen("notice")}
             >
               <p>공지</p>
-              <div>
-                <h4>{notice?.writerName}</h4>
-                <p>{notice?.content}</p>
-              </div>
+              {notice ? (
+                <div className={style.notice}>
+                  <h4>{notice.writerName}</h4>
+                  <p>{notice.content}</p>
+                </div>
+              ) : (
+                <div className={style.notice}>
+                  <p>공지가 없습니다</p>
+                </div>
+              )}
             </div>
             <div className={style.group_detail_middle_right}>
               <div onClick={() => setIsModalOpen("invite")}>
