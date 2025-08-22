@@ -23,7 +23,19 @@ import { RootState, AppDispatch } from "../../store/store";
 import { addSelectedSlot, removeSelectedSlot } from "../../store/calendarSlice";
 import GuideOverlay from "./GuideOverlay";
 
-const WeekCalendar = () => {
+interface WeekCalendarProps {
+  selectedLocation: string;
+  setSelectedLocation: (loc: string) => void;
+  selectedTheme: string;
+  setSelectedTheme: (theme: string) => void;
+}
+
+const WeekCalendar: React.FC<WeekCalendarProps> = ({
+  selectedLocation,
+  setSelectedLocation,
+  selectedTheme,
+  setSelectedTheme,
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const { events, mainViewDate } = useSelector(
     (state: RootState) => state.calendar
@@ -159,8 +171,6 @@ const WeekCalendar = () => {
   );
 
   const [activeTab, setActiveTab] = useState("지역");
-  const [selectedLocation, setSelectedLocation] = useState("서울");
-  const [selectedTheme, setSelectedTheme] = useState("체험/액티비티");
 
   const createClickHandler = useCallback(
     (setter: any) => (e: any) => {
