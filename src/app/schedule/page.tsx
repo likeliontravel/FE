@@ -1,17 +1,27 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import WeekCalendar from '../../../util/scheduleCalendar/WeekCalendar';
-import ScheduleList from '../../../util/scheduleList/ScheduleList';
-import TourOverlay from './TourOverlay';
+import { useState } from "react";
+import WeekCalendar from "../../../util/scheduleCalendar/WeekCalendar";
+import ScheduleList from "../../../util/scheduleList/ScheduleList";
+import TourOverlay from "./TourOverlay";
 
 const SchedulePage = () => {
+  const [selectedLocation, setSelectedLocation] = useState("서울");
+  const [selectedTheme, setSelectedTheme] = useState("체험/액티비티");
   const [showGuide, setShowGuide] = useState(true);
 
   return (
     <>
-      <WeekCalendar />
-      <ScheduleList />
+      <WeekCalendar
+        selectedLocation={selectedLocation}
+        setSelectedLocation={setSelectedLocation}
+        selectedTheme={selectedTheme}
+        setSelectedTheme={setSelectedTheme}
+      />
+      <ScheduleList
+        selectedLocation={selectedLocation}
+        selectedTheme={selectedTheme}
+      />
       {showGuide && <TourOverlay onClose={() => setShowGuide(false)} />}
     </>
   );
