@@ -166,7 +166,11 @@ export default function GroupNoticeModal({
                   </li>
                 ))
               ) : (
-                <img src="/imgs/group_modal_center.png" alt="group_modal" />
+                <img
+                  className={styles.group_modal_center}
+                  src="/imgs/group_modal_center.png"
+                  alt="group_modal"
+                />
               )}
             </ul>
             <div className={styles.edit_box}>
