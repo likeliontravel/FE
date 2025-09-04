@@ -1,4 +1,5 @@
 .container {
+  width: 70%;
   display: flex;
   flex-direction: column;
   background-color: #8fd9ff;
@@ -187,4 +188,45 @@
   line-height: 100%;
   color: #5d6064;
   margin: 0.3rem 0rem;
+}
+
+.blurContainer {
+  position: relative;
+  width: 70%;
+  div {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .blurText {
+    font-family: Inter;
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 100%;
+    margin-bottom: 0;
+    cursor: default;
+  }
+  .blurText_2 {
+    font-family: Inter;
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 100%;
+    margin-bottom: 0;
+    cursor: default;
+  }
+  .blurText_3 {
+    padding: 10px 12px;
+    color: #2e97cf;
+    background-color: white;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  img {
+    width: 100%;
+  }
 }
