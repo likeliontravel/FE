@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styles from "../../../../styles/group/groupDetail.module.scss";
 
 export default function GroupInviteModal({
@@ -14,6 +14,37 @@ export default function GroupInviteModal({
   const [copyStatus, setCopyStatus] = useState<null | "success" | "fail">(null);
   const [inviteLink, setInviteLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchInvitation = useCallback(async () => {
+    if (!groupName) return;
+
+    try {
+      const res = await fetch(
+        `https://localhost:8080/group/${groupName}/invitation`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        setInviteLink(result.data?.invitationCode ?? "");
+      } else {
+        console.error("초대링크 조회 실패:", result.message);
+      }
+    } catch (err) {
+      console.error("초대링크 조회 에러:", err);
+    }
+  }, [groupName, token]);
+
+  useEffect(() => {
+    fetchInvitation();
+  }, [fetchInvitation]);
 
   const handleCopy = async () => {
     try {
@@ -31,7 +62,7 @@ export default function GroupInviteModal({
       setIsSubmitting(true);
 
       const res = await fetch(
-        `https://localhost:8080/${groupName}/invitation/generateNew`,
+        `https://localhost:8080/group/${groupName}/invitation/generateNew`,
         {
           method: "POST",
           headers: {
@@ -45,9 +76,8 @@ export default function GroupInviteModal({
       const result = await res.json();
 
       if (res.ok && result.success) {
-        const link = result.data?.invitationCode;
-        setInviteLink(link);
         alert("초대 링크가 성공적으로 생성되었습니다!");
+        await fetchInvitation();
       } else {
         alert("초대 링크 생성 실패: " + result.message);
       }
