@@ -17,6 +17,7 @@ export default function groupDetail() {
     null
   );
   const [group, setGroup] = useState<any | null>(null);
+  const [schedule, setSchedule] = useState<any | null>(null);
   const [notice, setNotice] = useState<any | null>(null);
   const params = useParams();
   const groupName = params.groupName as string;
@@ -36,16 +37,16 @@ export default function groupDetail() {
 
         if (json.success) {
           setGroup(json.data);
+          setNotice(json.data.latestAnnouncement);
         }
       } catch (error) {
         console.error("그룹 정보 불러오기 실패:", error);
       }
     };
-
-    const fetchNotice = async () => {
+    const fetchSchedule = async () => {
       try {
         const res = await fetch(
-          `https://localhost:8080/group/announcement/latestOne?groupName=${groupName}`,
+          `https://localhost:8080/schedule/get/${groupName}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -54,17 +55,16 @@ export default function groupDetail() {
         );
         const json = await res.json();
 
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setNotice(json.data[0]);
-        } else {
+        if (json.success) {
+          setSchedule(json.data);
         }
       } catch (error) {
-        console.error("공지 정보 불러오기 실패:", error);
+        console.error("일정 불러오기 실패:", error);
       }
     };
 
     fetchGroups();
-    fetchNotice();
+    fetchSchedule();
   }, []);
 
   return (
@@ -74,7 +74,7 @@ export default function groupDetail() {
           <div className={style.group_detail_top}>
             <div>
               <h1>{group.groupName}</h1>
-              <p>{group.groupDescription}</p>
+              <p>{group.description}</p>
             </div>
             <p>
               {group.createdName} 외 {group.members.length - 1}명의 멤버가
@@ -106,7 +106,7 @@ export default function groupDetail() {
               <Link
                 href={{
                   pathname: `/group/${groupName}/chat`,
-                  query: { groupDescription: group.groupDescription },
+                  query: { groupDescription: group.description },
                 }}
               >
                 <p>그룹 채팅</p>
