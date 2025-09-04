@@ -78,8 +78,7 @@ const ifGroup = ({ groups }: { groups: any[] }) => {
         </div>
         {/* 그룹 메인 이미지 */}
         <div>
-          <div className={style.schedule_div_group_img}></div>
-          <div className={style.schedule_div_deadline}>
+          <div className={style.schedule_div_group_img}>
             <p>D-12</p>
           </div>
         </div>
