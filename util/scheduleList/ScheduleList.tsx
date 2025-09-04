@@ -90,14 +90,16 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
       };
       const endpoint = categoryMap[category] || "touristspots";
 
-      const params = new URLSearchParams({
-        regions: selectedLocation,
-        themes: selectedTheme,
-        keyword: keyword.trim(),
-        page: "0",
-        size: "10",
-        sortType: "latest",
-      });
+      const params = new URLSearchParams();
+
+      if (selectedLocation) params.append("regions", selectedLocation);
+      if (selectedTheme) params.append("themes", selectedTheme);
+      if (keyword.trim()) params.append("keyword", keyword.trim());
+
+      params.append("page", "1");
+      params.append("size", "10");
+
+      params.append("sortType", "TITLE_ASC");
 
       const res = await fetch(
         `https://localhost:8080/places/${endpoint}?${params.toString()}`,
