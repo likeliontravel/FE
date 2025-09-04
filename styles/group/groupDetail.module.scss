@@ -2,6 +2,7 @@
 @use "../component/display_mixins.scss" as *;
 
 .group_detail {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -28,7 +29,7 @@
 }
 
 .group_detail_top {
-  width: 75vw;
+  width: 75%;
   height: 15vh;
   display: flex;
   align-items: center;

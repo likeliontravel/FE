@@ -242,10 +242,18 @@
 }
 
 .schedule_div_group_img {
+  position: relative;
   @include width-height(758px, 100%);
   @include background_image-size_cover-repeat_no_repeat(
     "../../public/imgs/group_img.png"
   );
+  p {
+    position: absolute;
+    right: -10%;
+    top: 5%;
+    @include font_size-font_weight-line_height(100px, 700, 121.02px);
+    color: #27abf1;
+  }
 }
 
 .comming_div {
@@ -311,17 +319,6 @@
     @include font_size-font_weight-line_height(22px, 700, 32px);
     color: white;
     padding: 12px 14px 12px 20px;
-  }
-}
-
-.schedule_div_deadline {
-  @include width-height(250px, 128px);
-  position: absolute;
-  top: 570px;
-  right: 316px;
-  p {
-    @include font_size-font_weight-line_height(100px, 700, 121.02px);
-    color: #27abf1;
   }
 }
 
