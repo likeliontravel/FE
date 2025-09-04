@@ -154,10 +154,10 @@ export default function GroupNoticeModal({
             </div>
             <ul className={styles.modal_bottom}>
               {Array.isArray(notices) && notices.length > 0 ? (
-                notices.map((notice: any) => (
+                notices.map((notice: any, idx: number) => (
                   <li
                     key={notice.id}
-                    onClick={() => setSelectedNoticeIndex(notice.id - 1)}
+                    onClick={() => setSelectedNoticeIndex(idx)}
                   >
                     <div>
                       <strong>{notice.writerName}</strong> {notice.title}
