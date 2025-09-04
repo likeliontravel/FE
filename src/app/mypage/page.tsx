@@ -23,13 +23,9 @@ export default function myPage() {
           },
         });
         const json = await res.json();
-
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setUser(json.data[0]);
-        } else {
-        }
+        setUser(json.data);
       } catch (error) {
-        console.error("그룹 정보 불러오기 실패:", error);
+        console.error("유저 정보 불러오기 실패:", error);
       }
     };
 
@@ -48,13 +44,13 @@ export default function myPage() {
             <div>
               <img
                 className={style.profile}
-                style={{ backgroundImage: `url(${user.profileImageUrl})` }}
+                style={{ backgroundImage: `url(${user?.profileImageUrl})` }}
               />
             </div>
             {/* 이름 */}
             <div className={style.user}>
-              <p className={style.name}>{user.name}</p>
-              <p className={style.email}>{user.email}</p>
+              <p className={style.name}>{user?.name}</p>
+              <p className={style.email}>{user?.email}</p>
               <p className={style.account}>연동 소셜 계정</p>
             </div>
             {/* 회원 정보 수정 및 소셜 계정 */}
