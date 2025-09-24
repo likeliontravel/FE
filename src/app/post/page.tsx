@@ -21,6 +21,31 @@ const regionKeywords = [
 ];
 const themeKeywords = ['힐링', '액티비티', '맛집', '문화'];
 
+const createExcerpt = (htmlContent: string, maxLength: number = 100): string => {
+  if (typeof window === 'undefined' || !htmlContent) {
+    return '';
+  }
+  
+  try {
+    const parser = new DOMParser();
+    const unescapedHtml = parser.parseFromString(`<!doctype html><body>${htmlContent}`, 'text/html').body.textContent || '';
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = unescapedHtml;
+    
+    const plainText = tempDiv.textContent || tempDiv.innerText || '';
+    
+    if (plainText.length > maxLength) {
+      return plainText.substring(0, maxLength) + '...';
+    }
+    return plainText;
+  } catch (e) {
+    console.error("Excerpt 생성 오류:", e);
+    return '';
+  }
+};
+
+
 const PostList = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -50,12 +75,12 @@ const PostList = () => {
 
   const handleSearch = (term: string) => {
     setCurrentQuery(term);
-    setActiveCategory(null); // 검색 시 카테고리 선택 해제
+    setActiveCategory(null);
   };
 
   const handleCategoryClick = (category: string) => {
-    setCurrentQuery(''); // 카테고리 클릭 시 검색어 초기화
-    setActiveCategory(category);
+    setCurrentQuery('');
+    setActiveCategory(prevCategory => prevCategory === category ? null : category);
   };
 
   const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -63,9 +88,11 @@ const PostList = () => {
   }, []);
   
   const handleTabClick = useCallback((tab: '지역' | '테마') => () => {
-    setActiveTab(tab);
-    setActiveCategory(null);
-  }, []);
+    if (activeTab !== tab) {
+        setActiveTab(tab);
+        setActiveCategory(null);
+    }
+  }, [activeTab]);
 
   const goToPostWrite = useCallback(() => router.push('/postWrite'), [router]);
   const currentKeywords = activeTab === '지역' ? regionKeywords : themeKeywords;
@@ -97,7 +124,9 @@ const PostList = () => {
                           <div className={styles.authorAvatar}></div>
                           <span className={styles.authorName}>{post.writer}</span>
                       </div>
-                      <p className={styles.postExcerpt} dangerouslySetInnerHTML={{ __html: post.content }} />
+                      <p className={styles.postExcerpt}>
+                        {createExcerpt(post.content)}
+                      </p>
                     </div>
                     <img src={post.thumbnailPublicUrl || '/imgs/default-thumbnail.png'} alt={post.title} className={styles.postImage} />
                   </div>
