@@ -6,11 +6,12 @@ import NonGroup from "./nonGroup";
 import IfGroup from "./ifGroup";
 
 const GroupPage = () => {
-  const token = localStorage.getItem("accessToken");
   const [hasGroup, setHasGroup] = useState<boolean | null>(null);
   const [groups, setGroups] = useState<any[]>([]);
 
   useEffect(() => {
+      const token = localStorage.getItem("accessToken");
+
     const fetchGroups = async () => {
       try {
         const res = await fetch("https://172.31.45.175:8080/group/user-groups", {
