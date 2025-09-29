@@ -12,7 +12,6 @@ import GroupInviteModal from "./GroupInviteModal";
 import UseReactSelect from "../../../../util/select/UseReactSelect";
 
 export default function groupDetail() {
-  const token = localStorage.getItem("accessToken");
   const [isModalOpen, setIsModalOpen] = useState<null | "notice" | "invite">(
     null
   );
@@ -23,6 +22,8 @@ export default function groupDetail() {
   const groupName = params.groupName as string;
 
   useEffect(() => {
+      const token = localStorage.getItem("accessToken");
+
     const fetchGroups = async () => {
       try {
         const res = await fetch(
