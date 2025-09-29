@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, Transition } from 'framer-motion';
 import styles from '../../../styles/Random/Random.module.scss';
 import Image from 'next/image';
 import { useMemo } from 'react';
@@ -16,7 +16,7 @@ const animationSettings = {
   y: [0, -12, 12, -6, 6, 0],
 };
 
-const transitionSettings = {
+const transitionSettings: Transition = { 
   duration: 1.5,
   ease: 'easeInOut',
   repeat: Infinity,
@@ -32,7 +32,7 @@ export default function RandomLoading() {
 
   const transitions = useMemo(
     () =>
-      balls.map((_, index) => ({
+      balls.map((_, index): Transition => ({
         ...transitionSettings,
         delay: index * 0.2,
       })),
