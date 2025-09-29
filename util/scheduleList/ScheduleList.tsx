@@ -67,7 +67,6 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   selectedLocation,
   selectedTheme,
 }) => {
-  const token = localStorage.getItem("accessToken");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedListSchedule = useSelector(
     (s: RootState) => s.calendar.selectedListSchedule
@@ -77,6 +76,11 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
 
   const handleFetchTouristSpots = async () => {
+      const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
     if (isSubmitting) return;
 
     try {
