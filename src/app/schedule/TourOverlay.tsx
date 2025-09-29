@@ -2,7 +2,11 @@
 
 import styles from "./TourOverlay.module.css";
 
-export default function TourOverlay({ onClose }) {
+interface TourOverlayProps {
+  onClose: () => void;
+}
+
+export default function TourOverlay({ onClose }: TourOverlayProps) {
   return (
     <div className={styles.overlay}>
       {/* STEP 1 */}
