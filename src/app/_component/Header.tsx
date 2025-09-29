@@ -4,24 +4,40 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import style from "../../../styles/component/header.module.scss";
 
+interface UserProfile {
+  name: string;
+  profileImageUrl?: string;
+}
+
 export default function Header() {
-  const token = localStorage.getItem("accessToken");
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      return;
+    }
+
     const fetchUser = async () => {
       try {
-        const res = await fetch("https://172.31.45.175:8080/user/getProfile/", {
+        const res = await fetch("http://172.31.45.175:8080/user/getProfile/", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+        if (!res.ok) {
+            console.error("Failed to fetch user profile, status:", res.status);
+            return;
+        }
+
         const json = await res.json();
 
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setUser(json.data[0]);
-        } else {
+        if (json.success && json.data) {
+          setUser(Array.isArray(json.data) ? json.data[0] : json.data);
         }
+
       } catch (error) {
         console.error("회원 정보 불러오기 실패:", error);
       }
@@ -33,12 +49,8 @@ export default function Header() {
   return (
     <>
       <div className={style.header}>
-        {/* 로고 */}
         <Link href="/main" className={style.logo}></Link>
-
-        {/* 네비게이션 바 */}
         <div className={style.navBar}>
-          {/* 네비게이션 그룹 */}
           <div className={style.navGroup}>
             <Link href="/schedule">
               <p>여행 일정 짜기</p>
@@ -47,26 +59,21 @@ export default function Header() {
               <p>나의 그룹</p>
             </Link>
             <Link href="/RandomHome">
-            <p>여행지 추천</p>
-             </Link>
-             <Link href="/post">
-            <p>지역별 여행 게시판</p>
+              <p>여행지 추천</p>
+            </Link>
+            <Link href="/post">
+              <p>지역별 여행 게시판</p>
             </Link>
           </div>
-          {/* 회원 그룹 */}
           <div className={style.userGroup}>
-            {/* 알람 */}
             <div className={style.alram}></div>
-            {/* 회원 정보 */}
             <div className={style.user}>
-              {/* 사진 */}
               <div
                 className={style.userImage}
-                style={{ backgroundImage: `url(${user?.profileImageUrl})` }}
+                style={{ backgroundImage: `url(${user?.profileImageUrl || '/imgs/default-profile.png'})` }}
               ></div>
-              {/* 이름 */}
               <Link href="/mypage">
-                <p>{user?.name}</p>
+                {user ? <p>{user.name}님</p> : <p>로그인</p>}
               </Link>
             </div>
           </div>
