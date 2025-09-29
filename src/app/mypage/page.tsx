@@ -11,10 +11,11 @@ import KakaoMap from "../../../util/KakaoMap";
 import ScheduleCheck from "../../../util/ScheduleCheck";
 
 export default function myPage() {
-  let token = localStorage.getItem("accessToken");
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+      let token = localStorage.getItem("accessToken");
+
     const fetchUser = async () => {
       try {
         const res = await fetch("https://172.31.45.175:8080/user/getProfile/", {
