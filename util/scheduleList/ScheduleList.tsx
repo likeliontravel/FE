@@ -102,7 +102,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
       params.append("sortType", "TITLE_ASC");
 
       const res = await fetch(
-        `https://localhost:8080/places/${endpoint}?${params.toString()}`,
+        `https://172.31.45.175:8080/places/${endpoint}?${params.toString()}`,
         {
           method: "GET",
           headers: {

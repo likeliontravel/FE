@@ -17,7 +17,7 @@ export default function myPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch("https://localhost:8080/user/getProfile/", {
+        const res = await fetch("https://172.31.45.175:8080/user/getProfile/", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

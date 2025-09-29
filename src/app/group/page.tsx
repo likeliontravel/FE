@@ -13,7 +13,7 @@ const GroupPage = () => {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const res = await fetch("https://localhost:8080/group/user-groups", {
+        const res = await fetch("https://172.31.45.175:8080/group/user-groups", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
