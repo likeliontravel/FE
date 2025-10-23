@@ -67,15 +67,15 @@ export default function Header() {
           </div>
           <div className={style.userGroup}>
             <div className={style.alram}></div>
-            <div className={style.user}>
-              <div
-                className={style.userImage}
-                style={{ backgroundImage: `url(${user?.profileImageUrl || '/imgs/default-profile.png'})` }}
-              ></div>
-              <Link href="/mypage">
-                {user ? <p>{user.name}님</p> : <p>로그인</p>}
-              </Link>
-            </div>
+          <div className={style.user}>
+            <div
+              className={style.userImage}
+              style={{ backgroundImage: `url(${user?.profileImageUrl || '/imgs/default-profile.png'})` }}
+            ></div>
+            <Link href={user ? "/mypage" : "/login"}>
+              {user ? <p>{user.name}님</p> : <p>로그인</p>}
+            </Link>
+          </div>
           </div>
         </div>
       </div>
