@@ -24,7 +24,7 @@ export default function GroupNoticeModal({
     const fetchNotice = async () => {
       try {
         const res = await fetch(
-          `https://172.31.45.175:8080/group/announcement/getAllAnnouncement?groupName=${groupName}`,
+          `https://api.toleave.shop/group/announcement/getAllAnnouncement?groupName=${groupName}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -51,7 +51,7 @@ export default function GroupNoticeModal({
       setIsSubmitting(true);
 
       const res = await fetch(
-        "https://172.31.45.175:8080/group/announcement/create",
+        "https://api.toleave.shop/group/announcement/create",
         {
           method: "POST",
           headers: {

@@ -14,7 +14,7 @@ const GroupPage = () => {
 
     const fetchGroups = async () => {
       try {
-        const res = await fetch("https://172.31.45.175:8080/group/user-groups", {
+        const res = await fetch("https://api.toleave.shop/group/user-groups", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

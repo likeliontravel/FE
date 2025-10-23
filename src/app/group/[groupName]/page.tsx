@@ -27,7 +27,7 @@ export default function groupDetail() {
     const fetchGroups = async () => {
       try {
         const res = await fetch(
-          `https://172.31.45.175:8080/group/${groupName}/detail`,
+          `https://api.toleave.shop/group/${groupName}/detail`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -47,7 +47,7 @@ export default function groupDetail() {
     const fetchSchedule = async () => {
       try {
         const res = await fetch(
-          `https://172.31.45.175:8080/schedule/get/${groupName}`,
+          `https://api.toleave.shop/schedule/get/${groupName}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
