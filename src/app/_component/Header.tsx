@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // ✅ 추가
+import { useRouter } from "next/navigation";
 import style from "../../../styles/component/header.module.scss";
 
 interface UserProfile {
@@ -12,7 +12,7 @@ interface UserProfile {
 
 export default function Header() {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const router = useRouter(); // ✅ 추가
+  const router = useRouter(); 
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -45,7 +45,6 @@ export default function Header() {
     fetchUser();
   }, []);
 
-  // ✅ 로그인 필수 접근 제어 함수
   const handleProtectedClick = (path: string) => {
     if (!user) {
       alert("로그인이 필요한 서비스입니다.");
