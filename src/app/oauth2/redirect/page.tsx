@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../../store/store';
 import { fetchUserProfile } from '../../../../util/login/authSlice';
-import styles from '../../../styles/login/redirect.module.scss';
+import styles from '../../../../styles/login/redirect.module.scss';
 
 const RedirectPage = () => {
   const router = useRouter();
