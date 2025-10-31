@@ -55,7 +55,7 @@ const Login = () => {
   );
 
   const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao') => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorization/${provider}`;
+    window.location.href = `https://api.toleave.shop/oauth2/authorization/${provider}`;
   }, []);
   
   const handleKakaoLogin = useCallback(() => handleOAuthLogin('kakao'), [handleOAuthLogin]);
