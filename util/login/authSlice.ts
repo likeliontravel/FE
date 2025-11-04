@@ -15,22 +15,25 @@ api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
       let token = localStorage.getItem('accessToken');
-      
       if (!token) {
-        const cookieToken = getCookie('Authorization');
+        const cookieToken = getCookie('Authorization') || getCookie('authorization');
+        
         if (typeof cookieToken === 'string') {
-            token = cookieToken;
+          token = cookieToken;
         }
       }
       
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        const cleanedToken = token.startsWith('Bearer ') ? token.split(' ')[1] : token;
+        
+        config.headers.Authorization = `Bearer ${cleanedToken}`;
       }
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
+
 
 api.interceptors.response.use(
   (response) => response,
