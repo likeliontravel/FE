@@ -90,20 +90,20 @@
 .loggedInUser {
   display: flex;
   align-items: center;
-  gap: 12px; // 이름과 로그아웃 버튼 사이 간격
+  gap: 12px;
 
   p {
-    margin: 0; // p 태그 기본 마진 제거
+    margin: 0;
   }
 }
 
 .logoutButton {
   cursor: pointer;
-  color: #888; // 로그아웃 버튼 색상
-  font-size: 0.9em; // 글자 크기를 약간 작게
+  color: #888; 
+  font-size: 0.9em; 
 
   &:hover {
     text-decoration: underline;
-    color: #333; // 마우스 올렸을 때 색상
+    color: #333;
   }
 }
