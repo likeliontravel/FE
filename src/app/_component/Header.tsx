@@ -1,49 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import style from "../../../styles/component/header.module.scss";
-
-interface UserProfile {
-  name: string;
-  profileImageUrl?: string;
-}
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../store/store";
+import { logoutUser } from "../../../util/login/authSlice";
 
 export default function Header() {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const router = useRouter(); 
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
+  const { user } = useSelector((state: RootState) => state.auth);
 
-    if (!token) return;
-
-    const fetchUser = async () => {
+  const handleLogout = async () => {
+    if (confirm("정말 로그아웃 하시겠습니까?")) {
       try {
-        const res = await fetch("https://api.toleave.shop/user/getProfile/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          console.error("Failed to fetch user profile, status:", res.status);
-          return;
-        }
-
-        const json = await res.json();
-
-        if (json.success && json.data) {
-          setUser(Array.isArray(json.data) ? json.data[0] : json.data);
-        }
+        await dispatch(logoutUser()).unwrap();
+        alert("로그아웃 되었습니다.");
+        router.push("/login");
       } catch (error) {
-        console.error("회원 정보 불러오기 실패:", error);
+        console.error("로그아웃 실패:", error);
+        alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
       }
-    };
-
-    fetchUser();
-  }, []);
+    }
+  };
 
   const handleProtectedClick = (path: string) => {
     if (!user) {
@@ -65,7 +46,6 @@ export default function Header() {
             <Link href="/RandomHome">
               <p>여행지 추천</p>
             </Link>
-
             <p onClick={() => handleProtectedClick("/post")}>지역별 여행 게시판</p>
           </div>
 
@@ -75,12 +55,24 @@ export default function Header() {
               <div
                 className={style.userImage}
                 style={{
-                  backgroundImage: `url(${user?.profileImageUrl || "/imgs/default-profile.png"})`,
+                  backgroundImage: `url(${"/imgs/default-profile.png"})`,
                 }}
               ></div>
-              <Link href={user ? "/mypage" : "/login"}>
-                {user ? <p>{user.name}님</p> : <p>로그인</p>}
-              </Link>
+              
+              {user ? (
+                <div className={style.loggedInUser}>
+                  <Link href="/mypage">
+                    <p>{user.name}님</p>
+                  </Link>
+                  <p className={style.logoutButton} onClick={handleLogout}>
+                    로그아웃
+                  </p>
+                </div>
+              ) : (
+                <Link href="/login">
+                  <p>로그인</p>
+                </Link>
+              )}
             </div>
           </div>
         </div>
