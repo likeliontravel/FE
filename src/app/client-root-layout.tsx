@@ -1,4 +1,4 @@
-'use client'; 
+'use client';
 
 import ReduxProvider from "../../store/ReduxProvider";
 import AuthSessionHandler from "./_component/AuthSessionHandler";
