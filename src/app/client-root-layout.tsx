@@ -1,10 +1,7 @@
-'use client';
+'use client'; 
 
-import React from 'react';
-import '../../styles/globals.css';
-import { Provider } from 'react-redux';
-import store from '../../store/store';
-import Header from '@/app/_component/Header';
+import ReduxProvider from "../../store/ReduxProvider";
+import AuthSessionHandler from "./_component/AuthSessionHandler";
 
 export default function RootLayout({
   children,
@@ -12,13 +9,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Provider store={store}>
-      <html lang="ko">
-        <body>
-          <Header />
-          {children}
-        </body>
-      </html>
-    </Provider>
+    <html lang="ko">
+      <body>
+        <ReduxProvider>
+          <AuthSessionHandler>
+            {children}
+          </AuthSessionHandler>
+        </ReduxProvider>
+      </body>
+    </html>
   );
 }
