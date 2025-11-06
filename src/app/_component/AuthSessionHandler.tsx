@@ -17,7 +17,8 @@ interface DecodedToken {
 
 const AuthSessionHandler = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const user = useSelector((state: RootState) => state.auth.user);
+  
+  const user = useSelector((state: RootState) => state.auth?.user);
 
   useEffect(() => {
     if (!user) {

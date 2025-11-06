@@ -11,7 +11,7 @@ export default function Header() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth || {});
 
   const handleLogout = async () => {
     if (confirm("정말 로그아웃 하시겠습니까?")) {
