@@ -34,7 +34,6 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -68,16 +67,17 @@ api.interceptors.response.use(
   }
 );
 
-// 타입 정의
 interface User {
-  id: number;
+  id: number | null;
   email: string;
   name: string;
   policy: boolean;
   subscribe: boolean;
   role: string;
   password?: string | null;
+  provider?: string;
 }
+
 interface SignUpData {
   name: string;
   email: string;
@@ -85,6 +85,7 @@ interface SignUpData {
   termsAccepted: boolean[];
   selectedPlan: string | null;
 }
+
 interface AuthState {
   user: User | null;
   loading: boolean;
@@ -93,6 +94,7 @@ interface AuthState {
   signUpData: SignUpData;
   isEmailVerified: boolean;
 }
+
 interface APIResponse<T = unknown> {
   message: string;
   data?: T;
@@ -100,7 +102,6 @@ interface APIResponse<T = unknown> {
   status: number;
 }
 
-// 초기 상태
 const initialState: AuthState = {
   user: null,
   loading: false,
@@ -115,8 +116,6 @@ const initialState: AuthState = {
     selectedPlan: null,
   },
 };
-
-// --- 비동기 Thunks ---
 
 export const requestEmailCode = createAsyncThunk<APIResponse, { email: string }>(
   'auth/requestEmailCode',
@@ -201,6 +200,43 @@ export const loginUser = createAsyncThunk<
   }
 });
 
+export const socialLoginUser = createAsyncThunk<
+  User,
+  { provider: string; code: string }
+>('auth/socialLoginUser', async ({ provider, code }, { rejectWithValue }) => {
+  try {
+    const response = await axios.get<APIResponse<User>>(
+      `${BASE_URL}/login/oauth2/code/${provider}?code=${code}`,
+      { withCredentials: true }
+    );
+
+    const accessToken = response.headers['authorization']?.replace('Bearer ', '');
+    const refreshToken = response.headers['refresh-token']?.replace('Bearer ', '');
+    const user = response.data.data;
+
+    if (!response.data.success || !user) {
+      throw new Error(response.data.message || '로그인 응답 데이터가 올바르지 않습니다.');
+    }
+    if (!accessToken || !refreshToken) {
+      throw new Error('응답 헤더에 토큰이 포함되지 않았습니다.');
+    }
+
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    
+    return user;
+
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return rejectWithValue(error.response.data.message || '소셜 로그인에 실패했습니다.');
+    }
+    if (error instanceof Error) {
+      return rejectWithValue(error.message);
+    }
+    return rejectWithValue('소셜 로그인 중 알 수 없는 오류가 발생했습니다.');
+  }
+});
+
 export const logoutUser = createAsyncThunk<APIResponse>(
   'auth/logoutUser',
   async (_, { rejectWithValue }) => {
@@ -263,6 +299,20 @@ const authSlice = createSlice({
         state.successMessage = '로그인 성공!';
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.user = null;
+      })
+      .addCase(socialLoginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(socialLoginUser.fulfilled, (state, action: PayloadAction<User>) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.successMessage = '로그인 성공!';
+      })
+      .addCase(socialLoginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
         state.user = null;

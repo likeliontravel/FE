@@ -2,6 +2,7 @@
 
 import ReduxProvider from "../../store/ReduxProvider";
 import AuthSessionHandler from "./_component/AuthSessionHandler";
+import Header from "../../src/app/_component/Header";
 
 export default function RootLayout({
   children,
@@ -13,7 +14,10 @@ export default function RootLayout({
       <body>
         <ReduxProvider>
           <AuthSessionHandler>
-            {children}
+            <Header />
+
+            <main>{children}</main>
+            
           </AuthSessionHandler>
         </ReduxProvider>
       </body>
