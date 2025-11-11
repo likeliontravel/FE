@@ -2,7 +2,6 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { getCookie } from 'cookies-next';
 
 const BASE_URL = 'https://api.toleave.shop';
 
@@ -11,29 +10,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      let token = localStorage.getItem('accessToken');
-      if (!token) {
-        const cookieToken = getCookie('Authorization') || getCookie('authorization');
-        
-        if (typeof cookieToken === 'string') {
-          token = cookieToken;
-        }
-      }
-      
-      if (token) {
-        const cleanedToken = token.startsWith('Bearer ') ? token.split(' ')[1] : token;
-        
-        config.headers.Authorization = `Bearer ${cleanedToken}`;
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -41,22 +17,16 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refreshToken = localStorage.getItem('refreshToken') || getCookie('RefreshToken');
-        if (!refreshToken) throw new Error('Refresh token not available');
-        
-        const response = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+        const response = await axios.post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true });
         
         const newAccessToken = response.headers['authorization']?.replace('Bearer ', '');
         if (newAccessToken) {
-            localStorage.setItem('accessToken', newAccessToken);
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return api(originalRequest);
         } else {
             throw new Error('New access token not received');
         }
       } catch (refreshError) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
         if (typeof window !== 'undefined') {
             window.location.href = '/login';
         }
@@ -172,23 +142,13 @@ export const loginUser = createAsyncThunk<
       credentials,
       { withCredentials: true }
     );
-
-    const accessToken = response.headers['authorization']?.replace('Bearer ', '');
-    const refreshToken = response.headers['refresh-token']?.replace('Bearer ', '');
     const user = response.data.data;
 
     if (!response.data.success || !user) {
       throw new Error(response.data.message || '로그인 응답 데이터가 올바르지 않습니다.');
     }
-    if (!accessToken || !refreshToken) {
-      throw new Error('응답 헤더에 토큰이 포함되지 않았습니다.');
-    }
-
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
     
     return user;
-
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       return rejectWithValue(error.response.data.message || '로그인에 실패했습니다.');
@@ -200,50 +160,11 @@ export const loginUser = createAsyncThunk<
   }
 });
 
-export const socialLoginUser = createAsyncThunk<
-  User,
-  { provider: string; code: string }
->('auth/socialLoginUser', async ({ provider, code }, { rejectWithValue }) => {
-  try {
-    const response = await axios.get<APIResponse<User>>(
-      `${BASE_URL}/login/oauth2/code/${provider}?code=${code}`,
-      { withCredentials: true }
-    );
-
-    const accessToken = response.headers['authorization']?.replace('Bearer ', '');
-    const refreshToken = response.headers['refresh-token']?.replace('Bearer ', '');
-    const user = response.data.data;
-
-    if (!response.data.success || !user) {
-      throw new Error(response.data.message || '로그인 응답 데이터가 올바르지 않습니다.');
-    }
-    if (!accessToken || !refreshToken) {
-      throw new Error('응답 헤더에 토큰이 포함되지 않았습니다.');
-    }
-
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-    
-    return user;
-
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      return rejectWithValue(error.response.data.message || '소셜 로그인에 실패했습니다.');
-    }
-    if (error instanceof Error) {
-      return rejectWithValue(error.message);
-    }
-    return rejectWithValue('소셜 로그인 중 알 수 없는 오류가 발생했습니다.');
-  }
-});
-
 export const logoutUser = createAsyncThunk<APIResponse>(
   'auth/logoutUser',
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.post<APIResponse>('/logout');
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       return response.data;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
@@ -303,20 +224,6 @@ const authSlice = createSlice({
         state.error = action.payload as string;
         state.user = null;
       })
-      .addCase(socialLoginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(socialLoginUser.fulfilled, (state, action: PayloadAction<User>) => {
-        state.loading = false;
-        state.user = action.payload;
-        state.successMessage = '로그인 성공!';
-      })
-      .addCase(socialLoginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-        state.user = null;
-      })
       .addCase(logoutUser.pending, (state) => {
         state.loading = true;
       })
@@ -344,7 +251,7 @@ const authSlice = createSlice({
       .addCase(fetchUserProfile.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+      .addCase(fetchUserProfile.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.user = action.payload;
       })

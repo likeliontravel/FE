@@ -4,65 +4,36 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../../store/store';
-import { setUser } from '../../../../util/login/authSlice';
-import { getCookie } from 'cookies-next';
-import { jwtDecode } from 'jwt-decode';
-
-interface DecodedToken {
-  id: number;
-  sub: string;
-  auth: string;
-  name: string;
-  exp: number;
-}
+import { fetchUserProfile } from '../../../../util/login/authSlice';
 
 const RedirectClientComponent = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    const accessToken = getCookie('Authorization');
-    const refreshToken = getCookie('RefreshToken');
-
-    if (typeof accessToken === 'string') {
-      const cleanedToken = accessToken.startsWith('Bearer ') ? accessToken.split(' ')[1] : accessToken;
-      
-      localStorage.setItem('accessToken', cleanedToken);
-      if (typeof refreshToken === 'string') {
-        const cleanedRefreshToken = refreshToken.startsWith('Bearer ') ? refreshToken.split(' ')[1] : refreshToken;
-        localStorage.setItem('refreshToken', cleanedRefreshToken);
-      }
-
+    const handleLogin = async () => {
       try {
-        const decoded: DecodedToken = jwtDecode(cleanedToken);
-        
-        const userProfile = {
-          id: decoded.id,
-          email: decoded.sub,
-          name: decoded.name,
-          role: decoded.auth,
-          policy: false,
-          subscribe: false,
-          password: null
-        };
-        
-        dispatch(setUser(userProfile));
-        
+        const user = await dispatch(fetchUserProfile()).unwrap();
+
+        alert(`${user.name}님, 환영합니다!`);
         router.replace('/main');
 
       } catch (error) {
-        console.error('소셜 로그인 처리 중 토큰 디코딩 실패:', error);
-        alert('로그인에 실패했습니다. 토큰이 유효하지 않습니다.');
+        console.error('소셜 로그인 후 프로필 조회 실패:', error);
+        alert('로그인에 실패했습니다. 사용자 정보를 가져올 수 없습니다.');
         router.replace('/login');
       }
-    } else {
-      console.error('소셜 로그인 리다이렉트 후 쿠키에서 토큰을 찾을 수 없습니다.');
-      alert('로그인 과정에 문제가 발생했습니다.');
-      router.replace('/login');
-    }
-  }, []); 
+    };
 
-  return null;
+    const timer = setTimeout(() => {
+      handleLogin();
+    }, 100);
+
+    return () => clearTimeout(timer);
+    
+  }, [dispatch, router]);
+
+  return <div style={{ textAlign: 'center', padding: '50px' }}>로그인 정보를 확인 중입니다...</div>;
 };
 
 export default RedirectClientComponent;
