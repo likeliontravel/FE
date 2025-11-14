@@ -195,7 +195,17 @@ const PostDetail = () => {
     }
   }, [dispatch, id]);
 
+  const requireLogin = useCallback(() => {
+    if (!loggedInUser) {
+      alert('로그인이 필요한 기능입니다.');
+      router.push('/login');
+      return false;
+    }
+    return true;
+  }, [loggedInUser, router]);
+
   const handleCommentSubmit = useCallback(async () => {
+    if (!requireLogin()) return;
     if (!newComment.trim() || !id) return;
     try {
       await dispatch(createComment({ boardId: id, commentContent: newComment })).unwrap();
@@ -204,9 +214,10 @@ const PostDetail = () => {
     } catch (err) {
       alert(`댓글 작성 실패: ${err}`);
     }
-  }, [dispatch, id, newComment]);
+  }, [dispatch, id, newComment, requireLogin]);
 
   const handleReplySubmit = useCallback(async (parentId: number) => {
+    if (!requireLogin()) return;
     if (!replyContent.trim() || !id) return;
     try {
       await dispatch(createComment({ boardId: id, commentContent: replyContent, parentCommentId: parentId })).unwrap();
@@ -216,7 +227,7 @@ const PostDetail = () => {
     } catch (err) {
       alert(`답글 작성 실패: ${err}`);
     }
-  }, [dispatch, id, replyContent]);
+  }, [dispatch, id, replyContent, requireLogin]);
 
   const handleEditPost = useCallback(() => {
     router.push(`/post/edit/${id}`);
@@ -235,9 +246,10 @@ const PostDetail = () => {
   }, [dispatch, id, router]);
 
   const handleStartEditComment = useCallback((comment: Comment) => {
+    if (!requireLogin()) return;
     setEditingCommentId(comment.id);
     setEditingContent(comment.commentContent);
-  }, []);
+  }, [requireLogin]);
 
   const handleCancelEditComment = useCallback(() => {
     setEditingCommentId(null);
@@ -299,10 +311,16 @@ const PostDetail = () => {
   }, [post?.content]);
 
   const handleTabClick = useCallback((tab: '지역' | '테마') => () => setActiveTab(tab), []);
-  const goToPostWrite = useCallback(() => router.push('/postWrite'), [router]);
+  
+  const goToPostWrite = useCallback(() => {
+    if (!requireLogin()) return;
+    router.push('/postWrite');
+  }, [router, requireLogin]);
+
   const handleReplyClick = useCallback((id: number) => {
+    if (!requireLogin()) return;
     setReplyingTo(prev => (prev === id ? null : id));
-  }, []);
+  }, [requireLogin]);
   
   const currentKeywords = activeTab === '지역' ? regionKeywords : themeKeywords;
 
@@ -343,14 +361,15 @@ const PostDetail = () => {
               <div className={styles.commentInputWrapper}>
                 <div className={styles.commentInputContainer}>
                   <textarea
-                    placeholder="따뜻한 댓글을 남겨주세요 :)"
+                    placeholder={loggedInUser ? "따뜻한 댓글을 남겨주세요 :)" : "댓글을 작성하려면 로그인해주세요."}
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     maxLength={200}
+                    disabled={!loggedInUser}
                   />
                   <span className={styles.charCount}>{newComment.length}/200</span>
                 </div>
-                <button className={styles.sendButton} onClick={handleCommentSubmit} disabled={loading}>
+                <button className={styles.sendButton} onClick={handleCommentSubmit} disabled={loading || !loggedInUser}>
                   {loading ? '...' : <Image src="/imgs/comment_send.png" alt="댓글 전송" width={48} height={48} />}
                 </button>
               </div>

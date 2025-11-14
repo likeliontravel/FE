@@ -45,10 +45,10 @@ const createExcerpt = (htmlContent: string, maxLength: number = 100): string => 
   }
 };
 
-
 const PostList = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const { user: loggedInUser } = useSelector((state: RootState) => state.auth);
   const { posts, loading, error } = useSelector((state: RootState) => state.board);
 
   const [currentQuery, setCurrentQuery] = useState('');
@@ -94,7 +94,25 @@ const PostList = () => {
     }
   }, [activeTab]);
 
-  const goToPostWrite = useCallback(() => router.push('/postWrite'), [router]);
+  const requireLogin = useCallback(() => {
+    if (!loggedInUser) {
+      alert('로그인이 필요한 기능입니다.');
+      router.push('/login');
+      return false;
+    }
+    return true;
+  }, [loggedInUser, router]);
+
+  const goToPostWrite = useCallback(() => {
+    if (!requireLogin()) return;
+    router.push('/postWrite');
+  }, [router, requireLogin]);
+
+  const goToMyPosts = useCallback(() => {
+    if (!requireLogin()) return;
+    router.push('/mypage/posts');
+  }, [router, requireLogin]);
+
   const currentKeywords = activeTab === '지역' ? regionKeywords : themeKeywords;
 
   return (
@@ -146,7 +164,7 @@ const PostList = () => {
               <div className={styles.profileActions}>
                 <button><Image src="/imgs/Popular.png" alt="인기글" width={36} height={36} /><span>인기글 보기</span></button>
                 <button onClick={goToPostWrite}><Image src="/imgs/writing.png" alt="글쓰기" width={36} height={36} /><span>글쓰기</span></button>
-                <button><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
+                <button onClick={goToMyPosts}><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
               </div>
             </div>
             <div className={styles.categoryContainer}>
