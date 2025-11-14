@@ -21,6 +21,7 @@
     title: string;
     content: string;
     writer: string;
+    writerIdentifier: string;
     boardHits: number;
     theme: string;
     region: string;
@@ -126,13 +127,10 @@
     }
   );
 
-  // ✅✅✅ [수정] 이미지 업로드 로직 전체를 'Signed URL' 방식으로 변경 ✅✅✅
   export const uploadImage = createAsyncThunk<string, File>(
     'board/uploadImage',
     async (imageFile, { rejectWithValue }) => {
       try {
-        // 1. 백엔드에 GCS 업로드용 1회용 URL을 요청합니다.
-        // (백엔드에 새로 만들어질 API 경로입니다)
         const signedUrlResponse = await api.get('/api/images/generate-upload-url', {
           params: {
             fileName: imageFile.name,
@@ -146,15 +144,13 @@
           throw new Error('GCS 업로드 URL을 받아오지 못했습니다.');
         }
 
-        // 2. 받아온 1회용 URL을 사용해 GCS로 이미지 파일을 직접 전송합니다.
-        // (이 요청은 백엔드를 거치지 않습니다)
+
         await axios.put(signedUrl, imageFile, {
           headers: {
             'Content-Type': imageFile.type,
           },
         });
 
-        // 3. 업로드가 성공하면, DB에 저장될 최종 공개 URL을 반환합니다.
         return publicUrl;
 
       } catch (error) {

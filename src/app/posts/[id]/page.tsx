@@ -4,7 +4,15 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../../store/store';
-import { fetchBoardDetail, fetchComments, createComment, Comment } from '../../../../util/board/boardSilce';
+import { 
+  fetchBoardDetail, 
+  fetchComments, 
+  createComment, 
+  deleteBoard,
+  deleteComment,
+  updateComment,
+  Comment 
+} from '../../../../util/board/boardSilce';
 import styles from '../../../../styles/postDetail/postDetail.module.scss';
 import SearchBar from '../../SearchBar/SearchBar';
 import Image from 'next/image';
@@ -16,6 +24,16 @@ interface NestedComment extends Comment {
   children: NestedComment[];
 }
 
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${year}. ${month}. ${day}. ${hours}:${minutes}`;
+};
+
 const CommentItem = ({ 
   comment, 
   isReply,
@@ -24,7 +42,15 @@ const CommentItem = ({
   onReplySubmit,
   replyContent,
   onReplyContentChange,
-  loading
+  loading,
+  loggedInUser,
+  editingCommentId,
+  editingContent,
+  onEditingContentChange,
+  onStartEdit,
+  onCancelEdit,
+  onUpdateComment,
+  onDeleteComment
 }: { 
   comment: NestedComment, 
   isReply: boolean,
@@ -33,81 +59,134 @@ const CommentItem = ({
   onReplySubmit: (id: number) => void,
   replyContent: string,
   onReplyContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void,
-  loading: boolean
-}) => (
-  <div className={isReply ? styles.replyItem : styles.commentItem}>
-    {isReply && (
-      <div className={styles.replyArrow}>
-        <Image 
-          src="/imgs/reply.png" 
-          alt="대댓글 화살표" 
-          width={20}
-          height={20}
-        />
-      </div>
-    )}
-    <img src={comment.commentWriterProfileImageUrl || '/imgs/default-profile.png'} alt={comment.commentWriter} className={styles.commentAvatar} />
-    <div className={styles.commentBody}>
-      <span className={styles.commentAuthor}>{comment.commentWriter}</span>
-      <p className={styles.commentText}>{comment.commentContent}</p>
-      <div className={styles.commentMeta}>
-        {!isReply && (
-          <button onClick={() => onReplyClick(comment.id)}>
-            <Image src="/imgs/message-square.png" alt="답글 달기" width={16} height={16} />
-            <span>답글</span>
-          </button>
-        )}
-      </div>
-      {replyingTo === comment.id && (
-        <div className={styles.commentInputWrapper} style={{marginTop: '15px'}}>
-           <div className={styles.commentInputContainer}>
+  loading: boolean,
+  loggedInUser: any,
+  editingCommentId: number | null,
+  editingContent: string,
+  onEditingContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void,
+  onStartEdit: (comment: Comment) => void,
+  onCancelEdit: () => void,
+  onUpdateComment: () => void,
+  onDeleteComment: (id: number) => void,
+}) => {
+  const isEditing = editingCommentId === comment.id;
+  const isAuthor = loggedInUser && loggedInUser.userIdentifier === comment.commentWriterIdentifier;
+
+  return (
+    <div className={isReply ? styles.replyItem : styles.commentItem}>
+      {isReply && (
+        <div className={styles.replyArrow}>
+          <Image 
+            src="/imgs/reply.png" 
+            alt="대댓글 화살표" 
+            width={20}
+            height={20}
+          />
+        </div>
+      )}
+      <img src={comment.commentWriterProfileImageUrl || '/imgs/default-profile.png'} alt={comment.commentWriter} className={styles.commentAvatar} />
+      <div className={styles.commentBody}>
+        <span className={styles.commentAuthor}>{comment.commentWriter}</span>
+        
+        {isEditing ? (
+          <div className={styles.editCommentForm}>
             <textarea
-              placeholder={`@${comment.commentWriter}님에게 답글 남기기`}
-              value={replyContent}
-              onChange={onReplyContentChange}
+              value={editingContent}
+              onChange={onEditingContentChange}
               maxLength={200}
               autoFocus
             />
-            <span className={styles.charCount}>{replyContent.length}/200</span>
+            <div className={styles.editActions}>
+              <button onClick={onCancelEdit}>취소</button>
+              <button onClick={onUpdateComment} disabled={loading}>저장</button>
+            </div>
           </div>
-          <button className={styles.sendButton} onClick={() => onReplySubmit(comment.id)} disabled={loading}>
-            {loading ? '...' : <Image src="/imgs/comment_send.png" alt="답글 전송" width={48} height={48} />}
-          </button>
+        ) : (
+          <p className={styles.commentText}>{comment.commentContent}</p>
+        )}
+
+        <div className={styles.commentMeta}>
+          <span className={styles.commentDate}>{formatDate(comment.commentCreatedTime)}</span>
+          {!isReply && (
+            <button onClick={() => onReplyClick(comment.id)}>
+              <Image src="/imgs/message-square.png" alt="답글 달기" width={16} height={16} />
+              <span>답글</span>
+            </button>
+          )}
+          {isAuthor && !isEditing && (
+            <div className={styles.commentActions}>
+              <button onClick={() => onStartEdit(comment)}>수정</button>
+              <button onClick={() => onDeleteComment(comment.id)}>삭제</button>
+            </div>
+          )}
         </div>
-      )}
-      {comment.children.length > 0 && (
-        <div className={styles.repliesContainer}>
-          {comment.children.map(child => (
-            <CommentItem
-              key={child.id}
-              comment={child}
-              isReply={true}
-              replyingTo={replyingTo}
-              onReplyClick={onReplyClick}
-              onReplySubmit={onReplySubmit}
-              replyContent={replyContent}
-              onReplyContentChange={onReplyContentChange}
-              loading={loading}
-            />
-          ))}
-        </div>
-      )}
+        
+        {replyingTo === comment.id && (
+          <div className={styles.commentInputWrapper} style={{marginTop: '15px'}}>
+            <div className={styles.commentInputContainer}>
+              <textarea
+                placeholder={`@${comment.commentWriter}님에게 답글 남기기`}
+                value={replyContent}
+                onChange={onReplyContentChange}
+                maxLength={200}
+                autoFocus
+              />
+              <span className={styles.charCount}>{replyContent.length}/200</span>
+            </div>
+            <button className={styles.sendButton} onClick={() => onReplySubmit(comment.id)} disabled={loading}>
+              {loading ? '...' : <Image src="/imgs/comment_send.png" alt="답글 전송" width={48} height={48} />}
+            </button>
+          </div>
+        )}
+        {comment.children.length > 0 && (
+          <div className={styles.repliesContainer}>
+            {comment.children.map(child => (
+              <CommentItem
+                key={child.id}
+                comment={child}
+                isReply={true}
+                replyingTo={replyingTo}
+                onReplyClick={onReplyClick}
+                onReplySubmit={onReplySubmit}
+                replyContent={replyContent}
+                onReplyContentChange={onReplyContentChange}
+                loading={loading}
+                loggedInUser={loggedInUser}
+                editingCommentId={editingCommentId}
+                editingContent={editingContent}
+                onEditingContentChange={onEditingContentChange}
+                onStartEdit={onStartEdit}
+                onCancelEdit={onCancelEdit}
+                onUpdateComment={onUpdateComment}
+                onDeleteComment={onDeleteComment}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const PostDetail = () => {
   const router = useRouter();
   const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
+  
+  const { user: loggedInUser } = useSelector((state: RootState) => state.auth);
   const { post, comments, loading, error } = useSelector((state: RootState) => state.board);
 
   const id = params.id ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id, 10) : 0;
-
+  
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState('');
+  
   const [activeTab, setActiveTab] = useState<'지역' | '테마'>('지역');
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
+
+  const isPostAuthor = loggedInUser && post && loggedInUser.userIdentifier === post.writerIdentifier;
 
   useEffect(() => {
     if (id && !isNaN(id)) {
@@ -138,6 +217,54 @@ const PostDetail = () => {
       alert(`답글 작성 실패: ${err}`);
     }
   }, [dispatch, id, replyContent]);
+
+  const handleEditPost = useCallback(() => {
+    router.push(`/post/edit/${id}`);
+  }, [router, id]);
+
+  const handleDeletePost = useCallback(async () => {
+    if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      try {
+        await dispatch(deleteBoard(id)).unwrap();
+        alert('게시글이 삭제되었습니다.');
+        router.push('/post');
+      } catch (err) {
+        alert(`게시글 삭제 실패: ${err}`);
+      }
+    }
+  }, [dispatch, id, router]);
+
+  const handleStartEditComment = useCallback((comment: Comment) => {
+    setEditingCommentId(comment.id);
+    setEditingContent(comment.commentContent);
+  }, []);
+
+  const handleCancelEditComment = useCallback(() => {
+    setEditingCommentId(null);
+    setEditingContent('');
+  }, []);
+
+  const handleUpdateComment = useCallback(async () => {
+    if (!editingContent.trim() || !editingCommentId) return;
+    try {
+      await dispatch(updateComment({ id: editingCommentId, commentContent: editingContent, boardId: id })).unwrap();
+      handleCancelEditComment();
+      dispatch(fetchComments(id));
+    } catch (err) {
+      alert(`댓글 수정 실패: ${err}`);
+    }
+  }, [dispatch, id, editingCommentId, editingContent, handleCancelEditComment]);
+
+  const handleDeleteComment = useCallback(async (commentId: number) => {
+    if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+      try {
+        await dispatch(deleteComment(commentId)).unwrap();
+        dispatch(fetchComments(id));
+      } catch (err) {
+        alert(`댓글 삭제 실패: ${err}`);
+      }
+    }
+  }, [dispatch, id]);
 
   const nestedComments = useMemo((): NestedComment[] => {
     if (!comments) return [];
@@ -192,10 +319,20 @@ const PostDetail = () => {
 
         <div className={styles.contentWrapper}>
           <main className={styles.mainContent}>
-            <h1 className={styles.title}>{post.title}</h1>
+            <div className={styles.titleWrapper}>
+              <h1 className={styles.title}>{post.title}</h1>
+              {isPostAuthor && (
+                <div className={styles.postActions}>
+                  <button onClick={handleEditPost}>수정</button>
+                  <button onClick={handleDeletePost}>삭제</button>
+                </div>
+              )}
+            </div>
+            
             <div className={styles.authorInfo}>
               <div className={styles.authorAvatar} style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}></div>
               <span className={styles.authorName}>{post.writer}</span>
+              <span className={styles.postDate}>{formatDate(post.createdTime)}</span>
             </div>
             <div className={styles.imageGrid}>
               <img src={post.thumbnailPublicUrl || '/imgs/default-thumbnail.png'} alt={post.title} />
@@ -230,6 +367,14 @@ const PostDetail = () => {
                       replyContent={replyContent}
                       onReplyContentChange={(e) => setReplyContent(e.target.value)}
                       loading={loading}
+                      loggedInUser={loggedInUser}
+                      editingCommentId={editingCommentId}
+                      editingContent={editingContent}
+                      onEditingContentChange={(e) => setEditingContent(e.target.value)}
+                      onStartEdit={handleStartEditComment}
+                      onCancelEdit={handleCancelEditComment}
+                      onUpdateComment={handleUpdateComment}
+                      onDeleteComment={handleDeleteComment}
                     />
                   ))
                 ) : <p>아직 댓글이 없습니다. 첫 댓글을 남겨주세요!</p>}

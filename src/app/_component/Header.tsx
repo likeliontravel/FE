@@ -41,12 +41,18 @@ export default function Header() {
         <Link href="/main" className={style.logo}></Link>
         <div className={style.navBar}>
           <div className={style.navGroup}>
-            <p onClick={() => handleProtectedClick("/schedule")}>여행 일정 짜기</p>
-            <p onClick={() => handleProtectedClick("/group")}>나의 그룹</p>
+            <a onClick={() => handleProtectedClick("/schedule")}>
+              <p>여행 일정 짜기</p>
+            </a>
+            <a onClick={() => handleProtectedClick("/group")}>
+              <p>나의 그룹</p>
+            </a>
             <Link href="/RandomHome">
               <p>여행지 추천</p>
             </Link>
-            <p onClick={() => handleProtectedClick("/post")}>지역별 여행 게시판</p>
+            <Link href="/post">
+              <p>지역별 여행 게시판</p>
+            </Link>
           </div>
 
           <div className={style.userGroup}>

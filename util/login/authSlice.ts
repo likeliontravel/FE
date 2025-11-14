@@ -41,6 +41,7 @@ interface User {
   id: number | null;
   email: string;
   name: string;
+  userIdentifier: string;
   policy: boolean;
   subscribe: boolean;
   role: string;
@@ -179,7 +180,8 @@ export const fetchUserProfile = createAsyncThunk<User>(
   'auth/fetchUserProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get<APIResponse<User>>('/general-user/profile');
+      const response = await api.get<APIResponse<User>>('/user/getProfile');
+      
       if (!response.data.data) throw new Error('User data not found');
       return response.data.data;
     } catch (error) {

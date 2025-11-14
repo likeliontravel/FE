@@ -41,7 +41,6 @@
   .title {
     font-size: 28px;
     font-weight: 700;
-    margin-bottom: 20px;
   }
   .authorInfo {
     display: flex;
@@ -281,6 +280,10 @@
 }
 
 .commentMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  
   button {
     background: none;
     border: none;
@@ -329,3 +332,102 @@
   }
 }
 
+.titleWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.postActions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-left: 20px;
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px;
+
+    &:hover {
+      color: #333;
+      text-decoration: underline;
+    }
+  }
+}
+
+.commentActions {
+  display: flex;
+  gap: 12px;
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 13px;
+    padding: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.editCommentForm {
+  margin-top: 8px;
+  
+  textarea {
+    width: 100%;
+    min-height: 80px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+
+    &:focus {
+      border-color: #27abf1;
+    }
+  }
+
+  .editActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+
+    button {
+      background-color: #f0f0f0;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+
+      &:last-child {
+        background-color: #27abf1;
+        color: white;
+      }
+    }
+  }
+}
+
+.postDate {
+  font-size: 14px;
+  color: #888;
+  margin-left: auto;
+}
+
+.commentDate {
+  font-size: 13px;
+  color: #888;
+}
