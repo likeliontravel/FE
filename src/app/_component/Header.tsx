@@ -26,13 +26,12 @@ export default function Header() {
     }
   };
 
-  const handleProtectedClick = (path: string) => {
+  const handleProtectedLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     if (!user) {
+      e.preventDefault(); 
       alert("로그인이 필요한 서비스입니다.");
       router.push("/login");
-      return;
     }
-    router.push(path);
   };
 
   return (
@@ -41,15 +40,24 @@ export default function Header() {
         <Link href="/main" className={style.logo}></Link>
         <div className={style.navBar}>
           <div className={style.navGroup}>
-            <a onClick={() => handleProtectedClick("/schedule")}>
+            <Link 
+              href="/schedule" 
+              onClick={(e) => handleProtectedLinkClick(e, "/schedule")}
+            >
               <p>여행 일정 짜기</p>
-            </a>
-            <a onClick={() => handleProtectedClick("/group")}>
+            </Link>
+
+            <Link 
+              href="/group"
+              onClick={(e) => handleProtectedLinkClick(e, "/group")}
+            >
               <p>나의 그룹</p>
-            </a>
+            </Link>
+
             <Link href="/RandomHome">
               <p>여행지 추천</p>
             </Link>
+            
             <Link href="/post">
               <p>지역별 여행 게시판</p>
             </Link>
