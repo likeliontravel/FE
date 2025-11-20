@@ -4,41 +4,24 @@ import { useEffect, useState } from "react";
 import style from "../../../styles/group/groupPage.module.scss";
 import NonGroup from "./nonGroup";
 import IfGroup from "./ifGroup";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../store/store";
+import { fetchUserGroups } from "../../../util/group/groupSlice";
 
 const GroupPage = () => {
-  const [hasGroup, setHasGroup] = useState<boolean | null>(null);
-  const [groups, setGroups] = useState<any[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { groups, loading } = useSelector((state: RootState) => state.group);
 
   useEffect(() => {
-      const token = localStorage.getItem("accessToken");
+    dispatch(fetchUserGroups());
+  }, [dispatch]);
 
-    const fetchGroups = async () => {
-      try {
-        const res = await fetch("https://api.toleave.shop/group/user-groups", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const json = await res.json();
-
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setGroups(json.data);
-          setHasGroup(true);
-        } else {
-          setHasGroup(false);
-        }
-      } catch (error) {
-        console.error("그룹 정보 불러오기 실패:", error);
-        setHasGroup(false);
-      }
-    };
-
-    fetchGroups();
-  }, []);
+  const hasGroup = groups.length > 0;
 
   return (
     <div className={style.body}>
-      {hasGroup ? <IfGroup groups={groups} /> : <NonGroup />}
+      {loading ? <></> : hasGroup ? <IfGroup groups={groups} /> : <NonGroup />}
     </div>
   );
 };
