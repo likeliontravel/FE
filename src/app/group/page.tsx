@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import style from "../../../styles/group/groupPage.module.scss";
 import NonGroup from "./nonGroup";
 import IfGroup from "./ifGroup";
