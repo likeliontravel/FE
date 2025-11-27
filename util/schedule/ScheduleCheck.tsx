@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import { setMainViewDate } from "../store/calendarSlice";
+import { RootState } from "../../store/store";
+import { setMainViewDate } from "../../store/calendarSlice";
 import { useState } from "react";
 import ScheduleModal from "./ScheduleModal";
 import styles from "./ScheduleCheck.module.scss";

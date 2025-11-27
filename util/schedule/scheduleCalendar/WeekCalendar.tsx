@@ -8,7 +8,7 @@ import { EventMountArg } from "@fullcalendar/core";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import koLocale from "@fullcalendar/core/locales/ko";
-import UseReactSelect from "../select/UseReactSelect";
+import UseReactSelect from "../../select/UseReactSelect";
 
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
@@ -19,8 +19,11 @@ import getMonthWeekString from "./getMonthWeekString";
 import MiniCalendar from "./MiniCalendar";
 
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../../store/store";
-import { addSelectedSlot, removeSelectedSlot } from "../../store/calendarSlice";
+import { RootState, AppDispatch } from "../../../store/store";
+import {
+  addSelectedSlot,
+  removeSelectedSlot,
+} from "../../../store/calendarSlice";
 import GuideOverlay from "./GuideOverlay";
 
 interface WeekCalendarProps {

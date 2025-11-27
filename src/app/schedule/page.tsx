@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import WeekCalendar from "../../../util/scheduleCalendar/WeekCalendar";
-import ScheduleList from "../../../util/scheduleList/ScheduleList";
+import WeekCalendar from "../../../util/schedule/scheduleCalendar/WeekCalendar";
+import ScheduleList from "../../../util/schedule/scheduleList/ScheduleList";
 import TourOverlay from "./TourOverlay";
 
 const SchedulePage = () => {

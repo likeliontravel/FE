@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import style from "../../../../styles/group/groupDetail.module.scss";
-import MiniCalendar from "../../../../util/scheduleCalendar/MiniCalendar";
-import ScheduleCheck from "../../../../util/ScheduleCheck";
+import MiniCalendar from "../../../../util/schedule/scheduleCalendar/MiniCalendar";
+import ScheduleCheck from "../../../../util/schedule/ScheduleCheck";
 import Footer from "@/app/_component/Footer";
 import GroupNoticeModal from "./GroupNoticeModal";
 import GroupInviteModal from "./GroupInviteModal";
@@ -22,7 +22,7 @@ export default function groupDetail() {
   const groupName = params.groupName as string;
 
   useEffect(() => {
-      const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
 
     const fetchGroups = async () => {
       try {

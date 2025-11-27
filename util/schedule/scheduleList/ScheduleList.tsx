@@ -2,10 +2,10 @@
 
 import React, { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import UseReactSelect from "../select/UseReactSelect";
+import UseReactSelect from "../../select/UseReactSelect";
 import styles from "./ScheduleList.module.scss";
-import { RootState, AppDispatch } from "../../store/store";
-import { addEvent, clearSelectedSlots } from "../../store/calendarSlice";
+import { RootState, AppDispatch } from "../../../store/store";
+import { addEvent, clearSelectedSlots } from "../../../store/calendarSlice";
 import dayjs from "dayjs";
 
 interface ScheduleItem {
@@ -76,7 +76,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
 
   const handleFetchTouristSpots = async () => {
-      const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       alert("로그인이 필요합니다.");
       return;

@@ -7,8 +7,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 import koLocale from "@fullcalendar/core/locales/ko";
 import { DateSelectArg } from "@fullcalendar/core";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../../store/store";
-import { setMainViewDate } from "../../store/calendarSlice";
+import { RootState, AppDispatch } from "../../../store/store";
+import { setMainViewDate } from "../../../store/calendarSlice";
 import dayjs from "dayjs";
 import styles from "./WeekCalendar.module.scss";
 

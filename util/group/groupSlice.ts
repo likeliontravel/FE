@@ -16,9 +16,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/* ===========================
-   Types
-=========================== */
 export interface Group {
   id: number;
   groupName: string;
@@ -42,24 +39,21 @@ export interface GroupSchedule {
 }
 
 interface GroupState {
-  groups: Group[]; // 기존 목록
-  groupDetail: GroupDetail | null; // 🔥 추가
-  schedule: GroupSchedule[] | null; // 🔥 추가
+  groups: Group[];
+  groupDetail: GroupDetail | null;
+  schedule: GroupSchedule[] | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: GroupState = {
   groups: [],
-  groupDetail: null, // 🔥 추가
-  schedule: null, // 🔥 추가
+  groupDetail: null,
+  schedule: null,
   loading: false,
   error: null,
 };
 
-/* ===========================
-   1) 기존: 사용자 그룹 조회
-=========================== */
 export const fetchUserGroups = createAsyncThunk<Group[]>(
   "group/fetchUserGroups",
   async (_, { rejectWithValue }) => {
@@ -74,9 +68,6 @@ export const fetchUserGroups = createAsyncThunk<Group[]>(
   }
 );
 
-/* ===========================
-   2) 기존: 그룹 생성
-=========================== */
 export const createGroup = createAsyncThunk(
   "group/createGroup",
   async (
@@ -102,9 +93,6 @@ export const createGroup = createAsyncThunk(
   }
 );
 
-/* ===========================
-   🔥 3) 추가: 그룹 상세 조회
-=========================== */
 export const fetchGroupDetail = createAsyncThunk<GroupDetail, string>(
   "group/fetchGroupDetail",
   async (groupName, { rejectWithValue }) => {
@@ -124,9 +112,6 @@ export const fetchGroupDetail = createAsyncThunk<GroupDetail, string>(
   }
 );
 
-/* ===========================
-   🔥 4) 추가: 그룹 일정 조회
-=========================== */
 export const fetchGroupSchedule = createAsyncThunk<GroupSchedule[], string>(
   "group/fetchGroupSchedule",
   async (groupName, { rejectWithValue }) => {
@@ -144,16 +129,12 @@ export const fetchGroupSchedule = createAsyncThunk<GroupSchedule[], string>(
   }
 );
 
-/* ===========================
-   Slice
-=========================== */
 const groupSlice = createSlice({
   name: "group",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      /* 기존 목록 */
       .addCase(fetchUserGroups.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -170,7 +151,6 @@ const groupSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      /* 기존 생성 */
       .addCase(createGroup.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -184,7 +164,6 @@ const groupSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      /* 🔥 추가: 그룹 상세 */
       .addCase(fetchGroupDetail.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -201,7 +180,6 @@ const groupSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      /* 🔥 추가: 일정 */
       .addCase(fetchGroupSchedule.pending, (state) => {
         state.loading = true;
         state.error = null;
