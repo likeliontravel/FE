@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../../store/store";
+import { createGroup, fetchUserGroups } from "../../../util/group/groupSlice";
 import style from "../../../styles/group/groupPage.module.scss";
 
 export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
-  const token = localStorage.getItem("accessToken");
+  const dispatch = useDispatch<AppDispatch>();
+
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,30 +21,21 @@ export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
     try {
       setIsSubmitting(true);
 
-      const res = await fetch("https://api.toleave.shop/group/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      await dispatch(
+        createGroup({
           groupName: groupName.trim(),
           description: description.trim(),
-        }),
-      });
+        })
+      ).unwrap();
 
-      const result = await res.json();
+      alert("그룹이 성공적으로 생성되었습니다!");
 
-      if (res.ok && result.success) {
-        alert("그룹이 성공적으로 생성되었습니다!");
-        window.location.reload();
-        onClose();
-      } else {
-        alert("그룹 생성 실패: " + result.message);
-      }
-    } catch (err) {
+      dispatch(fetchUserGroups());
+
+      onClose();
+    } catch (err: any) {
       console.error(err);
-      alert("요청 중 오류가 발생했습니다.");
+      alert("그룹 생성 실패: " + (err || "알 수 없는 오류가 발생했습니다."));
     } finally {
       setIsSubmitting(false);
     }
