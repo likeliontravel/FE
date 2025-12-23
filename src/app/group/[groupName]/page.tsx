@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchGroupDetail,
+  fetchGroupSchedule,
+} from "../../../../util/group/groupSlice";
 import style from "../../../../styles/group/groupDetail.module.scss";
 import MiniCalendar from "../../../../util/schedule/scheduleCalendar/MiniCalendar";
 import ScheduleCheck from "../../../../util/schedule/ScheduleCheck";
@@ -12,74 +17,34 @@ import GroupInviteModal from "./GroupInviteModal";
 import UseReactSelect from "../../../../util/select/UseReactSelect";
 
 export default function groupDetail() {
+  const dispatch = useDispatch<any>();
+  const params = useParams();
+  const groupName = params.groupName as string;
+  const { groupDetail } = useSelector((state: any) => state.group);
   const [isModalOpen, setIsModalOpen] = useState<null | "notice" | "invite">(
     null
   );
-  const [group, setGroup] = useState<any | null>(null);
-  const [schedule, setSchedule] = useState<any | null>(null);
-  const [notice, setNotice] = useState<any | null>(null);
-  const params = useParams();
-  const groupName = params.groupName as string;
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-
-    const fetchGroups = async () => {
-      try {
-        const res = await fetch(
-          `https://api.toleave.shop/group/${groupName}/detail`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const json = await res.json();
-
-        if (json.success) {
-          setGroup(json.data);
-          setNotice(json.data.latestAnnouncement);
-        }
-      } catch (error) {
-        console.error("그룹 정보 불러오기 실패:", error);
-      }
-    };
-    const fetchSchedule = async () => {
-      try {
-        const res = await fetch(
-          `https://api.toleave.shop/schedule/get/${groupName}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const json = await res.json();
-
-        if (json.success) {
-          setSchedule(json.data);
-        }
-      } catch (error) {
-        console.error("일정 불러오기 실패:", error);
-      }
-    };
-
-    fetchGroups();
-    fetchSchedule();
-  }, []);
+    if (groupName) {
+      dispatch(fetchGroupDetail(groupName));
+      dispatch(fetchGroupSchedule(groupName));
+    }
+  }, [dispatch, groupName]);
+  const notice = groupDetail?.latestAnnouncement;
 
   return (
     <>
-      {group && (
+      {groupDetail && (
         <div className={style.group_detail}>
           <div className={style.group_detail_top}>
             <div>
-              <h1>{group.groupName}</h1>
-              <p>{group.description}</p>
+              <h1>{groupDetail.groupName}</h1>
+              <p>{groupDetail.description}</p>
             </div>
             <p>
-              {group.createdName} 외 {group.members.length - 1}명의 멤버가
-              있어요
+              {groupDetail.createdName} 외 {groupDetail.members.length - 1}명의
+              멤버가 있어요
             </p>
           </div>
           <div className={style.group_detail_middle}>
@@ -107,7 +72,7 @@ export default function groupDetail() {
               <Link
                 href={{
                   pathname: `/group/${groupName}/chat`,
-                  query: { groupDescription: group.description },
+                  query: { groupDescription: groupDetail.description },
                 }}
               >
                 <p>그룹 채팅</p>
@@ -116,7 +81,7 @@ export default function groupDetail() {
             </div>
           </div>
           <h1>
-            <i>{group?.groupName}</i>의 여행 일정
+            <i>{groupDetail?.groupName}</i>의 여행 일정
           </h1>
           <div className={style.group_detail_bottom}>
             <div className={style.calendar_div}>
