@@ -280,10 +280,11 @@
 }
 
 .commig_div_p_div_flex_div_title {
-  @include width-height(93px, 58px);
+  @include width-height(auto, 58px);
   background-color: #27abf1;
   border-radius: 12px;
   margin-right: 12px;
+  padding: 0 10px;
   p {
     @include font_size-font_weight-line_height(15px, 700, 62px);
     color: white;

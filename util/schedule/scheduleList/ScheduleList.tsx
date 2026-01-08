@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import UseReactSelect from "../../select/UseReactSelect";
 import styles from "./ScheduleList.module.scss";
 import { RootState, AppDispatch } from "../../../store/store";
 import { addEvent, clearSelectedSlots } from "../../../store/calendarSlice";
 import dayjs from "dayjs";
-
-interface ScheduleItem {
-  id: string;
-  title: string;
-  address: string;
-  category: "restaurant" | "hotel" | "tourist_spot";
-}
+import {
+  clearScheduleItems,
+  fetchScheduleItems,
+  ScheduleItem,
+} from "../scheduleSilce";
 
 interface ScheduleListProps {
   selectedLocation: string;
@@ -67,69 +65,43 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   selectedLocation,
   selectedTheme,
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
   const selectedListSchedule = useSelector(
     (s: RootState) => s.calendar.selectedListSchedule
   );
 
+  const { scheduleItems, loading, error } = useSelector(
+    (state: RootState) => state.schedule
+  );
   const [keyword, setKeyword] = useState("");
-  const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearScheduleItems());
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      alert(error);
+    }
+  }, [error]);
 
   const handleFetchTouristSpots = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-    if (isSubmitting) return;
+    if (loading) return;
 
-    try {
-      setIsSubmitting(true);
-
-      const category = selectedListSchedule.value;
-      const categoryMap: Record<string, string> = {
-        restaurant: "restaurants",
-        hotel: "accommodations",
-        tourist_spot: "touristspots",
-      };
-      const endpoint = categoryMap[category] || "touristspots";
-
-      const params = new URLSearchParams();
-
-      if (selectedLocation) params.append("regions", selectedLocation);
-      if (selectedTheme) params.append("themes", selectedTheme);
-      if (keyword.trim()) params.append("keyword", keyword.trim());
-
-      params.append("page", "1");
-      params.append("size", "10");
-
-      params.append("sortType", "TITLE_ASC");
-
-      const res = await fetch(
-        `https://api.toleave.shop/places/${endpoint}?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const result = await res.json();
-
-      if (res.ok && result.success) {
+    dispatch(
+      fetchScheduleItems({
+        category: selectedListSchedule.value, // "restaurant", "hotel", "tourist_spot"
+        location: selectedLocation,
+        theme: selectedTheme,
+        keyword: keyword,
+      })
+    ).then((action) => {
+      if (fetchScheduleItems.fulfilled.match(action)) {
         alert("데이터 조회가 성공적으로 되었습니다!");
-        setScheduleItems(result.data);
-      } else {
-        alert("데이터 조회 실패: " + result.message);
       }
-    } catch (err) {
-      console.error(err);
-      alert("요청 중 오류가 발생했습니다.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    });
   };
 
   return (
@@ -154,7 +126,10 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
         </div>
       </div>
       <div className={styles.main_list}>
-        {scheduleItems.map((item) => (
+        {!loading && scheduleItems.length === 0 && (
+          <div className={styles.empty}>검색 결과가 없습니다.</div>
+        )}
+        {scheduleItems.map((item: ScheduleItem) => (
           <ScheduleListItem key={item.id} item={item} />
         ))}
       </div>
