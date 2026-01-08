@@ -5,10 +5,10 @@ import Link from "next/link";
 import style from "../../../styles/mypage/mypage.module.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import MiniCalendar from "../../../util/scheduleCalendar/MiniCalendar";
+import MiniCalendar from '../../../util/schedule/scheduleCalendar/MiniCalendar';
 import UseReactSelect from "../../../util/select/UseReactSelect";
 import KakaoMap from "../../../util/KakaoMap";
-import ScheduleCheck from "../../../util/ScheduleCheck";
+import ScheduleCheck from '../../../util/schedule/ScheduleCheck';
 
 export default function myPage() {
   const [user, setUser] = useState<any>(null);

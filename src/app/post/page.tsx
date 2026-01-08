@@ -48,8 +48,8 @@ const createExcerpt = (htmlContent: string, maxLength: number = 100): string => 
 const PostList = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { user: loggedInUser } = useSelector((state: RootState) => state.auth);
-  const { posts, loading, error } = useSelector((state: RootState) => state.board);
+  const { user: loggedInUser } = useSelector((state: RootState) => state.auth || {});
+  const { posts, loading, error } = useSelector((state: RootState) => state.board || {});
 
   const [currentQuery, setCurrentQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'POPULAR' | 'RECENT'>('POPULAR');
@@ -133,13 +133,13 @@ const PostList = () => {
             <div className={styles.postList}>
               {loading && <p>게시글을 불러오는 중...</p>}
               {error && <p>에러: {error}</p>}
-              {!loading && !error && posts.map((post: Board) => (
-                <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
+              {!loading && !error && posts && posts.map((post: Board) => (
+                <Link href={`/post/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
                       <h3 className={styles.postTitle}>{post.title}</h3>
                       <div className={styles.postMeta}>
-                          <div className={styles.authorAvatar}></div>
+                          <div className={styles.authorAvatar} style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}></div>
                           <span className={styles.authorName}>{post.writer}</span>
                       </div>
                       <p className={styles.postExcerpt}>
@@ -150,22 +150,39 @@ const PostList = () => {
                   </div>
                 </Link>
               ))}
-               {!loading && posts.length === 0 && <p>표시할 게시글이 없습니다.</p>}
+               {!loading && posts?.length === 0 && <p>표시할 게시글이 없습니다.</p>}
             </div>
           </main>
 
           <aside className={styles.sidebar}>
             <div className={styles.profileCard}>
-              <div className={styles.profileHeader}>
-                <Image src="/imgs/Ellipse5.png" alt="profile" width={50} height={50} className={styles.profileImage}/>
-                <p className={styles.username}>린님</p>
-              </div>
-              <div className={styles.profileDivider} />
-              <div className={styles.profileActions}>
-                <button><Image src="/imgs/Popular.png" alt="인기글" width={36} height={36} /><span>인기글 보기</span></button>
-                <button onClick={goToPostWrite}><Image src="/imgs/writing.png" alt="글쓰기" width={36} height={36} /><span>글쓰기</span></button>
-                <button onClick={goToMyPosts}><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
-              </div>
+              {loggedInUser ? (
+                <>
+                  <div className={styles.profileHeader}>
+                    <Image 
+                      src={loggedInUser.profileImageUrl || "/imgs/default-profile.png"} 
+                      alt={`${loggedInUser.name}님의 프로필`}
+                      width={50} 
+                      height={50} 
+                      className={styles.profileImage}
+                    />
+                    <p className={styles.username}>{loggedInUser.name}님</p>
+                  </div>
+                  <div className={styles.profileDivider} />
+                  <div className={styles.profileActions}>
+                    <button><Image src="/imgs/Popular.png" alt="인기글" width={36} height={36} /><span>인기글 보기</span></button>
+                    <button onClick={goToPostWrite}><Image src="/imgs/writing.png" alt="글쓰기" width={36} height={36} /><span>글쓰기</span></button>
+                    <button onClick={goToMyPosts}><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
+                  </div>
+                </>
+              ) : (
+                <div className={styles.loginContainer}>
+                  <p className={styles.loginPrompt}>로그인하고 더 많은 기능을 이용해보세요!</p>
+                  <Link href="/login" className={styles.loginButtonLink}>
+                    <button className={styles.loginButton}>로그인 / 회원가입</button>
+                  </Link>
+                </div>
+              )}
             </div>
             <div className={styles.categoryContainer}>
               <div className={styles.categoryTabs}>

@@ -232,3 +232,40 @@
     }
   }
 }
+.loginContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.loginPrompt {
+  font-size: 15px;
+  color: #555;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.loginButtonLink {
+  width: 100%;
+  text-decoration: none;
+}
+
+.loginButton {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  background-color: #27abf1;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #1a92d1;
+  }
+}

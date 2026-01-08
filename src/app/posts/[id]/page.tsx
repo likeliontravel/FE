@@ -173,8 +173,8 @@ const PostDetail = () => {
   const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
   
-  const { user: loggedInUser } = useSelector((state: RootState) => state.auth);
-  const { post, comments, loading, error } = useSelector((state: RootState) => state.board);
+  const { user: loggedInUser } = useSelector((state: RootState) => state.auth || {});
+  const { post, comments, loading, error } = useSelector((state: RootState) => state.board || {});
 
   const id = params.id ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id, 10) : 0;
   
@@ -317,6 +317,11 @@ const PostDetail = () => {
     router.push('/postWrite');
   }, [router, requireLogin]);
 
+  const goToMyPosts = useCallback(() => {
+    if (!requireLogin()) return;
+    router.push('/mypage/posts');
+  }, [router, requireLogin]);
+
   const handleReplyClick = useCallback((id: number) => {
     if (!requireLogin()) return;
     setReplyingTo(prev => (prev === id ? null : id));
@@ -374,7 +379,7 @@ const PostDetail = () => {
                 </button>
               </div>
               <div className={styles.commentList}>
-                {nestedComments.length > 0 ? (
+                {nestedComments && nestedComments.length > 0 ? (
                   nestedComments.map(comment => (
                     <CommentItem
                       key={comment.id}
@@ -402,16 +407,36 @@ const PostDetail = () => {
           </main>
           <aside className={styles.sidebar}>
             <div className={styles.profileCard}>
-              <div className={styles.profileHeader}>
-                <Image src="/images/profile.png" alt="profile" width={50} height={50} className={styles.profileImage} />
-                <p className={styles.username}>린님</p>
-              </div>
-              <div className={styles.profileDivider} />
-              <div className={styles.profileActions}>
-                <button><img src="/imgs/Popular.png" alt="인기글" /><span>인기글 보기</span></button>
-                <button onClick={goToPostWrite}><img src="/imgs/writing.png" alt="글쓰기" /><span>글쓰기</span></button>
-                <button><img src="/imgs/myposts.png" alt="내 글" /><span>내 글보기</span></button>
-              </div>
+              {loggedInUser ? (
+                <>
+                  <div className={styles.profileHeader}>
+                    <Image 
+                      src={loggedInUser.profileImageUrl || "/imgs/default-profile.png"}
+                      alt={`${loggedInUser.name}님의 프로필`}
+                      width={50} 
+                      height={50} 
+                      className={styles.profileImage}
+                    />
+                    <p className={styles.username}>{loggedInUser.name}님</p>
+                  </div>
+                  <div className={styles.profileDivider} />
+                  <div className={styles.profileActions}>
+                    <button><Image src="/imgs/Popular.png" alt="인기글" width={36} height={36} /><span>인기글 보기</span></button>
+                    <button onClick={goToPostWrite}><Image src="/imgs/writing.png" alt="글쓰기" width={36} height={36} /><span>글쓰기</span></button>
+                    <button onClick={goToMyPosts}><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
+                  </div>
+                </>
+              ) : (
+                <div className={styles.loginContainer}>
+                  <p className={styles.loginPrompt}>로그인하고 더 많은 기능을 이용해보세요!</p>
+                <button 
+                  className={styles.loginButton} 
+                  onClick={() => router.push('/login')}
+                >
+                  로그인
+                </button>
+                </div>
+              )}
             </div>
             <div className={styles.categoryContainer}>
               <div className={styles.categoryTabs}>

@@ -10,26 +10,20 @@ const api = axios.create({
   withCredentials: true,
 });
 
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const response = await axios.post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true });
-        
-        const newAccessToken = response.headers['authorization']?.replace('Bearer ', '');
-        if (newAccessToken) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            return api(originalRequest);
-        } else {
-            throw new Error('New access token not received');
-        }
+        await axios.post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true });
+        return api(originalRequest);
       } catch (refreshError) {
-        if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-        }
+
+        console.error("Token refresh failed. User needs to login again.", refreshError);
         return Promise.reject(refreshError);
       }
     }
@@ -45,6 +39,7 @@ interface User {
   policy: boolean;
   subscribe: boolean;
   role: string;
+  profileImageUrl: string | null;
   password?: string | null;
   provider?: string;
 }
