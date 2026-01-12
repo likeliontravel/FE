@@ -319,7 +319,7 @@ const PostDetail = () => {
 
   const goToMyPosts = useCallback(() => {
     if (!requireLogin()) return;
-    router.push('/mypage/posts');
+    router.push('/posts/mypost');
   }, [router, requireLogin]);
 
   const handleReplyClick = useCallback((id: number) => {

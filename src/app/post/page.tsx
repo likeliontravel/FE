@@ -110,7 +110,7 @@ const PostList = () => {
 
   const goToMyPosts = useCallback(() => {
     if (!requireLogin()) return;
-    router.push('/mypage/posts');
+    router.push('/posts/mypost');
   }, [router, requireLogin]);
 
   const currentKeywords = activeTab === '지역' ? regionKeywords : themeKeywords;
