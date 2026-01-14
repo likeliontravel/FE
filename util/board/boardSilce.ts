@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { api, publicApi } from '../api';
+import { RootState } from '../../store/store'; 
 
 export interface Board {
   id: number;
@@ -59,18 +60,40 @@ export const fetchBoards = createAsyncThunk<Board[], { page?: number; size?: num
   }
 );
 
-export const fetchMyBoards = createAsyncThunk<Board[], void>(
+
+
+export const fetchMyBoards = createAsyncThunk<Board[], void, { state: RootState }>(
   'board/fetchMyBoards',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
-      const response = await api.get('/board/my'); 
-      return response.data.data;
+      const state = getState();
+      const currentUserIdentifier = state.auth.user?.userIdentifier;
+
+      if (!currentUserIdentifier) {
+        throw new Error('로그인 정보가 없습니다.');
+      }
+
+      const response = await publicApi.get('/board/all', { 
+        params: { 
+          page: 0, 
+          size: 1000, // 충분히 많은 양을 가져옵니다.
+          sortType: 'RECENT' 
+        } 
+      });
+      
+      const allPosts: Board[] = response.data.data;
+
+      const myPosts = allPosts.filter(post => post.writerIdentifier === currentUserIdentifier);
+
+      return myPosts;
+
     } catch (error) {
       if (axios.isAxiosError(error)) return rejectWithValue(error.response?.data?.message || '내 게시글 조회 실패');
       return rejectWithValue('알 수 없는 오류가 발생했습니다.');
     }
   }
 );
+
 
 export const searchBoards = createAsyncThunk<Board[], { searchKeyword: string; sortType?: 'POPULAR' | 'RECENT' }>(
   'board/searchBoards',
@@ -146,35 +169,22 @@ export const fetchComments = createAsyncThunk<Comment[], number>(
 export const uploadImage = createAsyncThunk<string, File>(
   'board/uploadImage',
   async (imageFile, { rejectWithValue }) => {
-    try {
-      const signedUrlResponse = await api.get('/api/images/generate-upload-url', {
-        params: {
-          fileName: imageFile.name,
-          contentType: imageFile.type,
-        },
-      });
-
-      const { signedUrl, publicUrl } = signedUrlResponse.data.data;
-
-      if (!signedUrl || !publicUrl) {
-        throw new Error('GCS 업로드 URL을 받아오지 못했습니다.');
+    return new Promise<string>((resolve, reject) => {
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(imageFile);
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            resolve(reader.result); // 변환된 긴 문자열 반환
+          } else {
+            reject('이미지 변환 실패');
+          }
+        };
+        reader.onerror = (error) => reject(error);
+      } catch (error) {
+        return rejectWithValue('이미지 처리 중 오류가 발생했습니다.');
       }
-
-      await axios.put(signedUrl, imageFile, {
-        headers: {
-          'Content-Type': imageFile.type,
-        },
-      });
-
-      return publicUrl;
-
-    } catch (error) {
-      console.error("GCS Upload Error:", error);
-      if (axios.isAxiosError(error)) {
-        return rejectWithValue(error.response?.data?.message || '이미지 업로드에 실패했습니다.');
-      }
-      return rejectWithValue('이미지 업로드 중 알 수 없는 오류가 발생했습니다.');
-    }
+    });
   }
 );
 

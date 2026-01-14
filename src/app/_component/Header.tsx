@@ -69,7 +69,7 @@ export default function Header() {
               <div
                 className={style.userImage}
                 style={{
-                  backgroundImage: `url(${"/imgs/default-profile.png"})`,
+                  backgroundImage: `url(${user?.profileImageUrl || "/imgs/default-profile.png"})`,
                 }}
               ></div>
               

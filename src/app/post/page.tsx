@@ -52,7 +52,9 @@ const PostList = () => {
   const { posts, loading, error } = useSelector((state: RootState) => state.board || {});
 
   const [currentQuery, setCurrentQuery] = useState('');
-  const [sortOrder, setSortOrder] = useState<'POPULAR' | 'RECENT'>('POPULAR');
+  
+  const [sortOrder, setSortOrder] = useState<'POPULAR' | 'RECENT'>('RECENT');
+  
   const [activeTab, setActiveTab] = useState<'지역' | '테마'>('지역');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -76,11 +78,13 @@ const PostList = () => {
   const handleSearch = (term: string) => {
     setCurrentQuery(term);
     setActiveCategory(null);
+    setSortOrder('RECENT'); 
   };
 
   const handleCategoryClick = (category: string) => {
     setCurrentQuery('');
     setActiveCategory(prevCategory => prevCategory === category ? null : category);
+    setSortOrder('RECENT'); 
   };
 
   const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -91,6 +95,7 @@ const PostList = () => {
     if (activeTab !== tab) {
         setActiveTab(tab);
         setActiveCategory(null);
+        setSortOrder('RECENT');
     }
   }, [activeTab]);
 
@@ -110,7 +115,7 @@ const PostList = () => {
 
   const goToMyPosts = useCallback(() => {
     if (!requireLogin()) return;
-    router.push('/posts/mypost');
+    router.push('/mypage/posts');
   }, [router, requireLogin]);
 
   const currentKeywords = activeTab === '지역' ? regionKeywords : themeKeywords;
@@ -126,31 +131,48 @@ const PostList = () => {
           <main className={styles.mainContent}>
             <div className={styles.sortOptions}>
               <select value={sortOrder} onChange={handleSortChange} className={styles.sortSelect}>
-                <option value="POPULAR">인기순</option>
                 <option value="RECENT">최신순</option>
+                <option value="POPULAR">인기순</option>
               </select>
             </div>
             <div className={styles.postList}>
               {loading && <p>게시글을 불러오는 중...</p>}
               {error && <p>에러: {error}</p>}
-              {!loading && !error && posts && posts.map((post: Board) => (
-                <Link href={`/post/${post.id}`} key={post.id} className={styles.postItemLink}>
+              
+              {!loading && !error && Array.isArray(posts) && posts.map((post: Board) => (
+                <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
                       <h3 className={styles.postTitle}>{post.title}</h3>
                       <div className={styles.postMeta}>
-                          <div className={styles.authorAvatar} style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}></div>
+                          <div 
+                            className={styles.authorAvatar} 
+                            style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}
+                          ></div>
                           <span className={styles.authorName}>{post.writer}</span>
                       </div>
                       <p className={styles.postExcerpt}>
                         {createExcerpt(post.content)}
                       </p>
                     </div>
-                    <img src={post.thumbnailPublicUrl || '/imgs/default-thumbnail.png'} alt={post.title} className={styles.postImage} />
+                    
+                    {post.thumbnailPublicUrl && (
+                      <img 
+                        src={post.thumbnailPublicUrl} 
+                        alt={post.title} 
+                        className={styles.postImage} 
+                      />
+                    )}
+                    
                   </div>
                 </Link>
               ))}
-               {!loading && posts?.length === 0 && <p>표시할 게시글이 없습니다.</p>}
+              
+              {!loading && Array.isArray(posts) && posts.length === 0 && (
+                <div style={{ padding: '50px', textAlign: 'center', color: '#666' }}>
+                  표시할 게시글이 없습니다.
+                </div>
+              )}
             </div>
           </main>
 
@@ -178,9 +200,12 @@ const PostList = () => {
               ) : (
                 <div className={styles.loginContainer}>
                   <p className={styles.loginPrompt}>로그인하고 더 많은 기능을 이용해보세요!</p>
-                  <Link href="/login" className={styles.loginButtonLink}>
-                    <button className={styles.loginButton}>로그인 / 회원가입</button>
-                  </Link>
+                  <button 
+                    className={styles.loginButton} 
+                    onClick={() => router.push('/login')}
+                  >
+                    로그인 / 회원가입
+                  </button>
                 </div>
               )}
             </div>

@@ -10,19 +10,16 @@ const api = axios.create({
   withCredentials: true,
 });
 
-
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
         await axios.post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true });
         return api(originalRequest);
       } catch (refreshError) {
-
         console.error("Token refresh failed. User needs to login again.", refreshError);
         return Promise.reject(refreshError);
       }
@@ -247,6 +244,7 @@ const authSlice = createSlice({
       })
       .addCase(fetchUserProfile.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchUserProfile.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
@@ -255,6 +253,7 @@ const authSlice = createSlice({
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.user = null;
       })
       .addCase(verifyEmailCode.fulfilled, (state) => {
         state.isEmailVerified = true;

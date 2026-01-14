@@ -357,9 +357,11 @@ const PostDetail = () => {
               <span className={styles.authorName}>{post.writer}</span>
               <span className={styles.postDate}>{formatDate(post.createdTime)}</span>
             </div>
-            <div className={styles.imageGrid}>
-              <img src={post.thumbnailPublicUrl || '/imgs/default-thumbnail.png'} alt={post.title} />
-            </div>
+            {post.thumbnailPublicUrl && (
+              <div className={styles.imageGrid}>
+                <img src={post.thumbnailPublicUrl} alt={post.title} />
+              </div>
+            )}
             <div className={styles.postBody} dangerouslySetInnerHTML={postBodyContent} />
             
             <div className={styles.commentsSection}>

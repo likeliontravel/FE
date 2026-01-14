@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../../store/store';
 import { fetchUserProfile } from '../../../../util/login/authSlice';
@@ -22,7 +22,6 @@ function RedirectHandler() {
         router.replace('/login');
       }
     };
-
     handleLogin();
   }, [dispatch, router]);
 
