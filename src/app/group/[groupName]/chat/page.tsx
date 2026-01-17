@@ -172,7 +172,7 @@ export default function WebSocketChatClient() {
 
     const client = new Client({
       webSocketFactory: () =>
-        new SockJS("https://api.toleave.shop/ws" + queryString),
+        new SockJS("/ws" + queryString),
       reconnectDelay: 3000, // 끊기면 3초 후 재연결
       onConnect: () => {
         const sub = client.subscribe(

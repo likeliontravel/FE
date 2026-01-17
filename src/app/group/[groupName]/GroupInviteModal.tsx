@@ -20,7 +20,7 @@ export default function GroupInviteModal({
 
     try {
       const res = await fetch(
-        `https://api.toleave.shop/group/${groupName}/invitation`,
+        `/group/${groupName}/invitation`,
         {
           method: "GET",
           headers: {
@@ -62,7 +62,7 @@ export default function GroupInviteModal({
       setIsSubmitting(true);
 
       const res = await fetch(
-        `https://api.toleave.shop/group/${groupName}/invitation/generateNew`,
+        `/group/${groupName}/invitation/generateNew`,
         {
           method: "POST",
           headers: {

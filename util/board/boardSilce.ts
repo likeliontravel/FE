@@ -76,7 +76,7 @@ export const fetchMyBoards = createAsyncThunk<Board[], void, { state: RootState 
       const response = await publicApi.get('/board/all', { 
         params: { 
           page: 0, 
-          size: 1000, // 충분히 많은 양을 가져옵니다.
+          size: 1000,
           sortType: 'RECENT' 
         } 
       });
