@@ -3,8 +3,10 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+const BASE_URL = 'https://api.toleave.shop';
 
 const api = axios.create({
+  baseURL: BASE_URL,
   withCredentials: true,
 });
 
@@ -15,7 +17,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        await axios.post(`/auth/refresh`, {}, { withCredentials: true });
+        await axios.post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true });
         return api(originalRequest);
       } catch (refreshError) {
         console.error("Token refresh failed. User needs to login again.", refreshError);
@@ -82,7 +84,7 @@ export const requestEmailCode = createAsyncThunk<APIResponse, { email: string }>
   'auth/requestEmailCode',
   async ({ email }, { rejectWithValue }) => {
     try {
-      const response = await axios.post<APIResponse>(`/mail/send`, { email });
+      const response = await axios.post<APIResponse>(`${BASE_URL}/mail/send`, { email });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -97,7 +99,7 @@ export const verifyEmailCode = createAsyncThunk<APIResponse, { email: string; co
   'auth/verifyEmailCode',
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axios.post<APIResponse>(`/mail/verify`, data);
+      const response = await axios.post<APIResponse>(`${BASE_URL}/mail/verify`, data);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -112,7 +114,7 @@ export const signUpUser = createAsyncThunk<APIResponse, Omit<SignUpData, 'termsA
   'auth/signUpUser',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post<APIResponse>(`/general-user/signup`, userData);
+      const response = await axios.post<APIResponse>(`${BASE_URL}/general-user/signup`, userData);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -129,7 +131,7 @@ export const loginUser = createAsyncThunk<
 >('auth/loginUser', async (credentials, { rejectWithValue }) => {
   try {
     const response = await axios.post<APIResponse<User>>(
-      `/login`, 
+      `${BASE_URL}/login`, 
       credentials,
       { withCredentials: true }
     );
