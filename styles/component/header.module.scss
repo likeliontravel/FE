@@ -22,7 +22,7 @@
 
 .header {
   @include display-flex_alii-center();
-  @include width-height(100vw, 80px);
+  @include width-height(auto, 80px);
 }
 
 .logo {
@@ -93,7 +93,6 @@
   gap: 12px;
   white-space: nowrap;
 
-
   p {
     margin: 0;
   }
@@ -101,8 +100,8 @@
 
 .logoutButton {
   cursor: pointer;
-  color: #888; 
-  font-size: 0.9em; 
+  color: #888;
+  font-size: 0.9em;
 
   &:hover {
     text-decoration: underline;

@@ -35,10 +35,6 @@
   @include width-height(100%, auto);
 }
 
-.top {
-  @include width-height(1280px, auto);
-}
-
 .main_img {
   @include width-height(497px, 494px);
   @include background_image-size_cover-repeat_no_repeat(
@@ -77,7 +73,7 @@
 }
 
 .middle {
-  @include width-height(1300px, 340px);
+  @include width-height(auto, 360px);
   margin-top: 110px;
   margin-left: 20px;
 }
@@ -236,7 +232,7 @@
 }
 
 .bottom {
-  @include width-height(1920px, 494px);
+  @include width-height(100%, 494px);
   background-color: #f4f5fb;
   margin-top: 80px;
 }
