@@ -15,12 +15,10 @@ export interface ChatMessage {
 
 interface ChatState {
   messages: ChatMessage[];
-  isConnected: boolean;
 }
 
 const initialState: ChatState = {
   messages: [],
-  isConnected: false,
 };
 
 const chatSlice = createSlice({
@@ -33,16 +31,8 @@ const chatSlice = createSlice({
     setMessages: (state, action: PayloadAction<ChatMessage[]>) => {
       state.messages = action.payload;
     },
-    setConnected: (state, action: PayloadAction<boolean>) => {
-      state.isConnected = action.payload;
-    },
-    clearChat: (state) => {
-      state.messages = [];
-      state.isConnected = false;
-    },
   },
 });
 
-export const { addMessage, setMessages, setConnected, clearChat } =
-  chatSlice.actions;
+export const { addMessage, setMessages } = chatSlice.actions;
 export default chatSlice.reducer;
