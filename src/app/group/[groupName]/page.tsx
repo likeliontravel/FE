@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  clearGroupDetail,
   fetchGroupDetail,
   fetchGroupSchedule,
 } from "../../../../util/group/groupSlice";
@@ -15,14 +16,15 @@ import Footer from "@/app/_component/Footer";
 import GroupNoticeModal from "./GroupNoticeModal";
 import GroupInviteModal from "./GroupInviteModal";
 import UseReactSelect from "../../../../util/select/UseReactSelect";
+import { AppDispatch, RootState } from "../../../../store/store";
 
 export default function groupDetail() {
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
   const params = useParams();
   const groupName = params.groupName as string;
-  const { groupDetail } = useSelector((state: any) => state.group);
+  const { groupDetail } = useSelector((state: RootState) => state.group);
   const [isModalOpen, setIsModalOpen] = useState<null | "notice" | "invite">(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -30,6 +32,9 @@ export default function groupDetail() {
       dispatch(fetchGroupDetail(groupName));
       dispatch(fetchGroupSchedule(groupName));
     }
+    return () => {
+      dispatch(clearGroupDetail());
+    };
   }, [dispatch, groupName]);
   const notice = groupDetail?.latestAnnouncement;
 
