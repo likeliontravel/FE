@@ -1,20 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-const BASE_URL = "https://api.toleave.shop";
-
-const api = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: true,
-});
-
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("accessToken");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { api } from "../api";
 
 export interface ScheduleItem {
   id: string;
@@ -85,7 +70,7 @@ export const fetchScheduleItems = createAsyncThunk<
     return items as ScheduleItem[];
   } catch (error: any) {
     return rejectWithValue(
-      error?.response?.data?.message || "요청 중 오류가 발생했습니다."
+      error?.response?.data?.message || "요청 중 오류가 발생했습니다.",
     );
   }
 });
