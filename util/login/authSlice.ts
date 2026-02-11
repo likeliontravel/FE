@@ -1,32 +1,7 @@
-'use client';
+"use client";
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const BASE_URL = 'https://api.toleave.shop';
-
-const api = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: true,
-});
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      try {
-        await axios.post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true });
-        return api(originalRequest);
-      } catch (refreshError) {
-        console.error("Token refresh failed. User needs to login again.", refreshError);
-        return Promise.reject(refreshError);
-      }
-    }
-    return Promise.reject(error);
-  }
-);
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { api, publicApi } from "../api";
 
 interface User {
   id: number | null;
@@ -72,121 +47,134 @@ const initialState: AuthState = {
   successMessage: null,
   isEmailVerified: false,
   signUpData: {
-    name: '',
-    email: '',
-    password: '',
+    name: "",
+    email: "",
+    password: "",
     termsAccepted: [false, false, false],
     selectedPlan: null,
   },
 };
 
-export const requestEmailCode = createAsyncThunk<APIResponse, { email: string }>(
-  'auth/requestEmailCode',
-  async ({ email }, { rejectWithValue }) => {
-    try {
-      const response = await axios.post<APIResponse>(`${BASE_URL}/mail/send`, { email });
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data.message || '이메일 코드 요청 실패');
-      }
-      return rejectWithValue('이메일 코드 요청 중 알 수 없는 오류 발생');
+export const requestEmailCode = createAsyncThunk<
+  APIResponse,
+  { email: string }
+>("auth/requestEmailCode", async ({ email }, { rejectWithValue }) => {
+  try {
+    const response = await publicApi.post<APIResponse>(`/mail/send`, {
+      email,
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      return rejectWithValue(
+        error.response.data.message || "이메일 코드 요청 실패",
+      );
     }
+    return rejectWithValue("이메일 코드 요청 중 알 수 없는 오류 발생");
   }
-);
+});
 
-export const verifyEmailCode = createAsyncThunk<APIResponse, { email: string; code: string }>(
-  'auth/verifyEmailCode',
-  async (data, { rejectWithValue }) => {
-    try {
-      const response = await axios.post<APIResponse>(`${BASE_URL}/mail/verify`, data);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data.message || '이메일 인증 실패');
-      }
-      return rejectWithValue('이메일 인증 중 알 수 없는 오류 발생');
+export const verifyEmailCode = createAsyncThunk<
+  APIResponse,
+  { email: string; code: string }
+>("auth/verifyEmailCode", async (data, { rejectWithValue }) => {
+  try {
+    const response = await publicApi.post<APIResponse>(`/mail/verify`, data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      return rejectWithValue(error.response.data.message || "이메일 인증 실패");
     }
+    return rejectWithValue("이메일 인증 중 알 수 없는 오류 발생");
   }
-);
+});
 
-export const signUpUser = createAsyncThunk<APIResponse, Omit<SignUpData, 'termsAccepted' | 'selectedPlan'>>(
-  'auth/signUpUser',
-  async (userData, { rejectWithValue }) => {
-    try {
-      const response = await axios.post<APIResponse>(`${BASE_URL}/general-user/signup`, userData);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data.message || '회원가입 실패');
-      }
-      return rejectWithValue('회원가입 중 알 수 없는 오류 발생');
+export const signUpUser = createAsyncThunk<
+  APIResponse,
+  Omit<SignUpData, "termsAccepted" | "selectedPlan">
+>("auth/signUpUser", async (userData, { rejectWithValue }) => {
+  try {
+    const response = await publicApi.post<APIResponse>(
+      `/general-user/signup`,
+      userData,
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      return rejectWithValue(error.response.data.message || "회원가입 실패");
     }
+    return rejectWithValue("회원가입 중 알 수 없는 오류 발생");
   }
-);
+});
 
 export const loginUser = createAsyncThunk<
   User,
   { email: string; password: string }
->('auth/loginUser', async (credentials, { rejectWithValue }) => {
+>("auth/loginUser", async (credentials, { rejectWithValue }) => {
   try {
-    const response = await axios.post<APIResponse<User>>(
-      `${BASE_URL}/login`, 
+    const response = await publicApi.post<APIResponse<User>>(
+      `/login`,
       credentials,
-      { withCredentials: true }
+      { withCredentials: true },
     );
     const user = response.data.data;
 
     if (!response.data.success || !user) {
-      throw new Error(response.data.message || '로그인 응답 데이터가 올바르지 않습니다.');
+      throw new Error(
+        response.data.message || "로그인 응답 데이터가 올바르지 않습니다.",
+      );
     }
-    
+
     return user;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      return rejectWithValue(error.response.data.message || '로그인에 실패했습니다.');
+  } catch (error: any) {
+    if (error.response) {
+      return rejectWithValue(
+        error.response.data.message || "로그인에 실패했습니다.",
+      );
     }
     if (error instanceof Error) {
       return rejectWithValue(error.message);
     }
-    return rejectWithValue('로그인 중 알 수 없는 오류가 발생했습니다.');
+    return rejectWithValue("로그인 중 알 수 없는 오류가 발생했습니다.");
   }
 });
 
 export const logoutUser = createAsyncThunk<APIResponse>(
-  'auth/logoutUser',
+  "auth/logoutUser",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.post<APIResponse>('/logout');
+      const response = await api.post<APIResponse>("/logout");
       return response.data;
-    } catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            return rejectWithValue(error.response.data.message || '로그아웃 실패');
-        }
-        return rejectWithValue('로그아웃 중 알 수 없는 오류 발생');
+    } catch (error: any) {
+      if (error.response) {
+        return rejectWithValue(error.response.data.message || "로그아웃 실패");
+      }
+      return rejectWithValue("로그아웃 중 알 수 없는 오류 발생");
     }
-  }
+  },
 );
 
 export const fetchUserProfile = createAsyncThunk<User>(
-  'auth/fetchUserProfile',
+  "auth/fetchUserProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get<APIResponse<User>>('/user/getProfile');
-      
-      if (!response.data.data) throw new Error('User data not found');
+      const response = await api.get<APIResponse<User>>("/user/getProfile");
+
+      if (!response.data.data) throw new Error("User data not found");
       return response.data.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data.message || '프로필 조회 실패');
+    } catch (error: any) {
+      if (error.response) {
+        return rejectWithValue(
+          error.response.data.message || "프로필 조회 실패",
+        );
       }
-      return rejectWithValue('프로필 조회 중 알 수 없는 오류 발생');
+      return rejectWithValue("프로필 조회 중 알 수 없는 오류 발생");
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setSignUpData: (state, action: PayloadAction<Partial<SignUpData>>) => {
@@ -211,7 +199,7 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.user = action.payload;
-        state.successMessage = '로그인 성공!';
+        state.successMessage = "로그인 성공!";
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -246,10 +234,13 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUserProfile.fulfilled, (state, action: PayloadAction<User>) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
+      .addCase(
+        fetchUserProfile.fulfilled,
+        (state, action: PayloadAction<User>) => {
+          state.loading = false;
+          state.user = action.payload;
+        },
+      )
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -257,7 +248,7 @@ const authSlice = createSlice({
       })
       .addCase(verifyEmailCode.fulfilled, (state) => {
         state.isEmailVerified = true;
-        state.successMessage = '이메일 인증 성공!';
+        state.successMessage = "이메일 인증 성공!";
       })
       .addCase(verifyEmailCode.rejected, (state, action) => {
         state.error = action.payload as string;
@@ -265,6 +256,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { setSignUpData, resetSignUpData, clearAuthError, setUser } = authSlice.actions;
+export const { setSignUpData, resetSignUpData, clearAuthError, setUser } =
+  authSlice.actions;
 
 export default authSlice.reducer;
