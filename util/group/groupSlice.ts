@@ -1,20 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
-
-const BASE_URL = "https://api.toleave.shop";
-
-const api = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: true,
-});
-
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("accessToken");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { api } from "../api";
 
 export interface Group {
   id: number;
@@ -38,10 +23,20 @@ export interface GroupSchedule {
   endDate: string;
 }
 
+export interface Notice {
+  id: number;
+  title: string;
+  content: string;
+  writerName: string;
+  createdTime: string;
+}
+
 interface GroupState {
   groups: Group[];
   groupDetail: GroupDetail | null;
   schedule: GroupSchedule[] | null;
+  notices: Notice[];
+  inviteLink: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -50,6 +45,8 @@ const initialState: GroupState = {
   groups: [],
   groupDetail: null,
   schedule: null,
+  notices: [],
+  inviteLink: null,
   loading: false,
   error: null,
 };
@@ -62,17 +59,17 @@ export const fetchUserGroups = createAsyncThunk<Group[]>(
       return res.data.data;
     } catch (error: any) {
       return rejectWithValue(
-        error?.response?.data?.message || "그룹 조회 실패"
+        error?.response?.data?.message || "그룹 조회 실패",
       );
     }
-  }
+  },
 );
 
 export const createGroup = createAsyncThunk(
   "group/createGroup",
   async (
     { groupName, description }: { groupName: string; description?: string },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.post("/group/create", {
@@ -87,10 +84,10 @@ export const createGroup = createAsyncThunk(
       return res.data.data;
     } catch (error: any) {
       return rejectWithValue(
-        error?.response?.data?.message || "그룹 생성 오류 발생"
+        error?.response?.data?.message || "그룹 생성 오류 발생",
       );
     }
-  }
+  },
 );
 
 export const fetchGroupDetail = createAsyncThunk<GroupDetail, string>(
@@ -106,10 +103,10 @@ export const fetchGroupDetail = createAsyncThunk<GroupDetail, string>(
       return res.data.data;
     } catch (err: any) {
       return rejectWithValue(
-        err?.response?.data?.message || "그룹 상세 조회 오류"
+        err?.response?.data?.message || "그룹 상세 조회 오류",
       );
     }
-  }
+  },
 );
 
 export const fetchGroupSchedule = createAsyncThunk<GroupSchedule[], string>(
@@ -126,13 +123,114 @@ export const fetchGroupSchedule = createAsyncThunk<GroupSchedule[], string>(
     } catch (err: any) {
       return rejectWithValue(err?.response?.data?.message || "일정 조회 오류");
     }
-  }
+  },
+);
+
+export const fetchGroupInvitation = createAsyncThunk<string, string>(
+  "group/fetchGroupInvitation",
+  async (groupName, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/group/${groupName}/invitation`);
+
+      if (res.data.success) {
+        return res.data.data?.invitationCode || "";
+      } else {
+        return rejectWithValue(res.data.message || "초대링크 조회 실패");
+      }
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message || "초대링크 조회 에러",
+      );
+    }
+  },
+);
+
+export const generateGroupInvitation = createAsyncThunk<string, string>(
+  "group/generateGroupInvitation",
+  async (groupName, { rejectWithValue }) => {
+    try {
+      const res = await api.post(
+        `/group/${groupName}/invitation/generateNew`,
+        {},
+      );
+
+      if (res.data.success) {
+        return res.data.data?.invitationCode || "";
+      } else {
+        return rejectWithValue(res.data.message || "초대링크 생성 실패");
+      }
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message || "초대링크 생성 오류",
+      );
+    }
+  },
+);
+
+export const fetchGroupNotices = createAsyncThunk<Notice[], string>(
+  "group/fetchGroupNotices",
+  async (groupName, { rejectWithValue }) => {
+    try {
+      const res = await api.get(
+        `/group/announcement/getAllAnnouncement?groupName=${groupName}`,
+      );
+      if (res.data.success) {
+        return res.data.data;
+      } else {
+        return rejectWithValue(res.data.message || "공지 조회 실패");
+      }
+    } catch (err: any) {
+      return rejectWithValue(err?.response?.data?.message || "공지 조회 에러");
+    }
+  },
+);
+
+export const createGroupNotice = createAsyncThunk(
+  "group/createGroupNotice",
+  async (
+    {
+      groupName,
+      title,
+      content,
+    }: { groupName: string; title: string; content: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      const res = await api.post("/group/announcement/create", {
+        groupName,
+        title,
+        content,
+      });
+
+      if (res.data.success) {
+        return res.data.data;
+      } else {
+        return rejectWithValue(res.data.message || "공지 생성 실패");
+      }
+    } catch (err: any) {
+      return rejectWithValue(err?.response?.data?.message || "공지 생성 에러");
+    }
+  },
 );
 
 const groupSlice = createSlice({
   name: "group",
   initialState,
-  reducers: {},
+  reducers: {
+    clearNotices: (state) => {
+      state.notices = [];
+    },
+    clearInviteLink: (state) => {
+      state.inviteLink = null;
+    },
+    clearGroupDetail: (state) => {
+      state.groupDetail = null;
+      state.schedule = null;
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchUserGroups.pending, (state) => {
@@ -144,7 +242,7 @@ const groupSlice = createSlice({
         (state, action: PayloadAction<Group[]>) => {
           state.loading = false;
           state.groups = action.payload;
-        }
+        },
       )
       .addCase(fetchUserGroups.rejected, (state, action) => {
         state.loading = false;
@@ -173,7 +271,7 @@ const groupSlice = createSlice({
         (state, action: PayloadAction<GroupDetail>) => {
           state.loading = false;
           state.groupDetail = action.payload;
-        }
+        },
       )
       .addCase(fetchGroupDetail.rejected, (state, action) => {
         state.loading = false;
@@ -189,13 +287,77 @@ const groupSlice = createSlice({
         (state, action: PayloadAction<GroupSchedule[]>) => {
           state.loading = false;
           state.schedule = action.payload;
-        }
+        },
       )
       .addCase(fetchGroupSchedule.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(fetchGroupInvitation.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchGroupInvitation.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.loading = false;
+          state.inviteLink = action.payload;
+        },
+      )
+      .addCase(fetchGroupInvitation.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(generateGroupInvitation.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        generateGroupInvitation.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.loading = false;
+          if (action.payload) {
+            state.inviteLink = action.payload;
+          }
+        },
+      )
+      .addCase(generateGroupInvitation.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(fetchGroupNotices.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchGroupNotices.fulfilled,
+        (state, action: PayloadAction<Notice[]>) => {
+          state.loading = false;
+          state.notices = action.payload;
+        },
+      )
+      .addCase(fetchGroupNotices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(createGroupNotice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createGroupNotice.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(createGroupNotice.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
   },
 });
 
+export const { clearNotices, clearInviteLink, clearGroupDetail, clearError } =
+  groupSlice.actions;
 export default groupSlice.reducer;

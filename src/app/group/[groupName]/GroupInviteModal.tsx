@@ -2,6 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import styles from "../../../../styles/group/groupDetail.module.scss";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../../store/store";
+import {
+  clearInviteLink,
+  fetchGroupInvitation,
+  generateGroupInvitation,
+} from "../../../../util/group/groupSlice";
 
 export default function GroupInviteModal({
   onClose,
@@ -10,43 +17,23 @@ export default function GroupInviteModal({
   onClose: () => void;
   groupName: string | string[] | undefined;
 }) {
-  const token = localStorage.getItem("accessToken");
+  const dispatch = useDispatch<AppDispatch>();
+  const { inviteLink, loading } = useSelector(
+    (state: RootState) => state.group,
+  );
   const [copyStatus, setCopyStatus] = useState<null | "success" | "fail">(null);
-  const [inviteLink, setInviteLink] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const fetchInvitation = useCallback(async () => {
-    if (!groupName) return;
-
-    try {
-      const res = await fetch(
-        `https://api.toleave.shop/group/${groupName}/invitation`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        }
-      );
-
-      const result = await res.json();
-
-      if (res.ok && result.success) {
-        setInviteLink(result.data?.invitationCode ?? "");
-      } else {
-        console.error("초대링크 조회 실패:", result.message);
-      }
-    } catch (err) {
-      console.error("초대링크 조회 에러:", err);
-    }
-  }, [groupName, token]);
 
   useEffect(() => {
-    fetchInvitation();
-  }, [fetchInvitation]);
+    if (groupName) {
+      dispatch(fetchGroupInvitation(groupName as string));
+    }
+    return () => {
+      dispatch(clearInviteLink());
+    };
+  }, [dispatch, groupName]);
 
   const handleCopy = async () => {
+    if (!inviteLink) return;
     try {
       await navigator.clipboard.writeText(inviteLink);
       setCopyStatus("success");
@@ -56,36 +43,15 @@ export default function GroupInviteModal({
   };
 
   const handleCreateInvitation = async () => {
-    if (isSubmitting) return;
+    if (loading || !groupName) return;
 
     try {
-      setIsSubmitting(true);
+      await dispatch(generateGroupInvitation(groupName as string)).unwrap();
 
-      const res = await fetch(
-        `https://api.toleave.shop/group/${groupName}/invitation/generateNew`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({}),
-        }
-      );
-
-      const result = await res.json();
-
-      if (res.ok && result.success) {
-        alert("초대 링크가 성공적으로 생성되었습니다!");
-        await fetchInvitation();
-      } else {
-        alert("초대 링크 생성 실패: " + result.message);
-      }
-    } catch (err) {
+      alert("초대 링크가 성공적으로 생성되었습니다!");
+    } catch (err: any) {
       console.error(err);
-      alert("요청 중 오류가 발생했습니다.");
-    } finally {
-      setIsSubmitting(false);
+      alert(err || "요청 중 오류가 발생했습니다.");
     }
   };
 
@@ -111,7 +77,7 @@ export default function GroupInviteModal({
           <input
             type="text"
             placeholder="초대링크를 생성하세요"
-            value={inviteLink}
+            value={inviteLink || ""}
             disabled
             readOnly
           />

@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from "react";
 import styles from "../../../../styles/group/groupDetail.module.scss";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../../store/store";
+import {
+  clearNotices,
+  createGroupNotice,
+  fetchGroupNotices,
+} from "../../../../util/group/groupSlice";
 
 export default function GroupNoticeModal({
   onClose,
@@ -10,75 +17,46 @@ export default function GroupNoticeModal({
   onClose: () => void;
   groupName: string | string[] | undefined;
 }) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { notices, loading } = useSelector((state: RootState) => state.group);
   const [selectedNoticeIndex, setSelectedNoticeIndex] = useState<number | null>(
-    null
+    null,
   );
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [notices, setNotices] = useState<any | null>(null);
-  const token = localStorage.getItem("accessToken");
 
   useEffect(() => {
-    const fetchNotice = async () => {
-      try {
-        const res = await fetch(
-          `https://api.toleave.shop/group/announcement/getAllAnnouncement?groupName=${groupName}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const json = await res.json();
-
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setNotices(json.data);
-        }
-      } catch (error) {
-        console.error("공지 정보 불러오기 실패:", error);
-      }
+    if (groupName) {
+      dispatch(fetchGroupNotices(groupName as string));
+    }
+    return () => {
+      dispatch(clearNotices());
     };
-
-    fetchNotice();
-  }, []);
+  }, [dispatch, groupName]);
 
   const handleCreateNotice = async () => {
-    if (isSubmitting) return;
+    if (loading || !groupName) return;
 
     try {
-      setIsSubmitting(true);
+      await dispatch(
+        createGroupNotice({
+          groupName: groupName as string,
+          title: title.trim(),
+          content: content.trim(),
+        }),
+      ).unwrap();
 
-      const res = await fetch(
-        "https://api.toleave.shop/group/announcement/create",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            groupName: groupName,
-            title: title.trim(),
-            content: content.trim(),
-          }),
-        }
-      );
+      alert("공지가 성공적으로 생성되었습니다!");
 
-      const result = await res.json();
+      dispatch(fetchGroupNotices(groupName as string));
 
-      if (res.ok && result.success) {
-        alert("공지가 성공적으로 생성되었습니다!");
-        onClose();
-      } else {
-        alert("공지 생성 실패: " + result.message);
-      }
-    } catch (err) {
+      setTitle("");
+      setContent("");
+      setIsEditMode(false);
+    } catch (err: any) {
       console.error(err);
-      alert("요청 중 오류가 발생했습니다.");
-    } finally {
-      setIsSubmitting(false);
+      alert(err || "요청 중 오류가 발생했습니다.");
     }
   };
 
@@ -140,7 +118,7 @@ export default function GroupNoticeModal({
                   ? styles.edit_btn
                   : styles.edit_btn_disabled
               }
-              disabled={isSubmitting || (!title.trim() && !content.trim())}
+              disabled={loading || (!title.trim() && !content.trim())}
               onClick={handleCreateNotice}
             >
               등록하기
