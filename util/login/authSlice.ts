@@ -94,10 +94,7 @@ export const signUpUser = createAsyncThunk<
   Omit<SignUpData, "termsAccepted" | "selectedPlan">
 >("auth/signUpUser", async (userData, { rejectWithValue }) => {
   try {
-    const response = await publicApi.post<APIResponse>(
-      `/general-user/signup`,
-      userData,
-    );
+    const response = await publicApi.post<APIResponse>(`/members`, userData);
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -113,7 +110,7 @@ export const loginUser = createAsyncThunk<
 >("auth/loginUser", async (credentials, { rejectWithValue }) => {
   try {
     const response = await publicApi.post<APIResponse<User>>(
-      `/login`,
+      `/members/login`,
       credentials,
       { withCredentials: true },
     );
@@ -143,7 +140,7 @@ export const logoutUser = createAsyncThunk<APIResponse>(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.post<APIResponse>("/logout");
+      const response = await api.post<APIResponse>("/members/logout");
       return response.data;
     } catch (error: any) {
       if (error.response) {
