@@ -1,6 +1,24 @@
-import style from "../../../../styles/mypage/modify.module.scss";
+"use client";
 
-export default function Page() {
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import style from "../../../../styles/mypage/modify.module.scss";
+import { RootState, AppDispatch } from "../../../../store/store";
+import { fetchMyPageInfo } from "../../../../util/mypage/mypageSlice";
+
+export default function ModifyPage() {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { userInfo } = useSelector((state: RootState) => state.mypage);
+
+  useEffect(() => {
+    if (!userInfo) {
+      dispatch(fetchMyPageInfo());
+    }
+  }, [dispatch, userInfo]);
+
+  const emailId = userInfo?.email?.split("@")[0] || "";
+
   return (
     <div className={style.container}>
       <div className={style.big_div}>
@@ -8,14 +26,17 @@ export default function Page() {
         <div className={style.mypage_div}>
           <div className={style.left_modify}>
             <div className={style.img}>
-              <img src="/imgs/Ellipse5.png" alt="프로필" />
+              <img
+                src={userInfo?.profileImageUrl || "/imgs/default-profile.png"}
+                alt="프로필"
+              />
               <img
                 className={style.modify}
                 src="/imgs/프로필 수정.png"
                 alt="프로필 수정"
               />
-              <p className={style.name}>린님</p>
-              <p className={style.mail}>@rin1234</p>
+              <p className={style.name}>{userInfo?.name || "여행자님"}</p>
+              <p className={style.mail}>@{emailId}</p>
             </div>
             <div className={style.left_modify_nav}>
               <div className={style.select_nav}>
@@ -44,11 +65,11 @@ export default function Page() {
                   <div className={style.user_box_left}>
                     <div className={style.user_box_left_top}>
                       <p className={style.name}>닉네임</p>
-                      <p className={style.p}>린</p>
+                      <p className={style.p}>{userInfo?.name || "-"}</p>
                     </div>
                     <div className={style.user_box_left_bottom}>
                       <p className={style.email}>이메일</p>
-                      <p className={style.p}>rin1234@naver.com</p>
+                      <p className={style.p}>{userInfo?.email || "-"}</p>
                     </div>
                   </div>
                   <div className={style.user_box_right}>
@@ -68,7 +89,7 @@ export default function Page() {
                   <div className={style.social_div_left}>
                     <p className={style.social_account}>연동 계정 관리</p>
                     <p className={style.social_get}>
-                      현재 <i>1개</i>의 연동계정 보유
+                      현재 <i>0</i>의 연동계정 보유
                     </p>
                   </div>
                   <div className={style.social_img}>

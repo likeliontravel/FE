@@ -4,12 +4,18 @@ import { useRef, useState } from "react";
 import style from "../../../styles/main/mainpage.module.scss";
 import useBetweenScroll from "../../../util/useBetweenScroll";
 
-export default function mainPage() {
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store/store";
+import Link from "next/link";
+
+export default function MainPage() {
   const topScrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomScrollContainerRef = useRef<HTMLDivElement>(null);
   const [hotPlaceList, setHotPlaceList] = useState<any>(null);
   useBetweenScroll(topScrollContainerRef);
   useBetweenScroll(bottomScrollContainerRef);
+
+  const { user } = useSelector((state: RootState) => state.auth);
 
   return (
     <div className={style.body}>
@@ -22,7 +28,7 @@ export default function mainPage() {
 
         <div className={style.top_main}>
           <div className={style.main_title}>
-            <p>린님</p>
+            <p>{user ? `${user.name}님` : "여행자님"}</p>
             <p>오늘은 어떤 여행을</p>
             <p>떠나볼까요?</p>
           </div>

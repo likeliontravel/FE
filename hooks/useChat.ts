@@ -39,14 +39,14 @@ export const useChat = (groupName: string) => {
 
     fetchChatHistory();
 
-    const token = localStorage.getItem("accessToken") || "";
-    const refreshToken = localStorage.getItem("refreshToken") || "";
-
-    const queryString = `?accessToken=${encodeURIComponent(token)}&refreshToken=${encodeURIComponent(refreshToken)}&groupName=${encodeURIComponent(groupName)}`;
+    const queryString = `?groupName=${encodeURIComponent(groupName)}`;
 
     const client = new Client({
       webSocketFactory: () =>
-        new SockJS("https://api.toleave.cloud/ws" + queryString),
+        new SockJS("https://api.toleave.cloud/ws" + queryString, null, {
+          transports: ["xhr-streaming", "xhr-polling"],
+          withCredentials: true,
+        } as any),
       reconnectDelay: 5000,
       onConnect: () => {
         console.log("WebSocket Connected!");
@@ -68,11 +68,15 @@ export const useChat = (groupName: string) => {
         });
       },
       onStompError: (frame) => {
-        console.error("Stomp Error:", frame.headers["message"]);
+        console.error(
+          "Stomp Error Details:",
+          frame.headers["message"],
+          frame.body,
+        );
         dispatch(setConnected(false));
       },
       onWebSocketClose: () => {
-        console.log("🔌 WebSocket Closed");
+        console.log("WebSocket Closed");
         dispatch(setConnected(false));
       },
     });
