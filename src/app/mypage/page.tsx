@@ -18,7 +18,7 @@ export default function myPage() {
 
     const fetchUser = async () => {
       try {
-        const res = await fetch("https://api.toleave.shop/user/getProfile/", {
+        const res = await fetch("/user/getProfile/", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -14,7 +14,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
-import ImageExtension from '@tiptap/extension-image';
+import { Image as ImageExtension } from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'; 
 import Heading from '@tiptap/extension-heading';
 
@@ -93,7 +93,7 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
           <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={editor.isActive('underline') ? styles.isActive : ''}><u>U</u></button>
           <button onClick={() => editor.chain().focus().toggleStrike().run()} className={editor.isActive('strike') ? styles.isActive : ''}><s>T</s></button>
           <div className={styles.divider}></div>
-          <input type="color" onInput={(e: React.ChangeEvent<HTMLInputElement>) => editor.chain().focus().setColor(e.target.value).run()} className={styles.colorInput} />
+          <input type="color" onChange={(e: React.ChangeEvent<HTMLInputElement>) => editor.chain().focus().setColor(e.target.value).run()} className={styles.colorInput} />
         </div>
         <select className={styles.categorySelect} value={selectedRegion} onChange={onRegionChange}>
           <option value="">지역</option>

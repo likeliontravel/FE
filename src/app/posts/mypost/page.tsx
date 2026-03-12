@@ -30,23 +30,29 @@ const createExcerpt = (htmlContent: string, maxLength: number = 100): string => 
 const MyPostsPage = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { user: loggedInUser } = useSelector((state: RootState) => state.auth || {});
+  
+  const { user: loggedInUser, loading: authLoading } = useSelector((state: RootState) => state.auth || {});
   const { posts, loading, error } = useSelector((state: RootState) => state.board || {});
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (!loggedInUser) {
       alert('로그인이 필요한 페이지입니다.');
       router.replace('/login');
       return;
     }
-    dispatch(fetchMyBoards());
-  }, [dispatch, loggedInUser, router]);
+
+    if (loggedInUser.userIdentifier) {
+      dispatch(fetchMyBoards(loggedInUser.userIdentifier));
+    }
+  }, [dispatch, loggedInUser, authLoading, router]);
 
   const goToPostWrite = useCallback(() => router.push('/postWrite'), [router]);
   const goToMyPosts = useCallback(() => router.push('/posts/mypost'), [router]);
 
-  if (!loggedInUser) {
-    return <div style={{textAlign: 'center', padding: '50px'}}>로그인 정보를 확인 중입니다...</div>;
+  if (authLoading || !loggedInUser) {
+    return <div style={{textAlign: 'center', padding: '50px'}}>사용자 정보를 확인 중입니다...</div>;
   }
 
   return (
@@ -58,24 +64,29 @@ const MyPostsPage = () => {
 
         <div className={styles.mainWrapper}>
           <main className={styles.mainContent}>
-            <h2 className={styles.pageTitle}>내 작성글</h2>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>내 작성글</h2>
             <div className={styles.postList}>
               {loading && <p>게시글을 불러오는 중...</p>}
               {error && <p>에러: {error}</p>}
               {!loading && !error && posts && posts.map((post: Board) => (
-                <Link href={`/post/${post.id}`} key={post.id} className={styles.postItemLink}>
+                <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
                       <h3 className={styles.postTitle}>{post.title}</h3>
                       <div className={styles.postMeta}>
-                          <div className={styles.authorAvatar} style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}></div>
+                          <div 
+                            className={styles.authorAvatar} 
+                            style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}
+                          ></div>
                           <span className={styles.authorName}>{post.writer}</span>
                       </div>
                       <p className={styles.postExcerpt}>
                         {createExcerpt(post.content)}
                       </p>
                     </div>
-                    <img src={post.thumbnailPublicUrl || '/imgs/default-thumbnail.png'} alt={post.title} className={styles.postImage} />
+                    {post.thumbnailPublicUrl && (
+                      <img src={post.thumbnailPublicUrl} alt={post.title} className={styles.postImage} />
+                    )}
                   </div>
                 </Link>
               ))}

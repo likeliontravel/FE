@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
@@ -52,9 +52,7 @@ const PostList = () => {
   const { posts, loading, error } = useSelector((state: RootState) => state.board || {});
 
   const [currentQuery, setCurrentQuery] = useState('');
-  
   const [sortOrder, setSortOrder] = useState<'POPULAR' | 'RECENT'>('RECENT');
-  
   const [activeTab, setActiveTab] = useState<'지역' | '테마'>('지역');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -75,16 +73,29 @@ const PostList = () => {
     loadPosts();
   }, [dispatch, sortOrder, currentQuery, activeCategory, activeTab]);
 
+
+  const sortedPosts = useMemo(() => {
+    if (!posts || !Array.isArray(posts)) return [];
+    
+    return [...posts].sort((a, b) => {
+      if (sortOrder === 'RECENT') {
+        // 날짜 기준 내림차순 (최신순)
+        return new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime();
+      } else {
+        // 조회수 기준 내림차순 (인기순)
+        return (b.boardHits || 0) - (a.boardHits || 0);
+      }
+    });
+  }, [posts, sortOrder]);
+
   const handleSearch = (term: string) => {
     setCurrentQuery(term);
     setActiveCategory(null);
-    setSortOrder('RECENT'); 
   };
 
   const handleCategoryClick = (category: string) => {
     setCurrentQuery('');
     setActiveCategory(prevCategory => prevCategory === category ? null : category);
-    setSortOrder('RECENT'); 
   };
 
   const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -95,7 +106,6 @@ const PostList = () => {
     if (activeTab !== tab) {
         setActiveTab(tab);
         setActiveCategory(null);
-        setSortOrder('RECENT');
     }
   }, [activeTab]);
 
@@ -115,7 +125,7 @@ const PostList = () => {
 
   const goToMyPosts = useCallback(() => {
     if (!requireLogin()) return;
-    router.push('/mypage/posts');
+    router.push('/posts/mypost');
   }, [router, requireLogin]);
 
   const currentKeywords = activeTab === '지역' ? regionKeywords : themeKeywords;
@@ -139,7 +149,7 @@ const PostList = () => {
               {loading && <p>게시글을 불러오는 중...</p>}
               {error && <p>에러: {error}</p>}
               
-              {!loading && !error && Array.isArray(posts) && posts.map((post: Board) => (
+              {!loading && !error && sortedPosts.map((post: Board) => (
                 <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
@@ -150,35 +160,25 @@ const PostList = () => {
                             style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}
                           ></div>
                           <span className={styles.authorName}>{post.writer}</span>
+                          <span className={styles.viewCount}>조회수 {post.boardHits}</span>
                       </div>
                       <p className={styles.postExcerpt}>
                         {createExcerpt(post.content)}
                       </p>
                     </div>
-                    
                     {post.thumbnailPublicUrl && (
-                      <img 
-                        src={post.thumbnailPublicUrl} 
-                        alt={post.title} 
-                        className={styles.postImage} 
-                      />
+                      <img src={post.thumbnailPublicUrl} alt={post.title} className={styles.postImage} />
                     )}
-                    
                   </div>
                 </Link>
               ))}
-              
-              {!loading && Array.isArray(posts) && posts.length === 0 && (
-                <div style={{ padding: '50px', textAlign: 'center', color: '#666' }}>
-                  표시할 게시글이 없습니다.
-                </div>
-              )}
+               {!loading && sortedPosts.length === 0 && <p>표시할 게시글이 없습니다.</p>}
             </div>
           </main>
 
           <aside className={styles.sidebar}>
             <div className={styles.profileCard}>
-              {loggedInUser ? (
+              {loggedInUser && loggedInUser.name ? (
                 <>
                   <div className={styles.profileHeader}>
                     <Image 
@@ -200,10 +200,7 @@ const PostList = () => {
               ) : (
                 <div className={styles.loginContainer}>
                   <p className={styles.loginPrompt}>로그인하고 더 많은 기능을 이용해보세요!</p>
-                  <button 
-                    className={styles.loginButton} 
-                    onClick={() => router.push('/login')}
-                  >
+                  <button className={styles.loginButton} onClick={() => router.push('/login')}>
                     로그인 / 회원가입
                   </button>
                 </div>
