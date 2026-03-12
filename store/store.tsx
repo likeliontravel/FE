@@ -5,11 +5,13 @@ import boardReducer from "../util/board/boardSilce";
 import scheduleReducer from "../util/schedule/scheduleSilce";
 import calendarReducer from "./calendarSlice";
 import chatReducer from "../util/group/chat/chatSlice";
+import mypageReducer from "../util/mypage/mypageSlice";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       auth: authReducer,
+      mypage: mypageReducer,
       group: groupReducer,
       chat: chatReducer,
       board: boardReducer,
