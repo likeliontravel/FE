@@ -47,7 +47,9 @@ export const fetchScheduleItems = createAsyncThunk<
 
     const params = new URLSearchParams();
     if (location) params.append("regions", location);
-    if (theme) params.append("themes", theme);
+    if (theme && category === "tourist_spot") {
+      params.append("themes", theme);
+    }
     if (keyword?.trim()) params.append("keyword", keyword.trim());
 
     params.append("page", "1");
