@@ -133,7 +133,7 @@ export const fetchGroupInvitation = createAsyncThunk<string, string>(
       const res = await api.get(`/group/${groupName}/invitation`);
 
       if (res.data.success) {
-        return res.data.data?.invitationCode || "";
+        return res.data.data?.invitationUrl || "";
       } else {
         return rejectWithValue(res.data.message || "초대링크 조회 실패");
       }
@@ -155,7 +155,7 @@ export const generateGroupInvitation = createAsyncThunk<string, string>(
       );
 
       if (res.data.success) {
-        return res.data.data?.invitationCode || "";
+        return res.data.data?.invitationUrl || "";
       } else {
         return rejectWithValue(res.data.message || "초대링크 생성 실패");
       }
