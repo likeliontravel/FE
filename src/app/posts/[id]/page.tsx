@@ -20,10 +20,6 @@ import Image from 'next/image';
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
 const themeKeywords = ['힐링', '액티비티', '맛집', '문화'];
 
-interface NestedComment extends Comment {
-  children: NestedComment[];
-}
-
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const year = date.getFullYear();
@@ -52,7 +48,7 @@ const CommentItem = ({
   onUpdateComment,
   onDeleteComment
 }: { 
-  comment: NestedComment, 
+  comment: Comment, 
   isReply: boolean,
   replyingTo: number | null,
   onReplyClick: (id: number) => void,
@@ -70,6 +66,7 @@ const CommentItem = ({
   onDeleteComment: (id: number) => void,
 }) => {
   const isEditing = editingCommentId === comment.id;
+  // 백엔드 필드명에 맞춰 writerIdentifier 확인 필요 (보통 commentWriterIdentifier)
   const isAuthor = loggedInUser && loggedInUser.userIdentifier === comment.commentWriterIdentifier;
 
   return (
@@ -102,7 +99,7 @@ const CommentItem = ({
             </div>
           </div>
         ) : (
-          <p className={styles.commentText}>{comment.commentContent}</p>
+          <p className={styles.commentText}>{comment.content}</p>
         )}
 
         <div className={styles.commentMeta}>
@@ -138,9 +135,10 @@ const CommentItem = ({
             </button>
           </div>
         )}
-        {comment.children.length > 0 && (
+        {/* 트리 구조 childComments 반영 */}
+        {comment.childComments && comment.childComments.length > 0 && (
           <div className={styles.repliesContainer}>
-            {comment.children.map(child => (
+            {comment.childComments.map(child => (
               <CommentItem
                 key={child.id}
                 comment={child}
@@ -208,7 +206,8 @@ const PostDetail = () => {
     if (!requireLogin()) return;
     if (!newComment.trim() || !id) return;
     try {
-      await dispatch(createComment({ boardId: id, commentContent: newComment })).unwrap();
+      // API 스펙 반영: { boardId, content }
+      await dispatch(createComment({ boardId: id, content: newComment })).unwrap();
       setNewComment('');
       dispatch(fetchComments(id));
     } catch (err) {
@@ -220,7 +219,8 @@ const PostDetail = () => {
     if (!requireLogin()) return;
     if (!replyContent.trim() || !id) return;
     try {
-      await dispatch(createComment({ boardId: id, commentContent: replyContent, parentCommentId: parentId })).unwrap();
+      // API 스펙 반영: { boardId, content, parentCommentId }
+      await dispatch(createComment({ boardId: id, content: replyContent, parentCommentId: parentId })).unwrap();
       setReplyContent('');
       setReplyingTo(null);
       dispatch(fetchComments(id));
@@ -248,7 +248,7 @@ const PostDetail = () => {
   const handleStartEditComment = useCallback((comment: Comment) => {
     if (!requireLogin()) return;
     setEditingCommentId(comment.id);
-    setEditingContent(comment.commentContent);
+    setEditingContent(comment.content);
   }, [requireLogin]);
 
   const handleCancelEditComment = useCallback(() => {
@@ -259,7 +259,8 @@ const PostDetail = () => {
   const handleUpdateComment = useCallback(async () => {
     if (!editingContent.trim() || !editingCommentId) return;
     try {
-      await dispatch(updateComment({ id: editingCommentId, commentContent: editingContent, boardId: id })).unwrap();
+      // API 스펙 반영: { id, content }
+      await dispatch(updateComment({ id: editingCommentId, content: editingContent })).unwrap();
       handleCancelEditComment();
       dispatch(fetchComments(id));
     } catch (err) {
@@ -277,26 +278,6 @@ const PostDetail = () => {
       }
     }
   }, [dispatch, id]);
-
-  const nestedComments = useMemo((): NestedComment[] => {
-    if (!comments) return [];
-    const commentMap: Record<number, NestedComment> = {};
-    const result: NestedComment[] = [];
-
-    comments.forEach(comment => {
-      commentMap[comment.id] = { ...comment, children: [] };
-    });
-
-    comments.forEach(comment => {
-      if (comment.parentCommentId && commentMap[comment.parentCommentId]) {
-        commentMap[comment.parentCommentId].children.push(commentMap[comment.id]);
-      } else {
-        result.push(commentMap[comment.id]);
-      }
-    });
-
-    return result;
-  }, [comments]);
 
   const postBodyContent = useMemo(() => {
     if (!post?.content) return { __html: '' };
@@ -381,8 +362,8 @@ const PostDetail = () => {
                 </button>
               </div>
               <div className={styles.commentList}>
-                {nestedComments && nestedComments.length > 0 ? (
-                  nestedComments.map(comment => (
+                {comments && comments.length > 0 ? (
+                  comments.map(comment => (
                     <CommentItem
                       key={comment.id}
                       comment={comment}
@@ -408,6 +389,7 @@ const PostDetail = () => {
             </div>
           </main>
           <aside className={styles.sidebar}>
+            {/* 사이드바 내용은 동일하게 유지 */}
             <div className={styles.profileCard}>
               {loggedInUser ? (
                 <>

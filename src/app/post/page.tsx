@@ -29,10 +29,8 @@ const createExcerpt = (htmlContent: string, maxLength: number = 100): string => 
   try {
     const parser = new DOMParser();
     const unescapedHtml = parser.parseFromString(`<!doctype html><body>${htmlContent}`, 'text/html').body.textContent || '';
-    
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = unescapedHtml;
-    
     const plainText = tempDiv.textContent || tempDiv.innerText || '';
     
     if (plainText.length > maxLength) {
@@ -40,7 +38,6 @@ const createExcerpt = (htmlContent: string, maxLength: number = 100): string => 
     }
     return plainText;
   } catch (e) {
-    console.error("Excerpt 생성 오류:", e);
     return '';
   }
 };
@@ -49,7 +46,7 @@ const PostList = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { user: loggedInUser } = useSelector((state: RootState) => state.auth || {});
-  const { posts, loading, error } = useSelector((state: RootState) => state.board || {});
+  const { posts, loading, error, pagination } = useSelector((state: RootState) => state.board || {});
 
   const [currentQuery, setCurrentQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'POPULAR' | 'RECENT'>('RECENT');
@@ -67,22 +64,19 @@ const PostList = () => {
           dispatch(fetchBoardsByTheme({ theme: activeCategory, sortType: sortOrder }));
         }
       } else {
-        dispatch(fetchBoards({ sortType: sortOrder }));
+        dispatch(fetchBoards({ page: 0, size: 30, sortType: sortOrder }));
       }
     };
     loadPosts();
   }, [dispatch, sortOrder, currentQuery, activeCategory, activeTab]);
-
 
   const sortedPosts = useMemo(() => {
     if (!posts || !Array.isArray(posts)) return [];
     
     return [...posts].sort((a, b) => {
       if (sortOrder === 'RECENT') {
-        // 날짜 기준 내림차순 (최신순)
         return new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime();
       } else {
-        // 조회수 기준 내림차순 (인기순)
         return (b.boardHits || 0) - (a.boardHits || 0);
       }
     });

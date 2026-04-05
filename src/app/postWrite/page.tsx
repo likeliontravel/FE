@@ -62,7 +62,6 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
            editor.chain().focus().setImage({ src: imageUrl }).run();
         }
       } catch (error) {
-        console.error('이미지 업로드 실패:', error);
         alert(`이미지 업로드 실패: ${error}`);
       }
     };
@@ -161,7 +160,7 @@ const WritePage: React.FC = () => {
   }, [editor]);
   
   const handleSubmit = useCallback(async () => {
-    const content = editor?.getHTML() || '';
+    const htmlContent = editor?.getHTML() || '';
     
     if (!title.trim() || editor?.isEmpty || !selectedRegion || !selectedTheme) {
       alert('제목, 내용, 지역, 테마를 모두 입력해주세요.');
@@ -169,13 +168,13 @@ const WritePage: React.FC = () => {
     }
 
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = content;
+    tempDiv.innerHTML = htmlContent;
     const firstImage = tempDiv.querySelector('img');
     const thumbnailPublicUrl = firstImage ? firstImage.src : '';
 
     const newPost = {
       title,
-      content,
+      content: htmlContent,
       region: selectedRegion,
       theme: selectedTheme,
       thumbnailPublicUrl,
@@ -221,7 +220,6 @@ const WritePage: React.FC = () => {
         </div>
       </div>
       
-      {/* 지도 모달 */}
       {isMapModalOpen && (
           <MapModal 
             onClose={closeMapModal} 
