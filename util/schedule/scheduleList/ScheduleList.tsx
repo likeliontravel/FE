@@ -48,10 +48,19 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
       dispatch(clearSelectedSlots());
     }, [dispatch, item, selectedSlots, selectedCalendarSchedule]);
 
+    const imgSrc = item.imageUrl || item.thumbnailImageUrl;
+
     return (
       <div className={styles.main} onClick={handleClick}>
         <div className={styles.overlay}></div>
-        <div className={styles.list_img}></div>
+        <div
+          className={styles.list_img}
+          style={{
+            backgroundImage: `url(${imgSrc})`,
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+          }}
+        ></div>
         <div className={styles.list_content}>
           <p className={styles.content_title}>{item.title}</p>
           <p className={styles.content_address}>{item.address}</p>
