@@ -36,26 +36,21 @@ const Login = () => {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      console.log('1. handleSubmit 시작');
-
       try {
-        console.log('2.보낼 데이터:', formData); 
-        
         const user = await dispatch(loginUser(formData)).unwrap();
-        
-        console.log('3. 받은 user:', user); 
         alert(`${user.name}님, 환영합니다!`);
-        router.push('/main');
-
+        router.push('/post'); // 게시판 목록으로 이동
       } catch (err: any) {
-        console.error('4. catch, 에러:', err);
+        // 에러는 Redux state의 error를 통해 UI에 표시됨
       }
     },
     [dispatch, formData, router]
   );
 
+  // 소셜 로그인 주소를 백엔드 API 주소로 변경 (중요!)
   const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao') => {
-    window.location.href = `/oauth2/authorization/${provider}`;
+    const API_BASE_URL = 'https://api.toleave.cloud';
+    window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
   }, []);
   
   const handleKakaoLogin = useCallback(() => handleOAuthLogin('kakao'), [handleOAuthLogin]);
@@ -115,8 +110,7 @@ const Login = () => {
               <label htmlFor="rememberMe">아이디 저장</label>
             </div>
             <div className={styles.links}>
-              <Link href="/forgot-username">아이디 찾기</Link>
-              <span> | </span>
+              {/* 비밀번호 찾기 등은 백엔드 가이드에서 추가된 /auth/password/reset API와 연동 필요 */}
               <Link href="/forgot-password">비밀번호 찾기</Link>
             </div>
           </div>
@@ -139,10 +133,10 @@ const Login = () => {
         <div className={styles.socialLogin}>
           <p>소셜 계정으로 로그인</p>
           <div className={styles.socialButtons}>
-            <button onClick={handleKakaoLogin}>
+            <button type="button" onClick={handleKakaoLogin}>
               <img src="/imgs/kakao.png" alt="카카오 로그인" className={styles.kakao} />
             </button>
-            <button onClick={handleNaverLogin}>
+            <button type="button" onClick={handleNaverLogin}>
               <img src="/imgs/naver.png" alt="네이버 로그인" className={styles.naver} />
             </button>
           </div>
