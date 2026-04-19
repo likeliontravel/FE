@@ -22,10 +22,10 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
   ({ item }) => {
     const dispatch = useDispatch<AppDispatch>();
     const selectedSlots = useSelector(
-      (s: RootState) => s.calendar.selectedSlots
+      (s: RootState) => s.calendar.selectedSlots,
     );
     const selectedCalendarSchedule = useSelector(
-      (s: RootState) => s.calendar.selectedCalendarSchedule
+      (s: RootState) => s.calendar.selectedCalendarSchedule,
     );
 
     const handleClick = useCallback(() => {
@@ -48,17 +48,26 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
       dispatch(clearSelectedSlots());
     }, [dispatch, item, selectedSlots, selectedCalendarSchedule]);
 
+    const imgSrc = item.imageUrl || item.thumbnailImageUrl;
+
     return (
       <div className={styles.main} onClick={handleClick}>
         <div className={styles.overlay}></div>
-        <div className={styles.list_img}></div>
+        <div
+          className={styles.list_img}
+          style={{
+            backgroundImage: `url(${imgSrc})`,
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+          }}
+        ></div>
         <div className={styles.list_content}>
           <p className={styles.content_title}>{item.title}</p>
           <p className={styles.content_address}>{item.address}</p>
         </div>
       </div>
     );
-  }
+  },
 );
 
 export const ScheduleList: React.FC<ScheduleListProps> = ({
@@ -67,14 +76,15 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedListSchedule = useSelector(
-    (s: RootState) => s.calendar.selectedListSchedule
+    (s: RootState) => s.calendar.selectedListSchedule,
   );
 
   const { scheduleItems, loading, error } = useSelector(
-    (state: RootState) => state.schedule
+    (state: RootState) => state.schedule,
   );
   const [keyword, setKeyword] = useState("");
-
+  const [currentPage, setCurrentPage] = useState(0);
+  const ITEMS_PER_PAGE = 5;
   useEffect(() => {
     return () => {
       dispatch(clearScheduleItems());
@@ -96,13 +106,32 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
         location: selectedLocation,
         theme: selectedTheme,
         keyword: keyword,
-      })
+      }),
     ).then((action) => {
       if (fetchScheduleItems.fulfilled.match(action)) {
         alert("데이터 조회가 성공적으로 되었습니다!");
+        setCurrentPage(0);
       }
     });
   };
+
+  const handlePrev = () => {
+    if (currentPage > 0) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const handleNext = () => {
+    const maxPage = Math.ceil(scheduleItems.length / ITEMS_PER_PAGE) - 1;
+    if (currentPage < maxPage) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const currentItems = scheduleItems.slice(
+    currentPage * ITEMS_PER_PAGE,
+    (currentPage + 1) * ITEMS_PER_PAGE,
+  );
 
   return (
     <div className={styles.body}>
@@ -121,15 +150,21 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
           </div>
         </div>
         <div className={styles.list_change}>
-          <div className={styles.list_change_left_arrow}></div>
-          <div className={styles.list_change_right_arrow}></div>
+          <div
+            onClick={handlePrev}
+            className={styles.list_change_left_arrow}
+          ></div>
+          <div
+            onClick={handleNext}
+            className={styles.list_change_right_arrow}
+          ></div>
         </div>
       </div>
       <div className={styles.main_list}>
         {!loading && scheduleItems.length === 0 && (
           <div className={styles.empty}>검색 결과가 없습니다.</div>
         )}
-        {scheduleItems.map((item: ScheduleItem) => (
+        {currentItems.map((item: ScheduleItem) => (
           <ScheduleListItem key={item.id} item={item} />
         ))}
       </div>
