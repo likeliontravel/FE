@@ -2,10 +2,15 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { api } from "../api";
 
 export interface MyPageUser {
-  id: number | null;
+  id: number;
   email: string;
   name: string;
   profileImageUrl: string | null;
+  role: string;
+  policyAgreed: boolean;
+  subscribed: boolean;
+  oauthProvider: string;
+  shouldChangePassword: boolean;
 }
 
 interface MyPageState {
@@ -24,7 +29,7 @@ export const fetchMyPageInfo = createAsyncThunk<MyPageUser>(
   "mypage/fetchMyPageInfo",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/user/getProfile");
+      const response = await api.get("/members/me");
 
       if (response.data.success) {
         return response.data.data;
