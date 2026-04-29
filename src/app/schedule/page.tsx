@@ -7,7 +7,7 @@ import TourOverlay from "./TourOverlay";
 
 const SchedulePage = () => {
   const [selectedLocation, setSelectedLocation] = useState("서울");
-  const [selectedTheme, setSelectedTheme] = useState("체험/액티비티");
+  const [selectedTheme, setSelectedTheme] = useState("체험 및 액티비티");
   const [showGuide, setShowGuide] = useState(true);
 
   return (

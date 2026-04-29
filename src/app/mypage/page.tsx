@@ -34,7 +34,7 @@ export default function MyPage() {
               />
             </div>
             <div className={style.user}>
-              <p className={style.name}>{userInfo?.name || "사용자"}</p>
+              <p className={style.name}>{userInfo?.name || "여행자님"}</p>
               <p className={style.email}>{userInfo?.email || ""}</p>
               <p className={style.account}>연동 소셜 계정</p>
             </div>

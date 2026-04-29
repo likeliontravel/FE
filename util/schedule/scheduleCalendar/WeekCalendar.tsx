@@ -41,10 +41,10 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { events, mainViewDate } = useSelector(
-    (state: RootState) => state.calendar
+    (state: RootState) => state.calendar,
   );
   const selectedSchedule = useSelector(
-    (state: RootState) => state.calendar.selectedCalendarSchedule
+    (state: RootState) => state.calendar.selectedCalendarSchedule,
   );
 
   const filteredEvents = useMemo(() => {
@@ -62,10 +62,10 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     const dateStr = dayjs(start).format("YYYY-MM-DD");
 
     const slotLaneEl = document.querySelector(
-      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`
+      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`,
     );
     const slotLabelEl = document.querySelector(
-      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`
+      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
     );
     if (slotLaneEl && slotLabelEl) {
       slotLaneEl.classList.add("has-event");
@@ -81,10 +81,10 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     const dateStr = dayjs(start).format("YYYY-MM-DD");
 
     const slotLaneEl = document.querySelector(
-      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`
+      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`,
     );
     const slotLabelEl = document.querySelector(
-      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`
+      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
     );
     if (slotLaneEl && slotLabelEl) {
       slotLaneEl.classList.remove("has-event");
@@ -103,10 +103,10 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       const timeStr = dayjs(arg.date).format("HH:mm:00");
       const dateStr = dayjs(arg.date).format("YYYY-MM-DD");
       const slotLaneEl = document.querySelector(
-        `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`
+        `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`,
       );
       const slotLabelEl = document.querySelector(
-        `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`
+        `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
       );
       if (slotLaneEl && slotLabelEl) {
         const isSelected = slotLaneEl.classList.contains("has-event");
@@ -121,7 +121,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         }
       }
     },
-    [dispatch, selectedSchedule]
+    [dispatch, selectedSchedule],
   );
 
   const getWeekDates = (baseDate: Date) => {
@@ -144,13 +144,13 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         });
       }
     },
-    []
+    [],
   );
 
   const getDayColumnClickHandler = useCallback(
     (dateStr: string) => (event: React.MouseEvent) =>
       handleDayColumnClick(event, dateStr),
-    [handleDayColumnClick]
+    [handleDayColumnClick],
   );
 
   const slotLabelContent = useCallback((arg: any) => {
@@ -170,7 +170,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
   const dayColumnDivStyle = useMemo<React.CSSProperties>(
     () => ({ gridTemplateColumns }),
-    [gridTemplateColumns]
+    [gridTemplateColumns],
   );
 
   const [activeTab, setActiveTab] = useState("지역");
@@ -182,7 +182,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         setter(value);
       }
     },
-    []
+    [],
   );
 
   const [showGuide, setShowGuide] = useState(false);
@@ -533,10 +533,10 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
             <div
               onClick={handleThemeClick}
               className={
-                selectedTheme === "체험/액티비티" ? styles.selected : ""
+                selectedTheme === "체험 및 액티비티" ? styles.selected : ""
               }
             >
-              체험/액티비티
+              체험 및 액티비티
             </div>
             <div
               onClick={handleThemeClick}
