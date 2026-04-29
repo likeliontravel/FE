@@ -36,15 +36,15 @@ export default function MyPage() {
             <div className={style.user}>
               <p className={style.name}>{userInfo?.name || "여행자님"}</p>
               <p className={style.email}>{userInfo?.email || ""}</p>
-              <p className={style.account}>연동 소셜 계정</p>
+              {/* <p className={style.account}>연동 소셜 계정</p> */}
             </div>
             <div className={style.oauthbox}>
               <Link href="/mypage/modify">
                 <button>회원 정보 수정</button>
               </Link>
-              <div className={style.oauth}>
+              {/* <div className={style.oauth}>
                 <FontAwesomeIcon icon={faPlus} />
-              </div>
+              </div> */}
             </div>
           </div>
           <div className={style.calendar_div}>

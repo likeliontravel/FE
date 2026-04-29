@@ -17,8 +17,6 @@ export default function ModifyPage() {
     }
   }, [dispatch, userInfo]);
 
-  const emailId = userInfo?.email?.split("@")[0] || "";
-
   return (
     <div className={style.container}>
       <div className={style.big_div}>
@@ -36,7 +34,6 @@ export default function ModifyPage() {
                 alt="프로필 수정"
               />
               <p className={style.name}>{userInfo?.name || "여행자님"}</p>
-              <p className={style.mail}>@{emailId}</p>
             </div>
             <div className={style.left_modify_nav}>
               <div className={style.select_nav}>
@@ -70,16 +67,6 @@ export default function ModifyPage() {
                     <div className={style.user_box_left_bottom}>
                       <p className={style.email}>이메일</p>
                       <p className={style.p}>{userInfo?.email || "-"}</p>
-                    </div>
-                  </div>
-                  <div className={style.user_box_right}>
-                    <div className={style.user_box_right_top}>
-                      <p className={style.age}>나이</p>
-                      <p className={style.p}>만21세</p>
-                    </div>
-                    <div className={style.user_box_right_bottom}>
-                      <p className={style.sex}>성별</p>
-                      <p className={style.p}>여</p>
                     </div>
                   </div>
                 </div>

@@ -12,8 +12,6 @@
   h2 {
     width: 185;
     height: 58;
-    top: 105px;
-    left: 380px;
     font-family: Inter;
     font-weight: 700;
     font-size: 40px;
@@ -25,8 +23,6 @@
 
 .mypage_div {
   width: 1240.0000000000048;
-  top: 186px;
-  left: 340px;
   border-width: 3px;
   display: flex;
   border-top: solid 3px #f4f5fb;
@@ -41,33 +37,27 @@
 }
 
 .img {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   width: 116;
   height: 176;
-  top: 216px;
-  left: 405px;
   img {
+    position: relative;
     width: 110;
     height: 110;
-    top: 216px;
-    left: 405px;
   }
   .modify {
     position: absolute;
     width: 38;
     height: 38;
-    top: 288px;
-    left: 433px;
+    top: -10px;
+    right: -15px;
     cursor: pointer;
   }
   .name {
-    width: 46;
-    height: 22;
-    top: 336px;
-    left: 437px;
     font-family: Inter;
     font-weight: 600;
     font-size: 20px;
@@ -75,20 +65,6 @@
     letter-spacing: -3%;
     text-align: center;
     margin: 0;
-  }
-  .mail {
-    width: 96;
-    height: 26;
-    top: 366px;
-    left: 412px;
-    font-family: Inter;
-    font-weight: 700;
-    font-size: 20px;
-    line-height: 28px;
-    letter-spacing: -3%;
-    text-align: center;
-    margin: 0;
-    color: #5d6064;
   }
 }
 
@@ -99,8 +75,6 @@
   justify-content: space-between;
   width: 205;
   height: 150;
-  top: 434px;
-  left: 360px;
   margin-top: 42;
   div {
     display: flex;
@@ -112,8 +86,6 @@
     border-radius: 10px;
     p {
       width: 136;
-      top: 16px;
-      left: 50px;
       color: #c1c4c7;
     }
   }
@@ -132,15 +104,11 @@
 .mypage_content {
   width: 990;
   height: 894;
-  top: 186px;
-  left: 590px;
   margin-left: 5;
   background-color: #f4f5fb;
   h3 {
     width: 155;
     height: 38;
-    top: 216px;
-    left: 622px;
     font-family: Inter;
     font-weight: 600;
     font-size: 30px;
@@ -158,8 +126,6 @@
   align-items: center;
   width: 924;
   height: 478;
-  top: 272px;
-  left: 622px;
   gap: 18px;
   margin-left: 32;
 
@@ -177,16 +143,12 @@
       justify-content: space-between;
       width: 880;
       height: 40;
-      top: 20px;
-      left: 22px;
       border-radius: 20px;
       margin-top: 20;
       margin-left: 22;
       p {
         width: 160;
         height: 38;
-        top: 22px;
-        left: 22px;
         font-family: Inter;
         font-weight: 600;
         font-size: 26px;
@@ -196,8 +158,6 @@
       button {
         width: 110;
         height: 38;
-        top: 20px;
-        left: 792px;
         gap: 8px;
         border-radius: 20px;
         padding-top: 2px;
@@ -233,40 +193,20 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      width: 312;
-      height: 68;
-      top: 86px;
-      left: 22px;
+      font-family: Inter;
+      font-size: 20px;
+      line-height: 100%;
+      letter-spacing: -3%;
       .user_box_left_top {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        width: 112;
-        height: 24;
-        top: 86px;
-        left: 22px;
         .name {
-          width: 56;
-          height: 24;
-          top: 86px;
-          left: 22px;
-          font-family: Inter;
           font-weight: 600;
-          font-size: 20px;
-          line-height: 100%;
-          letter-spacing: -3%;
           color: #2c2d2e;
         }
         .p {
-          width: 24;
-          height: 24;
-          top: 86px;
-          left: 110px;
-          font-family: Inter;
           font-weight: 500;
-          font-size: 20px;
-          line-height: 100%;
-          letter-spacing: -3%;
           color: #5d6064;
         }
       }
@@ -274,111 +214,91 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        width: 312;
-        height: 26;
-        top: 128px;
-        left: 22px;
         .email {
-          width: 56;
-          height: 24;
-          top: 129px;
-          left: 22px;
-          font-family: Inter;
           font-weight: 600;
-          font-size: 20px;
-          line-height: 100%;
-          letter-spacing: -3%;
           color: #2c2d2e;
         }
         .p {
-          width: 224;
-          height: 26;
-          top: 128px;
-          left: 110px;
-          font-family: Inter;
           font-weight: 500;
-          font-size: 20px;
-          line-height: 100%;
-          letter-spacing: -3%;
           color: #5d6064;
         }
       }
     }
-    .user_box_right {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      width: 195;
-      height: 66;
-      top: 86px;
-      left: 383px;
-      .user_box_right_top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 195;
-        height: 24;
-        top: 86px;
-        left: 383px;
-        .age {
-          width: 38;
-          height: 24;
-          top: 86px;
-          left: 383px;
-          font-family: Inter;
-          font-weight: 600;
-          font-size: 20px;
-          line-height: 100%;
-          letter-spacing: -3%;
-          color: #2c2d2e;
-        }
-        .p {
-          width: 107;
-          height: 24;
-          top: 86px;
-          left: 471px;
-          font-family: Inter;
-          font-weight: 500;
-          font-size: 20px;
-          line-height: 100%;
-          letter-spacing: -3%;
-          color: #5d6064;
-        }
-      }
-      .user_box_right_bottom {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 195;
-        height: 24;
-        top: 128px;
-        left: 383px;
-        .sex {
-          width: 38;
-          height: 24;
-          top: 128px;
-          left: 383px;
-          font-family: Inter;
-          font-weight: 600;
-          font-size: 20px;
-          line-height: 100%;
-          letter-spacing: -3%;
-          color: #2c2d2e;
-        }
-        .p {
-          width: 107;
-          height: 24;
-          top: 128px;
-          left: 471px;
-          font-family: Inter;
-          font-weight: 500;
-          font-size: 20px;
-          line-height: 100%;
-          letter-spacing: -3%;
-          color: #5d6064;
-        }
-      }
-    }
+    // .user_box_right {
+    //   display: flex;
+    //   flex-direction: column;
+    //   justify-content: space-between;
+    //   width: 195;
+    //   height: 66;
+    //   top: 86px;
+    //   left: 383px;
+    //   .user_box_right_top {
+    //     display: flex;
+    //     align-items: center;
+    //     justify-content: space-between;
+    //     width: 195;
+    //     height: 24;
+    //     top: 86px;
+    //     left: 383px;
+    //     .age {
+    //       width: 38;
+    //       height: 24;
+    //       top: 86px;
+    //       left: 383px;
+    //       font-family: Inter;
+    //       font-weight: 600;
+    //       font-size: 20px;
+    //       line-height: 100%;
+    //       letter-spacing: -3%;
+    //       color: #2c2d2e;
+    //     }
+    //     .p {
+    //       width: 107;
+    //       height: 24;
+    //       top: 86px;
+    //       left: 471px;
+    //       font-family: Inter;
+    //       font-weight: 500;
+    //       font-size: 20px;
+    //       line-height: 100%;
+    //       letter-spacing: -3%;
+    //       color: #5d6064;
+    //     }
+    //   }
+    //   .user_box_right_bottom {
+    //     display: flex;
+    //     align-items: center;
+    //     justify-content: space-between;
+    //     width: 195;
+    //     height: 24;
+    //     top: 128px;
+    //     left: 383px;
+    //     .sex {
+    //       width: 38;
+    //       height: 24;
+    //       top: 128px;
+    //       left: 383px;
+    //       font-family: Inter;
+    //       font-weight: 600;
+    //       font-size: 20px;
+    //       line-height: 100%;
+    //       letter-spacing: -3%;
+    //       color: #2c2d2e;
+    //     }
+    //     .p {
+    //       width: 107;
+    //       height: 24;
+    //       top: 128px;
+    //       left: 471px;
+    //       font-family: Inter;
+    //       font-weight: 500;
+    //       font-size: 20px;
+    //       line-height: 100%;
+    //       letter-spacing: -3%;
+    //       color: #5d6064;
+    //     }
+    //   }
+    // }
   }
 
   .social {
@@ -392,8 +312,6 @@
       justify-content: space-between;
       width: 478;
       height: 40;
-      top: 22px;
-      left: 22px;
       margin: 22 424 22 22;
       .social_div_left {
         display: flex;
@@ -401,13 +319,9 @@
         justify-content: space-between;
         width: 336;
         height: 36;
-        top: 24px;
-        left: 22px;
         .social_account {
           width: 160;
           height: 36;
-          top: 24px;
-          left: 22px;
           font-family: Inter;
           font-weight: 600;
           font-size: 26px;
@@ -418,8 +332,6 @@
         .social_get {
           width: 170;
           height: 36;
-          top: 24px;
-          left: 190px;
           font-family: Inter;
           font-weight: 500;
           font-size: 16px;
@@ -442,8 +354,6 @@
         justify-content: space-between;
         width: 98;
         height: 40;
-        top: 22px;
-        left: 402px;
         gap: 18px;
         img {
           width: 40;
@@ -569,15 +479,11 @@
   background-color: white;
   width: 500;
   height: 538;
-  top: 250px;
-  left: 808px;
   border-radius: 10px;
   position: fixed;
   h3 {
     width: 275;
     height: 38;
-    top: 28px;
-    left: 117px;
     margin: 0;
     font-family: Inter;
     font-weight: 600;
@@ -590,8 +496,6 @@
   p {
     width: 370;
     height: 20;
-    top: 78px;
-    left: 65px;
     margin: 0;
     font-family: Inter;
     font-weight: 500;
@@ -605,16 +509,12 @@
     background-image: url("/imgs/subscription.png");
     width: 394;
     height: 302;
-    top: 128px;
-    left: 53px;
     ul {
       position: relative;
       .deadline {
         position: absolute;
         width: 370;
         height: 20;
-        top: 155px;
-        left: 25px;
         font-family: Inter;
         font-weight: 500;
         font-size: 14px;
@@ -626,8 +526,6 @@
         position: absolute;
         width: 370;
         height: 20;
-        top: 185px;
-        left: 25px;
         font-family: Inter;
         font-weight: 500;
         font-size: 14px;
@@ -639,8 +537,6 @@
         position: absolute;
         width: 370;
         height: 41;
-        top: 210px;
-        left: 25px;
         font-family: Inter;
         font-weight: 500;
         font-size: 14px;
@@ -666,8 +562,6 @@
     justify-content: center;
     width: 156;
     height: 58;
-    top: 458px;
-    left: 172px;
     border-radius: 10px;
     font-family: Inter;
     font-weight: 600;
@@ -691,8 +585,6 @@
     justify-content: space-around;
     width: 424;
     height: 417;
-    top: 86px;
-    left: 37px;
     border-radius: 10px;
     background-color: #eff2f6;
     padding: 0 10;
