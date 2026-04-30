@@ -15,7 +15,7 @@ import Image from 'next/image';
 const SignUp = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { signUpData, isEmailVerified, error, loading } = useSelector(
+  const { signUpData, isEmailVerified, loading } = useSelector(
     (state: RootState) => state.auth
   );
 
@@ -25,9 +25,10 @@ const SignUp = () => {
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(setSignUpData({ ...signUpData, [e.target.id]: e.target.value }));
+      const { id, value } = e.target;
+      dispatch(setSignUpData({ [id]: value }));
     },
-    [dispatch, signUpData]
+    [dispatch]
   );
 
   const handleRequestCode = useCallback(async () => {
@@ -37,11 +38,15 @@ const SignUp = () => {
     }
     
     try {
-      await dispatch(requestEmailCode({ email: signUpData.email })).unwrap();
-      alert('인증 코드가 이메일로 발송되었습니다. 스팸 메일함을 확인해주세요!');
+      const payload = { email: signUpData.email };
+      console.log("코드 요청 바디 확인:", payload);
+      
+      await dispatch(requestEmailCode(payload)).unwrap();
+      
+      alert('인증 코드가 이메일로 발송되었습니다.');
       setIsCodeSent(true);
       setIsCodeInputVisible(true);
-    } catch (err) {
+    } catch (err: any) {
       alert(`코드 발송 실패: ${err}`);
     }
   }, [dispatch, signUpData.email]);
@@ -51,12 +56,15 @@ const SignUp = () => {
       alert('인증 코드를 입력해주세요.');
       return;
     }
+    
     try {
-      await dispatch(
-        verifyEmailCode({ email: signUpData.email, code })
-      ).unwrap();
+      const payload = { email: signUpData.email, code: code };
+      console.log("인증 확인 바디 확인:", payload);
+
+      await dispatch(verifyEmailCode(payload)).unwrap();
+      
       alert('이메일 인증에 성공했습니다!');
-    } catch (err) {
+    } catch (err: any) {
       alert(`인증 실패: ${err}`);
     }
   }, [dispatch, signUpData.email, code]);
@@ -148,7 +156,6 @@ const SignUp = () => {
                     type="button"
                     className={styles.verifyButton}
                     onClick={handleVerifyCode}
-                    disabled={loading}
                   >
                     인증 확인
                   </button>
@@ -166,7 +173,7 @@ const SignUp = () => {
                 value={signUpData.password}
                 onChange={handleChange}
                 placeholder="비밀번호를 입력해주세요"
-                required
+                required 
               />
               <p className={styles.hint}>영문+숫자 · 8~16자</p>
             </div>
