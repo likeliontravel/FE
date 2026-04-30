@@ -50,7 +50,7 @@ const calendarSlice = createSlice({
     setEvents(state, action: PayloadAction<CalendarEvent[]>) {
       state.events = action.payload;
     },
-    setMainViewDate(state, action: PayloadAction<Date>) {
+    setMainViewDate(state, action: PayloadAction<any>) {
       state.mainViewDate = action.payload;
     },
     addSelectedSlot(state, action: PayloadAction<Date>) {
