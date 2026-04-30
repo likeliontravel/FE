@@ -24,8 +24,8 @@ import {
   addSelectedSlot,
   removeSelectedSlot,
 } from "../../../store/calendarSlice";
-import { fetchUserGroups } from "../../../util/group/groupSlice";
 import { createSchedule } from "../../../util/schedule/scheduleSlice";
+import { ScheduleOption } from "../../../store/calendarSlice";
 import GuideOverlay from "./GuideOverlay";
 
 interface WeekCalendarProps {
@@ -33,6 +33,8 @@ interface WeekCalendarProps {
   setSelectedLocation: (loc: string) => void;
   selectedTheme: string;
   setSelectedTheme: (theme: string) => void;
+  groups: any[];
+  calendarOptions: ScheduleOption[];
 }
 
 const WeekCalendar: React.FC<WeekCalendarProps> = ({
@@ -40,6 +42,8 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   setSelectedLocation,
   selectedTheme,
   setSelectedTheme,
+  groups,
+  calendarOptions,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { events, mainViewDate } = useSelector(
@@ -48,12 +52,6 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   const selectedSchedule = useSelector(
     (state: RootState) => state.calendar.selectedCalendarSchedule,
   );
-
-  useEffect(() => {
-    dispatch(fetchUserGroups());
-  }, [dispatch]);
-
-  const groups = useSelector((state: RootState) => state.group.groups);
 
   const filteredEvents = useMemo(() => {
     return events.filter((event) => event.schedule === selectedSchedule.value);
@@ -240,7 +238,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       <div className={styles.mainScheduleDays}>
         <div className={styles.daySelect}>
           <p>{getMonthWeekString(new Date(mainViewDate))}</p>
-          <UseReactSelect type="calendar" />
+          <UseReactSelect type="calendar" calendarOptions={calendarOptions} />
         </div>
         <div className={styles.dayColumnDiv} style={dayColumnDivStyle}>
           {weekDates.map((day) => {

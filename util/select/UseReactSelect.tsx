@@ -21,9 +21,10 @@ import { api } from "../api";
 
 interface UseReactSelectProps {
   type: "calendar" | "list";
+  calendarOptions?: ScheduleOption[];
 }
 
-const UseReactSelect = ({ type }: UseReactSelectProps) => {
+const UseReactSelect = ({ type, calendarOptions }: UseReactSelectProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedCalendarSchedule = useSelector(
     (s: RootState) => s.calendar.selectedCalendarSchedule,
@@ -31,51 +32,6 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
   const selectedListSchedule = useSelector(
     (s: RootState) => s.calendar.selectedListSchedule,
   );
-
-  const [fetchedCalendarOptions, setFetchedCalendarOptions] = useState<
-    ScheduleOption[]
-  >([
-    { value: "default", label: "-", prefix: "내일정", suffix: "D-" }, // 기본값
-  ]);
-
-  useEffect(() => {
-    if (type === "calendar") {
-      const fetchSchedules = async () => {
-        try {
-          const res = await api.get("/schedule/getList");
-
-          if (res.data.success && res.data.data) {
-            const apiOptions = res.data.data.map((item: any) => {
-              const today = dayjs().startOf("day");
-              const targetDate = dayjs(item.startSchedule).startOf("day");
-              const diffDays = targetDate.diff(today, "day");
-
-              let dDayString = "";
-              if (diffDays === 0) dDayString = "D-Day";
-              else if (diffDays > 0) dDayString = `D-${diffDays}`;
-              else dDayString = `D+${Math.abs(diffDays)}`;
-
-              return {
-                value: item.groupName,
-                label: `${item.scheduleFirstRegion} 여행`,
-                prefix: item.groupName,
-                suffix: dDayString,
-              };
-            });
-
-            setFetchedCalendarOptions([
-              { value: "default", label: "-", prefix: "내일정", suffix: "D-" },
-              ...apiOptions,
-            ]);
-          }
-        } catch (error) {
-          console.error("일정 목록을 불러오는데 실패했습니다.", error);
-        }
-      };
-
-      fetchSchedules();
-    }
-  }, [type]);
 
   const listOptions = useMemo<ScheduleOption[]>(
     () => [
@@ -90,7 +46,7 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
     useMemo(() => {
       if (type === "calendar") {
         return {
-          options: fetchedCalendarOptions,
+          options: calendarOptions,
           customComponents: {
             Option: CalendarOption,
             SingleValue: CalendarSingleValue,
@@ -113,7 +69,7 @@ const UseReactSelect = ({ type }: UseReactSelectProps) => {
       type,
       selectedCalendarSchedule,
       selectedListSchedule,
-      fetchedCalendarOptions,
+      calendarOptions,
       listOptions,
     ]);
 
