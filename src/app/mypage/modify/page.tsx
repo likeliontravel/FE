@@ -33,7 +33,7 @@ export default function ModifyPage() {
                 src="/imgs/프로필 수정.png"
                 alt="프로필 수정"
               />
-              <p className={style.name}>{userInfo?.name || "여행자님"}</p>
+              <p className={style.name}>{userInfo?.name}</p>
             </div>
             <div className={style.left_modify_nav}>
               <div className={style.select_nav}>
@@ -71,7 +71,7 @@ export default function ModifyPage() {
                   </div>
                 </div>
               </div>
-              <div className={style.social}>
+              {/* <div className={style.social}>
                 <div className={style.social_div}>
                   <div className={style.social_div_left}>
                     <p className={style.social_account}>연동 계정 관리</p>
@@ -84,7 +84,7 @@ export default function ModifyPage() {
                     <img src="/imgs/plus_btn.png" alt="social" />
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className={style.agree}>
                 <p>이용 약관 동의 여부</p>
                 <div>약관보기 &gt;</div>

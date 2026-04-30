@@ -48,13 +48,14 @@
     position: relative;
     width: 110;
     height: 110;
+    border-radius: 50%;
   }
   .modify {
     position: absolute;
     width: 38;
     height: 38;
-    top: -10px;
-    right: -15px;
+    bottom: 60px;
+    right: -5px;
     cursor: pointer;
   }
   .name {
@@ -183,10 +184,6 @@
       display: flex;
       align-content: center;
       justify-content: space-between;
-      width: 556;
-      height: 68;
-      top: 86px;
-      left: 22px;
       margin-left: 22;
     }
     .user_box_left {
@@ -200,7 +197,6 @@
       .user_box_left_top {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         .name {
           font-weight: 600;
           color: #2c2d2e;
@@ -208,12 +204,12 @@
         .p {
           font-weight: 500;
           color: #5d6064;
+          margin-left: 30px;
         }
       }
       .user_box_left_bottom {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         .email {
           font-weight: 600;
           color: #2c2d2e;
@@ -221,6 +217,7 @@
         .p {
           font-weight: 500;
           color: #5d6064;
+          margin-left: 30px;
         }
       }
     }
