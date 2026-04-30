@@ -39,20 +39,19 @@ const Login = () => {
       try {
         const user = await dispatch(loginUser(formData)).unwrap();
         alert(`${user.name}님, 환영합니다!`);
-        router.push('/post'); // 게시판 목록으로 이동
+        router.push('/main'); 
       } catch (err: any) {
-        // 에러는 Redux state의 error를 통해 UI에 표시됨
       }
     },
     [dispatch, formData, router]
   );
 
-  // 소셜 로그인 주소를 백엔드 API 주소로 변경 (중요!)
-  const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao') => {
-    const API_BASE_URL = 'https://api.toleave.cloud';
-    window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
-  }, []);
-  
+  const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao') => { 
+  const API_BASE_URL = 'https://api.toleave.cloud/'; 
+
+ 
+  window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
+}, []);
   const handleKakaoLogin = useCallback(() => handleOAuthLogin('kakao'), [handleOAuthLogin]);
   const handleNaverLogin = useCallback(() => handleOAuthLogin('naver'), [handleOAuthLogin]);
 
@@ -110,7 +109,6 @@ const Login = () => {
               <label htmlFor="rememberMe">아이디 저장</label>
             </div>
             <div className={styles.links}>
-              {/* 비밀번호 찾기 등은 백엔드 가이드에서 추가된 /auth/password/reset API와 연동 필요 */}
               <Link href="/forgot-password">비밀번호 찾기</Link>
             </div>
           </div>

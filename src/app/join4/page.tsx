@@ -42,6 +42,7 @@ const Subscription: React.FC = () => {
     };
 
     try {
+      console.log("백엔드로 보내는 데이터:", finalUserData);
       await dispatch(signUpUser(finalUserData)).unwrap();
       alert('회원가입이 완료되었습니다!');
       dispatch(resetSignUpData());
