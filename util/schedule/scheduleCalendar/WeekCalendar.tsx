@@ -248,7 +248,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       return {
         scheduleId: null,
         contentId: event.id,
-        placeType: typeMap[event.category],
+        placeType: typeMap[event.category as string],
         visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
         visitedEnd: dayjs(event.end).format("YYYY-MM-DDTHH:mm:ss"),
         dayOrder,
@@ -280,7 +280,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       {/* ──────────────── 메인 스케줄(요일별) ──────────────── */}
       <div className={styles.mainScheduleDays}>
         <div className={styles.daySelect}>
-          <p>{getMonthWeekString(mainViewDate)}</p>
+          <p>{getMonthWeekString(new Date(mainViewDate))}</p>
           <UseReactSelect type="calendar" />
         </div>
         <div className={styles.dayColumnDiv} style={dayColumnDivStyle}>
@@ -728,13 +728,13 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
             >
               <button
                 onClick={() => setShowCreateModal(false)}
-                style={cancelBtnStyle}
+                className={styles.cancelBtn}
               >
                 취소
               </button>
               <button
                 onClick={handleCreateScheduleSubmit}
-                style={submitBtnStyle}
+                className={styles.submitBtn}
               >
                 생성하기
               </button>
