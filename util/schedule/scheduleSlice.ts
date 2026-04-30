@@ -23,7 +23,6 @@ export interface CreateSchedulePayload {
   groupName: string;
   startSchedule: string;
   endSchedule: string;
-  schedulePlaces: SchedulePlacePayload[];
 }
 
 interface ScheduleItemState {

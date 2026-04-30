@@ -212,49 +212,9 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       !modalData.startSchedule ||
       !modalData.endSchedule
     ) {
-      alert("그룹, 시작일, 종료일을 모두 입력해주세요.");
+      alert("그룹, 시작일, 종료일을 모두 선택해주세요.");
       return;
     }
-
-    if (filteredEvents.length === 0) {
-      alert("달력에 추가된 일정이 없습니다.");
-      return;
-    }
-
-    const sortedEvents = [...filteredEvents].sort(
-      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
-    );
-
-    let currentDayStr = "";
-    let dayOrder = 0;
-    let orderInDay = 0;
-
-    const typeMap: Record<string, string> = {
-      restaurant: "Restaurant",
-      hotel: "Accommodation",
-      tourist_spot: "TouristSpot",
-    };
-
-    const schedulePlaces = sortedEvents.map((event) => {
-      const startDay = dayjs(event.start).format("YYYY-MM-DD");
-      if (startDay !== currentDayStr) {
-        currentDayStr = startDay;
-        dayOrder += 1;
-        orderInDay = 1;
-      } else {
-        orderInDay += 1;
-      }
-
-      return {
-        scheduleId: null,
-        contentId: event.id,
-        placeType: typeMap[event.category as string],
-        visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
-        visitedEnd: dayjs(event.end).format("YYYY-MM-DDTHH:mm:ss"),
-        dayOrder,
-        orderInDay,
-      };
-    });
 
     const payload = {
       groupName: modalData.groupName,
@@ -262,7 +222,6 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         "YYYY-MM-DDTHH:mm:ss",
       ),
       endSchedule: dayjs(modalData.endSchedule).format("YYYY-MM-DDTHH:mm:ss"),
-      schedulePlaces,
     };
 
     dispatch(createSchedule(payload)).then((action) => {
