@@ -9,6 +9,23 @@ export interface ScheduleItem {
   [key: string]: any;
 }
 
+export interface SchedulePlacePayload {
+  scheduleId: number | null;
+  contentId: string;
+  placeType: string; // "Accommodation", "Restaurant", "TouristSpot"
+  visitStart: string;
+  visitedEnd: string;
+  dayOrder: number;
+  orderInDay: number;
+}
+
+export interface CreateSchedulePayload {
+  groupName: string;
+  startSchedule: string;
+  endSchedule: string;
+  schedulePlaces: SchedulePlacePayload[];
+}
+
 interface ScheduleItemState {
   scheduleItems: ScheduleItem[];
   loading: boolean;
@@ -77,6 +94,25 @@ export const fetchScheduleItems = createAsyncThunk<
   }
 });
 
+export const createSchedule = createAsyncThunk(
+  "scheduleItem/createSchedule",
+  async (payload: CreateSchedulePayload, { rejectWithValue }) => {
+    try {
+      const res = await api.post("/schedule", payload);
+
+      if (!res.data.success) {
+        return rejectWithValue(res.data.message || "일정 생성 실패");
+      }
+
+      return res.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "일정 생성 중 오류 발생",
+      );
+    }
+  },
+);
+
 const scheduleItemSlice = createSlice({
   name: "scheduleItem",
   initialState,
@@ -97,6 +133,18 @@ const scheduleItemSlice = createSlice({
         state.scheduleItems = action.payload;
       })
       .addCase(fetchScheduleItems.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(createSchedule.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createSchedule.fulfilled, (state) => {
+        state.loading = false;
+        // 생성 완료 후 별도로 상태에 저장할 값이 있다면 여기서 처리 (예: 알림)
+      })
+      .addCase(createSchedule.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

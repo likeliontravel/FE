@@ -11,7 +11,7 @@ import {
   clearScheduleItems,
   fetchScheduleItems,
   ScheduleItem,
-} from "../scheduleSilce";
+} from "../scheduleSlice";
 
 interface ScheduleListProps {
   selectedLocation: string;
@@ -36,7 +36,7 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
       const newEvents = selectedSlots.map((slot) => {
         const start = dayjs(slot);
         return {
-          id: Date.now().toString() + Math.random(),
+          id: item.contentId,
           title: item.title,
           start: start.toISOString(),
           end: start.add(1, "hour").toISOString(),

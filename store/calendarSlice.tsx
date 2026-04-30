@@ -26,7 +26,7 @@ interface CalendarState {
 
 const initialState: CalendarState = {
   events: [],
-  mainViewDate: new Date(),
+  mainViewDate: new Date().toISOString(),
   selectedSlots: [],
   selectedCalendarSchedule: {
     value: "default",

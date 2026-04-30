@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import { DateClickArg } from "@fullcalendar/interaction";
 import { EventMountArg } from "@fullcalendar/core";
@@ -24,6 +24,8 @@ import {
   addSelectedSlot,
   removeSelectedSlot,
 } from "../../../store/calendarSlice";
+import { fetchUserGroups } from "../../../util/group/groupSlice";
+import { createSchedule } from "../../../util/schedule/scheduleSlice";
 import GuideOverlay from "./GuideOverlay";
 
 interface WeekCalendarProps {
@@ -46,6 +48,12 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   const selectedSchedule = useSelector(
     (state: RootState) => state.calendar.selectedCalendarSchedule,
   );
+
+  useEffect(() => {
+    dispatch(fetchUserGroups());
+  }, [dispatch]);
+
+  const groups = useSelector((state: RootState) => state.group.groups);
 
   const filteredEvents = useMemo(() => {
     return events.filter((event) => event.schedule === selectedSchedule.value);
@@ -187,9 +195,85 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
   const [showGuide, setShowGuide] = useState(false);
 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [modalData, setModalData] = useState({
+    groupName: "",
+    startSchedule: "",
+    endSchedule: "",
+  });
+
   const handleTabClick = createClickHandler(setActiveTab);
   const handleLocationClick = createClickHandler(setSelectedLocation);
   const handleThemeClick = createClickHandler(setSelectedTheme);
+
+  const handleCreateScheduleSubmit = async () => {
+    if (
+      !modalData.groupName ||
+      !modalData.startSchedule ||
+      !modalData.endSchedule
+    ) {
+      alert("그룹, 시작일, 종료일을 모두 입력해주세요.");
+      return;
+    }
+
+    if (filteredEvents.length === 0) {
+      alert("달력에 추가된 일정이 없습니다.");
+      return;
+    }
+
+    const sortedEvents = [...filteredEvents].sort(
+      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
+    );
+
+    let currentDayStr = "";
+    let dayOrder = 0;
+    let orderInDay = 0;
+
+    const typeMap: Record<string, string> = {
+      restaurant: "Restaurant",
+      hotel: "Accommodation",
+      tourist_spot: "TouristSpot",
+    };
+
+    const schedulePlaces = sortedEvents.map((event) => {
+      const startDay = dayjs(event.start).format("YYYY-MM-DD");
+      if (startDay !== currentDayStr) {
+        currentDayStr = startDay;
+        dayOrder += 1;
+        orderInDay = 1;
+      } else {
+        orderInDay += 1;
+      }
+
+      return {
+        scheduleId: null,
+        contentId: event.id,
+        placeType: typeMap[event.category],
+        visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
+        visitedEnd: dayjs(event.end).format("YYYY-MM-DDTHH:mm:ss"),
+        dayOrder,
+        orderInDay,
+      };
+    });
+
+    const payload = {
+      groupName: modalData.groupName,
+      startSchedule: dayjs(modalData.startSchedule).format(
+        "YYYY-MM-DDTHH:mm:ss",
+      ),
+      endSchedule: dayjs(modalData.endSchedule).format("YYYY-MM-DDTHH:mm:ss"),
+      schedulePlaces,
+    };
+
+    dispatch(createSchedule(payload)).then((action) => {
+      if (createSchedule.fulfilled.match(action)) {
+        alert("일정이 성공적으로 생성되었습니다!");
+        setShowCreateModal(false);
+      } else {
+        alert(`일정 생성 실패: ${action.payload}`);
+      }
+    });
+  };
 
   return (
     <div className={styles.container}>
@@ -574,12 +658,90 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
             </div>
           </div>
         )}
-        <div onClick={() => setShowGuide(true)} className={styles.ai_schedule}>
-          AI 맞춤 일정 구성하기
+        <div className={styles.create_schedule}>
+          <p className={styles.first} onClick={() => setShowCreateModal(true)}>
+            일정 생성하기
+          </p>
+          <p>일정 저장하기</p>
         </div>
+
+        {/* <div onClick={() => setShowGuide(true)} className={styles.ai_schedule}>
+          AI 맞춤 일정 구성하기
+        </div> */}
       </div>
 
       {showGuide && <GuideOverlay onClose={() => setShowGuide(false)} />}
+
+      {showCreateModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h2>일정 생성</h2>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label>그룹 선택</label>
+              <select
+                value={modalData.groupName}
+                onChange={(e) =>
+                  setModalData({ ...modalData, groupName: e.target.value })
+                }
+                className={styles.input}
+              >
+                <option value="">그룹을 선택하세요</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.groupName}>
+                    {g.groupName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label>시작 날짜/시간</label>
+              <input
+                type="datetime-local"
+                value={modalData.startSchedule}
+                onChange={(e) =>
+                  setModalData({ ...modalData, startSchedule: e.target.value })
+                }
+                className={styles.input}
+              />
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <label>종료 날짜/시간</label>
+              <input
+                type="datetime-local"
+                value={modalData.endSchedule}
+                onChange={(e) =>
+                  setModalData({ ...modalData, endSchedule: e.target.value })
+                }
+                className={styles.input}
+              />
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                onClick={() => setShowCreateModal(false)}
+                style={cancelBtnStyle}
+              >
+                취소
+              </button>
+              <button
+                onClick={handleCreateScheduleSubmit}
+                style={submitBtnStyle}
+              >
+                생성하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
