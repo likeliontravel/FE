@@ -137,7 +137,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     return Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, "day"));
   };
 
-  const weekDates = getWeekDates(mainViewDate);
+  const weekDates = getWeekDates(new Date(mainViewDate));
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
 
   const handleDayColumnClick = useCallback(
