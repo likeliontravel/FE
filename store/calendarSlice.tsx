@@ -18,7 +18,7 @@ export interface ScheduleOption {
 
 interface CalendarState {
   events: CalendarEvent[];
-  mainViewDate: Date;
+  mainViewDate: srting;
   selectedSlots: Date[];
   selectedCalendarSchedule: ScheduleOption;
   selectedListSchedule: ScheduleOption;
