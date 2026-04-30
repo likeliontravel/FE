@@ -24,7 +24,7 @@ const ScheduleCheck = ({ schedule = [] as any[] }: { schedule?: any[] }) => {
 
   const dayEvents = events.filter((event) => {
     const eventDate = new Date(event.start).toDateString();
-    const selectedDate = mainViewDate.toDateString();
+    const selectedDate = new Date(mainViewDate).toDateString();
     return eventDate === selectedDate;
   });
 
