@@ -4,9 +4,9 @@ import { useState } from "react";
 const OPTIONS = [
   "체험 및 액티비티",
   "자연 속에서 힐링",
-  "열정적인 쇼핑 투어",
+  "열정적인 쇼핑투어",
   "미식 여행/먹방 중심",
-  "문화/예술 & 역사 탐방",
+  "문화 예술 및 역사 탐방",
 ];
 
 export default function ThemeSelector() {

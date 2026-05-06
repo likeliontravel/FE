@@ -22,7 +22,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../../store/store";
 import {
   addSelectedSlot,
+  fetchScheduleDetails,
   removeSelectedSlot,
+  setEvents,
 } from "../../../store/calendarSlice";
 import { createSchedule } from "../../../util/schedule/scheduleSlice";
 import { ScheduleOption } from "../../../store/calendarSlice";
@@ -52,6 +54,14 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   const selectedSchedule = useSelector(
     (state: RootState) => state.calendar.selectedCalendarSchedule,
   );
+
+  useEffect(() => {
+    if (selectedSchedule.value !== "default") {
+      dispatch(fetchScheduleDetails(selectedSchedule.value));
+    } else {
+      dispatch(setEvents([]));
+    }
+  }, [selectedSchedule.value, dispatch]);
 
   const filteredEvents = useMemo(() => {
     return events.filter((event) => event.schedule === selectedSchedule.value);
@@ -590,10 +600,10 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
             <div
               onClick={handleThemeClick}
               className={
-                selectedTheme === "열정적인 쇼핑 투어" ? styles.selected : ""
+                selectedTheme === "열정적인 쇼핑투어" ? styles.selected : ""
               }
             >
-              열정적인 쇼핑 투어
+              열정적인 쇼핑투어
             </div>
             <div
               onClick={handleThemeClick}
@@ -606,12 +616,12 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
             <div
               onClick={handleThemeClick}
               className={
-                selectedTheme === "문화, 예술 & 역사 탐방"
+                selectedTheme === "문화 예술 및 역사 탐방"
                   ? styles.selected
                   : ""
               }
             >
-              문화, 예술 & 역사 탐방
+              문화 예술 및 역사 탐방
             </div>
           </div>
         )}

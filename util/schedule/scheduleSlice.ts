@@ -42,6 +42,7 @@ interface FetchScheduleItemsArgs {
   location?: string;
   theme?: string;
   keyword?: string;
+  page: number;
 }
 
 const getEndpoint = (category: string) => {
@@ -54,11 +55,11 @@ const getEndpoint = (category: string) => {
 };
 
 export const fetchScheduleItems = createAsyncThunk<
-  ScheduleItem[],
+  { items: ScheduleItem[]; page: number },
   FetchScheduleItemsArgs
 >("scheduleItem/fetchScheduleItems", async (args, { rejectWithValue }) => {
   try {
-    const { category, location, theme, keyword } = args;
+    const { category, location, theme, keyword, page } = args;
     const endpoint = getEndpoint(category);
 
     const params = new URLSearchParams();
@@ -68,8 +69,8 @@ export const fetchScheduleItems = createAsyncThunk<
     }
     if (keyword?.trim()) params.append("keyword", keyword.trim());
 
-    params.append("page", "1");
-    params.append("size", "10");
+    params.append("page", page.toString());
+    params.append("size", "30");
     params.append("sortType", "TITLE_ASC");
 
     const res = await api.get(`/places/${endpoint}`, {
@@ -85,7 +86,7 @@ export const fetchScheduleItems = createAsyncThunk<
       category: category,
     }));
 
-    return items as ScheduleItem[];
+    return { items: items as ScheduleItem[], page };
   } catch (error: any) {
     return rejectWithValue(
       error?.response?.data?.message || "요청 중 오류가 발생했습니다.",
@@ -129,7 +130,14 @@ const scheduleItemSlice = createSlice({
       })
       .addCase(fetchScheduleItems.fulfilled, (state, action) => {
         state.loading = false;
-        state.scheduleItems = action.payload;
+        if (action.payload.page === 1) {
+          state.scheduleItems = action.payload.items;
+        } else {
+          state.scheduleItems = [
+            ...state.scheduleItems,
+            ...action.payload.items,
+          ];
+        }
       })
       .addCase(fetchScheduleItems.rejected, (state, action) => {
         state.loading = false;

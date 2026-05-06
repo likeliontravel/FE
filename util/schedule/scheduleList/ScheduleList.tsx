@@ -84,6 +84,8 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   );
   const [keyword, setKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
+  const [apiPage, setApiPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const ITEMS_PER_PAGE = 5;
   useEffect(() => {
     return () => {
@@ -106,11 +108,15 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
         location: selectedLocation,
         theme: selectedTheme,
         keyword: keyword,
+        page: 1,
       }),
     ).then((action) => {
       if (fetchScheduleItems.fulfilled.match(action)) {
         alert("데이터 조회가 성공적으로 되었습니다!");
         setCurrentPage(0);
+        if (action.payload.items.length < 30) {
+          setHasMore(false);
+        }
       }
     });
   };
@@ -122,9 +128,33 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   };
 
   const handleNext = () => {
+    if (loading) return;
+
     const maxPage = Math.ceil(scheduleItems.length / ITEMS_PER_PAGE) - 1;
+
     if (currentPage < maxPage) {
       setCurrentPage((prev) => prev + 1);
+    } else if (hasMore) {
+      const nextApiPage = apiPage + 1;
+
+      dispatch(
+        fetchScheduleItems({
+          category: selectedListSchedule.value,
+          location: selectedLocation,
+          theme: selectedTheme,
+          keyword: keyword,
+          page: nextApiPage,
+        }),
+      ).then((action) => {
+        if (fetchScheduleItems.fulfilled.match(action)) {
+          setApiPage(nextApiPage);
+          setCurrentPage((prev) => prev + 1);
+
+          if (action.payload.items.length < 30) {
+            setHasMore(false);
+          }
+        }
+      });
     }
   };
 

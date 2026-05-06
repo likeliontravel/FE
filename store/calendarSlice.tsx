@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { api } from "../util/api";
 
 export interface CalendarEvent {
   id: string;
@@ -40,6 +41,34 @@ const initialState: CalendarState = {
   },
 };
 
+export const fetchScheduleDetails = createAsyncThunk(
+  "calendar/fetchScheduleDetails",
+  async (scheduleId: string, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/schedule/detail/${scheduleId}`);
+
+      if (!res.data.success) {
+        return rejectWithValue(res.data.message || "일정 조회 실패");
+      }
+
+      const mappedEvents = res.data.data.map((item: any) => ({
+        id: item.contentId,
+        title: item.title,
+        start: item.visitStart,
+        end: item.visitedEnd,
+        schedule: scheduleId,
+        category: item.placeType.toLowerCase(),
+      }));
+
+      return mappedEvents;
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "일정 조회 에러",
+      );
+    }
+  },
+);
+
 const calendarSlice = createSlice({
   name: "calendar",
   initialState,
@@ -56,7 +85,7 @@ const calendarSlice = createSlice({
     addSelectedSlot(state, action: PayloadAction<Date>) {
       if (
         !state.selectedSlots.some(
-          (s) => s.getTime() === action.payload.getTime()
+          (s) => s.getTime() === action.payload.getTime(),
         )
       ) {
         state.selectedSlots.push(action.payload);
@@ -64,7 +93,7 @@ const calendarSlice = createSlice({
     },
     removeSelectedSlot(state, action: PayloadAction<Date>) {
       state.selectedSlots = state.selectedSlots.filter(
-        (s) => s.getTime() !== action.payload.getTime()
+        (s) => s.getTime() !== action.payload.getTime(),
       );
     },
     clearSelectedSlots(state) {
@@ -76,6 +105,17 @@ const calendarSlice = createSlice({
     setSelectedListSchedule(state, action: PayloadAction<ScheduleOption>) {
       state.selectedListSchedule = action.payload;
     },
+  },
+
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchScheduleDetails.fulfilled, (state, action) => {
+        state.events = action.payload;
+      })
+      .addCase(fetchScheduleDetails.rejected, (state, action) => {
+        console.error("일정 조회 실패:", action.payload);
+        state.events = [];
+      });
   },
 });
 
