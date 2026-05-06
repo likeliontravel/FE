@@ -45,7 +45,7 @@ export const fetchScheduleDetails = createAsyncThunk(
   "calendar/fetchScheduleDetails",
   async (scheduleId: string, { rejectWithValue }) => {
     try {
-      const res = await api.get(`/schedule/detail/${scheduleId}`);
+      const res = await api.get(`/schedule/get/${scheduleId}`);
 
       if (!res.data.success) {
         return rejectWithValue(res.data.message || "일정 조회 실패");
