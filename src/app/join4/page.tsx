@@ -46,7 +46,7 @@ const Subscription: React.FC = () => {
       await dispatch(signUpUser(finalUserData)).unwrap();
       alert('회원가입이 완료되었습니다!');
       dispatch(resetSignUpData());
-      router.push('/join4');
+      router.push('/login');
     } catch (err) {
       alert(`회원가입 실패: ${err}`);
     }

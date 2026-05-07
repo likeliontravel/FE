@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
-import { createBoard, uploadImage } from '../../../util/board/boardSilce';
+import { createBoard, uploadImage, clearBoardLoading } from '../../../util/board/boardSilce';
 
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -23,14 +23,7 @@ import SearchBar from '../SearchBar/SearchBar';
 import MapModal from './MapModal';
 
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
-
-const themeKeywords = [
-    '자연 속에서 힐링',
-    '미식 여행 및 먹방 중심',
-    '체험 및 액티비티',
-    '문화예술 및 역사탐방',
-    '기타'
-];
+const themeKeywords = ['자연 속에서 힐링', '미식 여행 및 먹방 중심', '체험 및 액티비티', '문화예술 및 역사탐방', '기타'];
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -117,6 +110,11 @@ const WritePage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.board || {}); 
   
+  // 페이지 진입 시 로딩 상태 강제 해제
+  useEffect(() => {
+    dispatch(clearBoardLoading());
+  }, [dispatch]);
+
   const [title, setTitle] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('');
@@ -128,7 +126,7 @@ const WritePage: React.FC = () => {
       Heading.configure({ levels: [1, 2, 3] }),
       Underline, Strike, TextAlign.configure({ types: ['heading', 'paragraph'] }),
       TextStyle, FontFamily, Color,
-      ImageExtension.configure({ inline: false, allowBase64: true }),
+      ImageExtension.configure({ inline: false }),
       Placeholder.configure({ placeholder: '여기에 여행 후기, 꿀팁 등 내용을 자유롭게 작성해주세요.' }),
     ],
     content: '',

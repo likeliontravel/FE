@@ -61,7 +61,6 @@ const initialState: BoardState = {
   successMessage: null,
 };
 
-// 모든 목록 조회 (전체, 검색, 지역필터, 테마필터 통합)
 export const fetchBoards = createAsyncThunk(
   'board/fetchBoards',
   async ({ page = 0, size = 30, sortType = 'RECENT', region, theme, searchKeyword }: { 
@@ -81,21 +80,24 @@ export const fetchBoards = createAsyncThunk(
 export const fetchBoardsByRegion = createAsyncThunk(
   'board/fetchBoardsByRegion',
   async (args: { region: string; page?: number; size?: number; sortType?: string }, { dispatch }) => {
-    return (await dispatch(fetchBoards(args))).payload;
+    const result = await dispatch(fetchBoards(args));
+    return result.payload;
   }
 );
 
 export const fetchBoardsByTheme = createAsyncThunk(
   'board/fetchBoardsByTheme',
   async (args: { theme: string; page?: number; size?: number; sortType?: string }, { dispatch }) => {
-    return (await dispatch(fetchBoards(args))).payload;
+    const result = await dispatch(fetchBoards(args));
+    return result.payload;
   }
 );
 
 export const searchBoards = createAsyncThunk(
   'board/searchBoards',
   async (args: { searchKeyword: string; page?: number; size?: number; sortType?: string }, { dispatch }) => {
-    return (await dispatch(fetchBoards(args))).payload;
+    const result = await dispatch(fetchBoards(args));
+    return result.payload;
   }
 );
 
@@ -228,7 +230,12 @@ export const deleteComment = createAsyncThunk<number, number>(
 const boardSlice = createSlice({
   name: 'board',
   initialState,
-  reducers: {},
+  reducers: {
+    clearBoardLoading: (state) => {
+      state.loading = false;
+      state.error = null;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchMyBoards.fulfilled, (state, action: PayloadAction<Board[]>) => {
@@ -268,6 +275,12 @@ const boardSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
+      .addMatcher(
+        (action) => action.type.endsWith('/fulfilled') || action.type.endsWith('/rejected'),
+        (state) => {
+          state.loading = false;
+        }
+      )
       .addMatcher((action) => action.type.endsWith('/rejected'), (state, action: any) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -275,4 +288,5 @@ const boardSlice = createSlice({
   },
 });
 
+export const { clearBoardLoading } = boardSlice.actions;
 export default boardSlice.reducer;
