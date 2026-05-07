@@ -61,6 +61,7 @@ const initialState: BoardState = {
   successMessage: null,
 };
 
+// 통합 조회 함수
 export const fetchBoards = createAsyncThunk(
   'board/fetchBoards',
   async ({ page = 0, size = 30, sortType = 'RECENT', region, theme, searchKeyword }: { 
@@ -77,6 +78,7 @@ export const fetchBoards = createAsyncThunk(
   }
 );
 
+// 빌드 에러 해결을 위해 명시적으로 export 추가
 export const fetchBoardsByRegion = createAsyncThunk(
   'board/fetchBoardsByRegion',
   async (args: { region: string; page?: number; size?: number; sortType?: string }, { dispatch }) => {
@@ -157,7 +159,7 @@ export const uploadImage = createAsyncThunk<string, File>(
 
 export const createBoard = createAsyncThunk(
   'board/createBoard',
-  async (newPost: { title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }, { rejectWithValue }) => {
+  async (newPost: { title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string; writer: string }, { rejectWithValue }) => {
     try {
       const response = await api.post('/board', newPost);
       return response.data;

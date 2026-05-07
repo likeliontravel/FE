@@ -11,32 +11,31 @@ import {
   fetchBoardsByRegion,
   fetchBoardsByTheme,
   Board 
-} from '../../../util/board/boardSilce';
+} from '../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
 import styles from '../../../styles/post/postList.module.scss';
-import SearchBar from '../SearchBar/SearchBar';
+import SearchBar from '../SearchBar/SearchBar'; 
 import Image from 'next/image';
 
 const regionKeywords = [
   '서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'
 ];
-const themeKeywords = ['힐링', '액티비티', '맛집', '문화'];
+
+// 백엔드 명세 및 WritePage와 일치시킨 테마 키워드
+const themeKeywords = [
+  '자연 속에서 힐링', 
+  '미식 여행 및 먹방 중심', 
+  '체험 및 액티비티', 
+  '문화예술 및 역사탐방', 
+  '기타'
+];
 
 const createExcerpt = (htmlContent: string, maxLength: number = 100): string => {
-  if (typeof window === 'undefined' || !htmlContent) {
-    return '';
-  }
-  
+  if (typeof window === 'undefined' || !htmlContent) return '';
   try {
     const parser = new DOMParser();
-    const unescapedHtml = parser.parseFromString(`<!doctype html><body>${htmlContent}`, 'text/html').body.textContent || '';
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = unescapedHtml;
-    const plainText = tempDiv.textContent || tempDiv.innerText || '';
-    
-    if (plainText.length > maxLength) {
-      return plainText.substring(0, maxLength) + '...';
-    }
-    return plainText;
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    const plainText = doc.body.textContent || doc.body.innerText || '';
+    return plainText.length > maxLength ? plainText.substring(0, maxLength) + '...' : plainText;
   } catch (e) {
     return '';
   }
@@ -46,7 +45,7 @@ const PostList = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { user: loggedInUser } = useSelector((state: RootState) => state.auth || {});
-  const { posts, loading, error, pagination } = useSelector((state: RootState) => state.board || {});
+  const { posts, loading, error } = useSelector((state: RootState) => state.board || {});
 
   const [currentQuery, setCurrentQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'POPULAR' | 'RECENT'>('RECENT');
@@ -55,6 +54,7 @@ const PostList = () => {
 
   useEffect(() => {
     const loadPosts = () => {
+      // 모든 목록 조회 로직을 통합된 API 규격에 맞춰 호출
       if (currentQuery) {
         dispatch(searchBoards({ searchKeyword: currentQuery, sortType: sortOrder }));
       } else if (activeCategory) {
@@ -72,13 +72,13 @@ const PostList = () => {
 
   const sortedPosts = useMemo(() => {
     if (!posts || !Array.isArray(posts)) return [];
-    
-    return [...posts].sort((a, b) => {
+    // 기본적으로 백엔드에서 정렬되어 오지만, 클라이언트 사이드에서 한번 더 안전하게 정렬
+    const list = [...posts];
+    return list.sort((a, b) => {
       if (sortOrder === 'RECENT') {
         return new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime();
-      } else {
-        return (b.boardHits || 0) - (a.boardHits || 0);
       }
+      return (b.boardHits || 0) - (a.boardHits || 0);
     });
   }, [posts, sortOrder]);
 
@@ -89,38 +89,36 @@ const PostList = () => {
 
   const handleCategoryClick = (category: string) => {
     setCurrentQuery('');
-    setActiveCategory(prevCategory => prevCategory === category ? null : category);
+    // 이미 선택된 카테고리를 다시 누르면 해제, 아니면 새로 선택
+    setActiveCategory(prev => prev === category ? null : category);
   };
 
-  const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSortOrder(e.target.value as 'POPULAR' | 'RECENT');
-  }, []);
+  };
   
-  const handleTabClick = useCallback((tab: '지역' | '테마') => () => {
-    if (activeTab !== tab) {
-        setActiveTab(tab);
-        setActiveCategory(null);
-    }
-  }, [activeTab]);
+  const handleTabClick = (tab: '지역' | '테마') => () => {
+    setActiveTab(tab);
+    setActiveCategory(null); // 탭 전환 시 필터 초기화
+  };
 
-  const requireLogin = useCallback(() => {
+  const goToPostWrite = () => {
     if (!loggedInUser) {
-      alert('로그인이 필요한 기능입니다.');
+      alert('로그인이 필요한 서비스입니다.');
       router.push('/login');
-      return false;
+      return;
     }
-    return true;
-  }, [loggedInUser, router]);
-
-  const goToPostWrite = useCallback(() => {
-    if (!requireLogin()) return;
     router.push('/postWrite');
-  }, [router, requireLogin]);
+  };
 
-  const goToMyPosts = useCallback(() => {
-    if (!requireLogin()) return;
+  const goToMyPosts = () => {
+    if (!loggedInUser) {
+      alert('로그인이 필요한 서비스입니다.');
+      router.push('/login');
+      return;
+    }
     router.push('/posts/mypost');
-  }, [router, requireLogin]);
+  };
 
   const currentKeywords = activeTab === '지역' ? regionKeywords : themeKeywords;
 
@@ -134,16 +132,35 @@ const PostList = () => {
         <div className={styles.mainWrapper}>
           <main className={styles.mainContent}>
             <div className={styles.sortOptions}>
+              <div className={styles.tabButtons}>
+                <button 
+                  className={`${styles.tabButton} ${activeTab === '지역' ? styles.active : ''}`}
+                  onClick={handleTabClick('지역')}
+                >
+                  지역별
+                </button>
+                <button 
+                  className={`${styles.tabButton} ${activeTab === '테마' ? styles.active : ''}`}
+                  onClick={handleTabClick('테마')}
+                >
+                  테마별
+                </button>
+              </div>
               <select value={sortOrder} onChange={handleSortChange} className={styles.sortSelect}>
                 <option value="RECENT">최신순</option>
                 <option value="POPULAR">인기순</option>
               </select>
             </div>
+
             <div className={styles.postList}>
-              {loading && <p>게시글을 불러오는 중...</p>}
-              {error && <p>에러: {error}</p>}
+              {loading && <p className={styles.infoText}>게시글을 불러오는 중입니다...</p>}
+              {error && <p className={styles.errorText}>에러가 발생했습니다: {error}</p>}
               
-              {!loading && !error && sortedPosts.map((post: Board) => (
+              {!loading && sortedPosts.length === 0 && (
+                <p className={styles.infoText}>표시할 게시글이 없습니다.</p>
+              )}
+
+              {!loading && sortedPosts.map((post: Board) => (
                 <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
@@ -154,60 +171,62 @@ const PostList = () => {
                             style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}
                           ></div>
                           <span className={styles.authorName}>{post.writer}</span>
+                          <span className={styles.metaDivider}>|</span>
                           <span className={styles.viewCount}>조회수 {post.boardHits}</span>
+                          <span className={styles.metaDivider}>|</span>
+                          <span className={styles.postDate}>{post.createdTime.split('T')[0]}</span>
                       </div>
                       <p className={styles.postExcerpt}>
                         {createExcerpt(post.content)}
                       </p>
                     </div>
                     {post.thumbnailPublicUrl && (
-                      <img src={post.thumbnailPublicUrl} alt={post.title} className={styles.postImage} />
+                      <div className={styles.postImageWrapper}>
+                        <img src={post.thumbnailPublicUrl} alt={post.title} className={styles.postImage} />
+                      </div>
                     )}
                   </div>
                 </Link>
               ))}
-               {!loading && sortedPosts.length === 0 && <p>표시할 게시글이 없습니다.</p>}
             </div>
           </main>
 
           <aside className={styles.sidebar}>
             <div className={styles.profileCard}>
-              {loggedInUser && loggedInUser.name ? (
-                <>
-                  <div className={styles.profileHeader}>
+              {loggedInUser ? (
+                <div className={styles.userProfile}>
+                  <div className={styles.profileInfo}>
                     <Image 
                       src={loggedInUser.profileImageUrl || "/imgs/default-profile.png"} 
-                      alt={`${loggedInUser.name}님의 프로필`}
-                      width={50} 
-                      height={50} 
-                      className={styles.profileImage}
+                      alt="프로필" 
+                      width={40} 
+                      height={40} 
+                      className={styles.avatar}
                     />
-                    <p className={styles.username}>{loggedInUser.name}님</p>
+                    <span className={styles.userName}>{loggedInUser.name}님 환영합니다</span>
                   </div>
-                  <div className={styles.profileDivider} />
-                  <div className={styles.profileActions}>
-                    <button><Image src="/imgs/Popular.png" alt="인기글" width={36} height={36} /><span>인기글 보기</span></button>
-                    <button onClick={goToPostWrite}><Image src="/imgs/writing.png" alt="글쓰기" width={36} height={36} /><span>글쓰기</span></button>
-                    <button onClick={goToMyPosts}><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
+                  <div className={styles.sideButtons}>
+                    <button onClick={goToPostWrite} className={styles.sideButton}>글쓰기</button>
+                    <button onClick={goToMyPosts} className={styles.sideButton}>내 글보기</button>
                   </div>
-                </>
+                </div>
               ) : (
-                <div className={styles.loginContainer}>
-                  <p className={styles.loginPrompt}>로그인하고 더 많은 기능을 이용해보세요!</p>
-                  <button className={styles.loginButton} onClick={() => router.push('/login')}>
-                    로그인 / 회원가입
-                  </button>
+                <div className={styles.loginPrompt}>
+                  <p>더 많은 기능을 이용하려면</p>
+                  <button onClick={() => router.push('/login')} className={styles.loginButton}>로그인하기</button>
                 </div>
               )}
             </div>
+
             <div className={styles.categoryContainer}>
-              <div className={styles.categoryTabs}>
-                <button className={`${styles.categoryTab} ${activeTab === '지역' ? styles.active : ''}`} onClick={handleTabClick('지역')}>지역</button>
-                <button className={`${styles.categoryTab} ${activeTab === '테마' ? styles.active : ''}`} onClick={handleTabClick('테마')}>테마</button>
-              </div>
+              <h4 className={styles.categoryTitle}>{activeTab} 필터</h4>
               <div className={styles.categoryItems}>
                 {currentKeywords.map((keyword) => (
-                  <span key={keyword} className={`${styles.categoryItem} ${activeCategory === keyword ? styles.activeItem : ''}`} onClick={() => handleCategoryClick(keyword)}>
+                  <span 
+                    key={keyword} 
+                    className={`${styles.categoryItem} ${activeCategory === keyword ? styles.activeItem : ''}`} 
+                    onClick={() => handleCategoryClick(keyword)}
+                  >
                     {keyword}
                   </span>
                 ))}
