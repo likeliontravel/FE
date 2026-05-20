@@ -3,7 +3,6 @@ import groupReducer from "../util/group/groupSlice";
 import authReducer from "../util/login/authSlice";
 import boardReducer from "../util/board/boardSilce";
 import scheduleReducer from "../util/schedule/scheduleSlice";
-import calendarReducer from "./calendarSlice";
 import chatReducer from "../util/group/chat/chatSlice";
 import mypageReducer from "../util/mypage/mypageSlice";
 
@@ -15,7 +14,6 @@ export const makeStore = () => {
       group: groupReducer,
       chat: chatReducer,
       board: boardReducer,
-      calendar: calendarReducer,
       schedule: scheduleReducer,
     },
   });

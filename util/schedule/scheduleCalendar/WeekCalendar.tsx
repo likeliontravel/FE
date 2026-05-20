@@ -25,9 +25,10 @@ import {
   fetchScheduleDetails,
   removeSelectedSlot,
   setEvents,
-} from "../../../store/calendarSlice";
-import { createSchedule } from "../../../util/schedule/scheduleSlice";
-import { ScheduleOption } from "../../../store/calendarSlice";
+  createSchedule,
+  createScheduleDetail,
+  ScheduleOption,
+} from "../../../util/schedule/scheduleSlice";
 import GuideOverlay from "./GuideOverlay";
 
 interface WeekCalendarProps {
@@ -48,11 +49,11 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   calendarOptions,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { events, mainViewDate } = useSelector(
-    (state: RootState) => state.calendar,
+  const { events, mainViewDate, currentScheduleId } = useSelector(
+    (state: RootState) => state.schedule,
   );
   const selectedSchedule = useSelector(
-    (state: RootState) => state.calendar.selectedCalendarSchedule,
+    (state: RootState) => state.schedule.selectedCalendarSchedule,
   );
 
   useEffect(() => {
@@ -64,7 +65,29 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   }, [selectedSchedule.value, dispatch]);
 
   const filteredEvents = useMemo(() => {
-    return events.filter((event) => event.schedule === selectedSchedule.value);
+    return events
+      .filter((event) => event.schedule === selectedSchedule.value)
+      .map((event) => {
+        let bgColor = "#e2e8f0";
+        let txtColor = "#333333";
+
+        if (event.category === "restaurant") {
+          bgColor = "#FF5F92";
+          txtColor = "#FFFFFF";
+        } else if (event.category === "tourist_spot") {
+          bgColor = "#6FC6F4";
+          txtColor = "#FFFFFF";
+        } else if (event.category === "hotel") {
+          bgColor = "#C6EE6A";
+          txtColor = "#333333";
+        }
+
+        return {
+          ...event,
+          color: bgColor,
+          textColor: txtColor,
+        };
+      });
   }, [events, selectedSchedule]);
 
   const pluginsMain = useMemo(() => [timeGridPlugin, interactionPlugin], []);
@@ -79,13 +102,20 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
     const slotLaneEl = document.querySelector(
       `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`,
-    );
+    ) as HTMLElement;
     const slotLabelEl = document.querySelector(
       `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
-    );
+    ) as HTMLElement;
     if (slotLaneEl && slotLabelEl) {
+      slotLaneEl.classList.remove("selected-slot");
+      slotLabelEl.classList.remove("selected-slot");
+
       slotLaneEl.classList.add("has-event");
       slotLabelEl.classList.add("has-event");
+
+      const bgColor = arg.event.backgroundColor || "#e6e9ee";
+      slotLaneEl.style.backgroundColor = bgColor;
+      slotLabelEl.style.backgroundColor = bgColor;
     }
   }, []);
 
@@ -98,13 +128,15 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
     const slotLaneEl = document.querySelector(
       `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`,
-    );
+    ) as HTMLElement;
     const slotLabelEl = document.querySelector(
       `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
-    );
+    ) as HTMLElement;
     if (slotLaneEl && slotLabelEl) {
-      slotLaneEl.classList.remove("has-event");
-      slotLabelEl.classList.remove("has-event");
+      slotLaneEl.classList.remove("has-event", "selected-slot");
+      slotLabelEl.classList.remove("has-event", "selected-slot");
+      slotLaneEl.style.backgroundColor = "";
+      slotLabelEl.style.backgroundColor = "";
     }
   }, []);
 
@@ -125,15 +157,15 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
       );
       if (slotLaneEl && slotLabelEl) {
-        const isSelected = slotLaneEl.classList.contains("has-event");
+        const isSelected = slotLaneEl.classList.contains("selected-slot");
         if (isSelected) {
           dispatch(removeSelectedSlot(arg.date));
-          slotLaneEl.classList.remove("has-event");
-          slotLabelEl.classList.remove("has-event");
+          slotLaneEl.classList.remove("selected-slot");
+          slotLabelEl.classList.remove("selected-slot");
         } else {
           dispatch(addSelectedSlot(arg.date));
-          slotLaneEl.classList.add("has-event");
-          slotLabelEl.classList.add("has-event");
+          slotLaneEl.classList.add("selected-slot");
+          slotLabelEl.classList.add("selected-slot");
         }
       }
     },
@@ -242,6 +274,80 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     });
   };
 
+  const handleSaveDetails = async () => {
+    if (selectedSchedule.value === "default") {
+      alert("먼저 드롭다운에서 저장할 일정을 선택해주세요.");
+      return;
+    }
+
+    if (filteredEvents.length === 0) {
+      alert("달력에 추가된 세부 일정이 없습니다.");
+      return;
+    }
+
+    if (!currentScheduleId) {
+      alert("일정 ID를 찾을 수 없습니다. 일정을 다시 불러와주세요.");
+      return;
+    }
+    const scheduleId = currentScheduleId;
+
+    const sortedEvents = [...filteredEvents].sort(
+      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
+    );
+
+    let currentDayStr = "";
+    let dayOrder = 0;
+    let orderInDay = 0;
+
+    const typeMap: Record<string, string> = {
+      restaurant: "Restaurant",
+      hotel: "Accommodation",
+      tourist_spot: "TouristSpot",
+    };
+
+    try {
+      const promises = sortedEvents.map((event) => {
+        const startDay = dayjs(event.start).format("YYYY-MM-DD");
+
+        if (startDay !== currentDayStr) {
+          currentDayStr = startDay;
+          dayOrder += 1;
+          orderInDay = 1;
+        } else {
+          orderInDay += 1;
+        }
+
+        const bodyData = {
+          contentId: event.id,
+          placeType: typeMap[event.category || "tourist_spot"] || "TouristSpot",
+          visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
+          visitedEnd: dayjs(
+            event.end || dayjs(event.start).add(1, "hour"),
+          ).format("YYYY-MM-DDTHH:mm:ss"),
+          dayOrder: dayOrder,
+          orderInDay: orderInDay,
+        };
+
+        return dispatch(createScheduleDetail({ scheduleId, body: bodyData }));
+      });
+
+      const results = await Promise.all(promises);
+
+      const hasError = results.some((res) =>
+        createScheduleDetail.rejected.match(res),
+      );
+
+      if (hasError) {
+        alert("일부 세부 일정 저장에 실패했습니다. 다시 시도해주세요.");
+      } else {
+        alert("모든 세부 일정이 성공적으로 저장되었습니다!");
+      }
+    } catch (error) {
+      console.error("세부 일정 저장 에러:", error);
+      alert("세부 일정을 저장하는 중 시스템 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <div className={styles.container}>
       {/* ──────────────── 메인 스케줄(요일별) ──────────────── */}
@@ -294,6 +400,9 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
                     // allDaySlot 여부
                     allDaySlot={false}
                     displayEventTime={false}
+                    // 같은 시간대 이벤트 겹침 허용 안 함
+                    slotEventOverlap={false}
+                    eventOverlap={false}
                   />
                 )}
               </div>
@@ -629,7 +738,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
           <p className={styles.first} onClick={() => setShowCreateModal(true)}>
             일정 생성하기
           </p>
-          <p>일정 저장하기</p>
+          <p onClick={handleSaveDetails}>일정 저장하기</p>
         </div>
 
         {/* <div onClick={() => setShowGuide(true)} className={styles.ai_schedule}>

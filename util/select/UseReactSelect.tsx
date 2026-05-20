@@ -13,10 +13,8 @@ import {
   setSelectedCalendarSchedule,
   setSelectedListSchedule,
   ScheduleOption,
-} from "../../store/calendarSlice";
+} from "../../util/schedule/scheduleSlice";
 import style from "./Select.module.scss";
-import dayjs from "dayjs";
-import { api } from "../api";
 
 interface UseReactSelectProps {
   type: "calendar" | "list";
@@ -26,10 +24,10 @@ interface UseReactSelectProps {
 const UseReactSelect = ({ type, calendarOptions }: UseReactSelectProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedCalendarSchedule = useSelector(
-    (s: RootState) => s.calendar.selectedCalendarSchedule,
+    (s: RootState) => s.schedule.selectedCalendarSchedule,
   );
   const selectedListSchedule = useSelector(
-    (s: RootState) => s.calendar.selectedListSchedule,
+    (s: RootState) => s.schedule.selectedListSchedule,
   );
 
   const listOptions = useMemo<ScheduleOption[]>(

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
-import { setMainViewDate } from "../../store/calendarSlice";
+import { setMainViewDate } from "../../util/schedule/scheduleSlice";
 import { useState } from "react";
 import ScheduleModal from "./ScheduleModal";
 import styles from "./ScheduleCheck.module.scss";
@@ -13,14 +13,14 @@ const ScheduleCheck = ({ schedule = [] as any[] }: { schedule?: any[] }) => {
   const route = useRouter();
   const dispatch = useDispatch();
   const mainViewDate = useSelector(
-    (state: RootState) => state.calendar.mainViewDate
+    (state: RootState) => state.schedule.mainViewDate,
   );
 
   const handleDateClick = (date: Date) => {
     dispatch(setMainViewDate(date));
   };
 
-  const events = useSelector((state: RootState) => state.calendar.events);
+  const events = useSelector((state: RootState) => state.schedule.events);
 
   const dayEvents = events.filter((event) => {
     const eventDate = new Date(event.start).toDateString();

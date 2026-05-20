@@ -208,6 +208,14 @@
     background-color: #f4f5fb;
     color: #9fa2a6;
     cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  :global(.fc .fc-timegrid-slots tr:hover .fc-timegrid-slot) {
+    background-color: #eaecf3 !important;
+    color: #6b7280 !important;
   }
 
   :global(.fc .fc-timegrid-slot-label) {
@@ -221,24 +229,42 @@
   }
 
   :global(.fc .fc-timegrid-cols .fc-timegrid-event) {
-    position: relative;
-    background: none;
-    color: #fff;
-    border: none;
-    box-shadow: none;
-    border-radius: 6px;
-    padding-top: 12px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 6px !important;
     cursor: pointer;
+
     div {
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+      padding-top: 3px;
     }
   }
 
-  :global(.fc .fc-timegrid-slot-lane.has-event),
+  :global(.fc .fc-timegrid-slot-lane.selected-slot),
+  :global(.fc .fc-timegrid-slot-label.selected-slot) {
+    background-color: #cbd5e1 !important;
+    color: #1e293b !important;
+  }
+  :global(.fc .fc-timegrid-slot-label.selected-slot) {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+  }
+  :global(.fc .fc-timegrid-slot-lane.selected-slot) {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+
   :global(.fc .fc-timegrid-slot-label.has-event) {
-    background-color: #e6e9ee;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    color: #fff !important;
+  }
+  :global(.fc .fc-timegrid-slot-lane.has-event) {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
   }
 }
 

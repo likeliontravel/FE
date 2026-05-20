@@ -5,7 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import UseReactSelect from "../../select/UseReactSelect";
 import styles from "./ScheduleList.module.scss";
 import { RootState, AppDispatch } from "../../../store/store";
-import { addEvent, clearSelectedSlots } from "../../../store/calendarSlice";
+import {
+  addEvent,
+  clearSelectedSlots,
+} from "../../../util/schedule/scheduleSlice";
 import dayjs from "dayjs";
 import {
   clearScheduleItems,
@@ -22,10 +25,10 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
   ({ item }) => {
     const dispatch = useDispatch<AppDispatch>();
     const selectedSlots = useSelector(
-      (s: RootState) => s.calendar.selectedSlots,
+      (s: RootState) => s.schedule.selectedSlots,
     );
     const selectedCalendarSchedule = useSelector(
-      (s: RootState) => s.calendar.selectedCalendarSchedule,
+      (s: RootState) => s.schedule.selectedCalendarSchedule,
     );
 
     const handleClick = useCallback(() => {
@@ -36,7 +39,7 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
       const newEvents = selectedSlots.map((slot) => {
         const start = dayjs(slot);
         return {
-          id: item.contentId,
+          id: `${item.contentId}-${start.toISOString()}`,
           title: item.title,
           start: start.toISOString(),
           end: start.add(1, "hour").toISOString(),
@@ -76,7 +79,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedListSchedule = useSelector(
-    (s: RootState) => s.calendar.selectedListSchedule,
+    (s: RootState) => s.schedule.selectedListSchedule,
   );
 
   const { scheduleItems, loading, error } = useSelector(
