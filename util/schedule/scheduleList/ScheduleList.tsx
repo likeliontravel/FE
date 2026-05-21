@@ -51,7 +51,8 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
       dispatch(clearSelectedSlots());
     }, [dispatch, item, selectedSlots, selectedCalendarSchedule]);
 
-    const imgSrc = item.imageUrl || item.thumbnailImageUrl;
+    const imgSrc =
+      item.imageUrl || item.thumbnailImageUrl || "/imgs/character.png";
 
     return (
       <div className={styles.main} onClick={handleClick}>

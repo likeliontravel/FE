@@ -228,12 +228,22 @@
     border-bottom-right-radius: 6px;
   }
 
+  :global(.fc .fc-timegrid-body),
+  :global(.fc .fc-timegrid-slots table),
+  :global(.fc .fc-timegrid-cols table) {
+    width: 100% !important;
+  }
+
   :global(.fc .fc-timegrid-cols .fc-timegrid-event) {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     border-radius: 6px !important;
     cursor: pointer;
+
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
 
     div {
       overflow: hidden;

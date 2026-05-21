@@ -180,6 +180,31 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   const weekDates = getWeekDates(new Date(mainViewDate));
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    setOpenDays((prev) => {
+      const next = { ...prev };
+      let shouldUpdate = false;
+
+      // 현재 선택된 일정이 존재하는 날짜들도 자동으로 열기
+      filteredEvents.forEach((event) => {
+        const eventDateStr = dayjs(event.start).format("YYYY-MM-DD");
+        if (!next[eventDateStr]) {
+          next[eventDateStr] = true;
+          shouldUpdate = true;
+        }
+      });
+
+      return shouldUpdate ? next : prev;
+    });
+
+    // FullCalendar가 닫혀있다가 열리면서 사이즈가 깨지지 않도록 재계산 트리거 발동
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+
+    return () => clearTimeout(timer);
+  }, [mainViewDate, filteredEvents]);
+
   const handleDayColumnClick = useCallback(
     (event: React.MouseEvent, dateStr: string) => {
       if ((event.target as HTMLElement).classList.contains(styles.dayHeader)) {
@@ -300,9 +325,9 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     let orderInDay = 0;
 
     const typeMap: Record<string, string> = {
-      restaurant: "Restaurant",
-      hotel: "Accommodation",
-      tourist_spot: "TouristSpot",
+      restaurant: "RESTAURANT",
+      hotel: "ACCOMMODATION",
+      tourist_spot: "TOURISTSPOT",
     };
 
     try {
@@ -319,7 +344,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
         const bodyData = {
           contentId: event.id,
-          placeType: typeMap[event.category || "tourist_spot"] || "TouristSpot",
+          placeType: typeMap[event.category || ""],
           visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
           visitedEnd: dayjs(
             event.end || dayjs(event.start).add(1, "hour"),
