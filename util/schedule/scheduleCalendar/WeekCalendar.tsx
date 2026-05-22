@@ -25,9 +25,9 @@ import {
   fetchScheduleDetails,
   removeSelectedSlot,
   setEvents,
-  createSchedule,
   createScheduleDetail,
   ScheduleOption,
+  setMainViewDate,
 } from "../../../util/schedule/scheduleSlice";
 import GuideOverlay from "./GuideOverlay";
 
@@ -58,7 +58,25 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
   useEffect(() => {
     if (selectedSchedule.value !== "default") {
-      dispatch(fetchScheduleDetails(selectedSchedule.value));
+      dispatch(fetchScheduleDetails(selectedSchedule.value)).then((action) => {
+        if (fetchScheduleDetails.fulfilled.match(action) && action.payload) {
+          const fetchedEvents = action.payload.events;
+
+          if (fetchedEvents && fetchedEvents.length > 0) {
+            const sorted = [...fetchedEvents].sort(
+              (a, b) =>
+                new Date(a.visitStart).getTime() -
+                new Date(b.visitStart).getTime(),
+            );
+
+            const firstEventDate = sorted[0].visitStart;
+
+            if (firstEventDate) {
+              dispatch(setMainViewDate(new Date(firstEventDate)));
+            }
+          }
+        }
+      });
     } else {
       dispatch(setEvents([]));
     }
@@ -260,44 +278,9 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
   const [showGuide, setShowGuide] = useState(false);
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [modalData, setModalData] = useState({
-    groupName: "",
-    startSchedule: "",
-    endSchedule: "",
-  });
-
   const handleTabClick = createClickHandler(setActiveTab);
   const handleLocationClick = createClickHandler(setSelectedLocation);
   const handleThemeClick = createClickHandler(setSelectedTheme);
-
-  const handleCreateScheduleSubmit = async () => {
-    if (
-      !modalData.groupName ||
-      !modalData.startSchedule ||
-      !modalData.endSchedule
-    ) {
-      alert("그룹, 시작일, 종료일을 모두 선택해주세요.");
-      return;
-    }
-
-    const payload = {
-      groupName: modalData.groupName,
-      startSchedule: dayjs(modalData.startSchedule).format(
-        "YYYY-MM-DDTHH:mm:ss",
-      ),
-      endSchedule: dayjs(modalData.endSchedule).format("YYYY-MM-DDTHH:mm:ss"),
-    };
-
-    dispatch(createSchedule(payload)).then((action) => {
-      if (createSchedule.fulfilled.match(action)) {
-        alert("일정이 성공적으로 생성되었습니다!");
-        setShowCreateModal(false);
-      } else {
-        alert(`일정 생성 실패: ${action.payload}`);
-      }
-    });
-  };
 
   const handleSaveDetails = async () => {
     if (selectedSchedule.value === "default") {
@@ -343,7 +326,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         }
 
         const bodyData = {
-          contentId: event.id,
+          contentId: event.id.split("-")[0],
           placeType: typeMap[event.category || ""],
           visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
           visitedEnd: dayjs(
@@ -760,9 +743,6 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
           </div>
         )}
         <div className={styles.create_schedule}>
-          <p className={styles.first} onClick={() => setShowCreateModal(true)}>
-            일정 생성하기
-          </p>
           <p onClick={handleSaveDetails}>일정 저장하기</p>
         </div>
 
@@ -772,77 +752,6 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       </div>
 
       {showGuide && <GuideOverlay onClose={() => setShowGuide(false)} />}
-
-      {showCreateModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h2>일정 생성</h2>
-
-            <div style={{ marginBottom: "15px" }}>
-              <label>그룹 선택</label>
-              <select
-                value={modalData.groupName}
-                onChange={(e) =>
-                  setModalData({ ...modalData, groupName: e.target.value })
-                }
-                className={styles.input}
-              >
-                <option value="">그룹을 선택하세요</option>
-                {groups.map((g) => (
-                  <option key={g.id} value={g.groupName}>
-                    {g.groupName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div style={{ marginBottom: "15px" }}>
-              <label>시작 날짜/시간</label>
-              <input
-                type="datetime-local"
-                value={modalData.startSchedule}
-                onChange={(e) =>
-                  setModalData({ ...modalData, startSchedule: e.target.value })
-                }
-                className={styles.input}
-              />
-            </div>
-
-            <div style={{ marginBottom: "20px" }}>
-              <label>종료 날짜/시간</label>
-              <input
-                type="datetime-local"
-                value={modalData.endSchedule}
-                onChange={(e) =>
-                  setModalData({ ...modalData, endSchedule: e.target.value })
-                }
-                className={styles.input}
-              />
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "10px",
-              }}
-            >
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className={styles.cancelBtn}
-              >
-                취소
-              </button>
-              <button
-                onClick={handleCreateScheduleSubmit}
-                className={styles.submitBtn}
-              >
-                생성하기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

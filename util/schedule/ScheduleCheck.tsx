@@ -2,16 +2,28 @@
 
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store/store";
-import { setMainViewDate } from "../../util/schedule/scheduleSlice";
+import { RootState, AppDispatch } from "../../store/store";
+import {
+  setMainViewDate,
+  createSchedule,
+} from "../../util/schedule/scheduleSlice";
 import { useState } from "react";
 import ScheduleModal from "./ScheduleModal";
 import styles from "./ScheduleCheck.module.scss";
 import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
 
-const ScheduleCheck = ({ schedule = [] as any[] }: { schedule?: any[] }) => {
+interface ScheduleCheckProps {
+  schedule?: any[];
+  groups?: any[];
+}
+
+const ScheduleCheck = ({
+  schedule = [] as any[],
+  groups = [] as any[],
+}: ScheduleCheckProps) => {
   const route = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const mainViewDate = useSelector(
     (state: RootState) => state.schedule.mainViewDate,
   );
@@ -32,6 +44,42 @@ const ScheduleCheck = ({ schedule = [] as any[] }: { schedule?: any[] }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [modalData, setModalData] = useState({
+    groupName: "",
+    startSchedule: "",
+    endSchedule: "",
+  });
+
+  const handleCreateScheduleSubmit = async () => {
+    if (
+      !modalData.groupName ||
+      !modalData.startSchedule ||
+      !modalData.endSchedule
+    ) {
+      alert("그룹, 시작일, 종료일을 모두 선택해주세요.");
+      return;
+    }
+
+    const payload = {
+      groupName: modalData.groupName,
+      startSchedule: dayjs(modalData.startSchedule).format(
+        "YYYY-MM-DDTHH:mm:ss",
+      ),
+      endSchedule: dayjs(modalData.endSchedule).format("YYYY-MM-DDTHH:mm:ss"),
+    };
+
+    dispatch(createSchedule(payload)).then((action) => {
+      if (createSchedule.fulfilled.match(action)) {
+        alert("일정이 성공적으로 생성되었습니다!");
+        setShowCreateModal(false);
+        route.push("/schedule");
+      } else {
+        alert(`일정 생성 실패: ${action.payload}`);
+      }
+    });
+  };
+
   if (!Array.isArray(schedule) || schedule.length === 0) {
     return (
       <div className={styles.blurContainer}>
@@ -42,12 +90,86 @@ const ScheduleCheck = ({ schedule = [] as any[] }: { schedule?: any[] }) => {
           </p>
           <h4
             className={styles.blurText_3}
-            onClick={() => route.push("/schedule")}
+            onClick={() => setShowCreateModal(true)}
           >
             새로운 일정 만들기
           </h4>
         </div>
         <img src="/imgs/blur_schedule.png" alt="blur" />
+
+        {showCreateModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <h2>일정 생성</h2>
+
+              <div style={{ marginBottom: "15px" }}>
+                <label>그룹 선택</label>
+                <select
+                  value={modalData.groupName}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, groupName: e.target.value })
+                  }
+                  className={styles.input}
+                >
+                  <option value="">그룹을 선택하세요</option>
+                  {groups.map((g) => (
+                    <option key={g.id} value={g.groupName}>
+                      {g.groupName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: "15px" }}>
+                <label>시작 날짜/시간</label>
+                <input
+                  type="datetime-local"
+                  value={modalData.startSchedule}
+                  onChange={(e) =>
+                    setModalData({
+                      ...modalData,
+                      startSchedule: e.target.value,
+                    })
+                  }
+                  className={styles.input}
+                />
+              </div>
+
+              <div style={{ marginBottom: "20px" }}>
+                <label>종료 날짜/시간</label>
+                <input
+                  type="datetime-local"
+                  value={modalData.endSchedule}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, endSchedule: e.target.value })
+                  }
+                  className={styles.input}
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "10px",
+                }}
+              >
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className={styles.cancelBtn}
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleCreateScheduleSubmit}
+                  className={styles.submitBtn}
+                >
+                  생성하기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

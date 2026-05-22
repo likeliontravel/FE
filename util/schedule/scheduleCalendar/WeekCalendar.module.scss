@@ -83,14 +83,6 @@
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
   cursor: pointer;
-  .first {
-    border-right: solid 1px white;
-  }
-  p {
-    width: 45%;
-    margin: 0;
-    padding: 0 5%;
-  }
 }
 
 /* ─────────────────────────────────────────
@@ -334,58 +326,4 @@
   font-weight: bold;
   margin-bottom: 8px;
   cursor: pointer;
-}
-
-// 일정 생성 css
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modalContent {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  color: #333;
-}
-
-.input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-}
-
-.submitBtn {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.cancelBtn {
-  padding: 10px 20px;
-  background-color: #ccc;
-  color: #333;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
 }
