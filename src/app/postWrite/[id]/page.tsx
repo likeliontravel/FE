@@ -1,10 +1,16 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation'; // useParams 추가
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../../store/store';
-import { createBoard, uploadImage, clearBoardLoading } from '../../../util/board/boardSilce';
+import { AppDispatch, RootState } from '../../../../store/store';
+import { 
+  createBoard, 
+  updateBoard, 
+  uploadImage, 
+  clearBoardLoading,
+  fetchBoardDetail 
+} from '../../../../util/board/boardSilce';
 
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -18,9 +24,9 @@ import { Image as ImageExtension } from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'; 
 import Heading from '@tiptap/extension-heading';
 
-import styles from '../../../styles/postWrite/postWrite.module.scss';
-import SearchBar from '../SearchBar/SearchBar'; 
-import MapModal from './MapModal';
+import styles from '../../../../styles/postWrite/postWrite.module.scss';
+import SearchBar from '../../SearchBar/SearchBar'; 
+import MapModal from '../MapModal';
 
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
 const themeKeywords = ['자연 속에서 힐링', '미식 여행 및 먹방 중심', '체험 및 액티비티', '문화예술 및 역사탐방', '기타'];
@@ -34,9 +40,10 @@ interface MenuBarProps {
   onSubmit: () => void;
   onMapClick: () => void;
   loading: boolean;
+  isEditMode: boolean;
 }
 
-const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThemeChange, onSubmit, onMapClick, loading }: MenuBarProps) => {
+const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThemeChange, onSubmit, onMapClick, loading, isEditMode }: MenuBarProps) => {
   if (!editor) { return null; }
   const dispatch = useDispatch<AppDispatch>();
 
@@ -81,9 +88,7 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
              <option value="0">본문</option><option value="3">제목3</option><option value="2">제목2</option><option value="1">제목1</option>
           </select>
           <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? styles.isActive : ''}><b>B</b></button>
-          <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? styles.isActive : ''}><i>I</i></button>
           <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={editor.isActive('underline') ? styles.isActive : ''}><u>U</u></button>
-          <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={editor.isActive('strike') ? styles.isActive : ''}><s>T</s></button>
           <div className={styles.divider}></div>
           <input type="color" onChange={(e: React.ChangeEvent<HTMLInputElement>) => editor.chain().focus().setColor(e.target.value).run()} className={styles.colorInput} />
         </div>
@@ -98,23 +103,23 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
       </div>
       <div className={styles.toolGroupRight}>
         <button type="button" className={styles.submitButton} onClick={onSubmit} disabled={loading}>
-          {loading ? '등록 중...' : '등록하기'}
+          {loading ? '처리 중...' : isEditMode ? '수정하기' : '등록하기'}
         </button>
       </div>
     </div>
   );
 };
 
-const WritePage: React.FC = () => {
+const DynamicWritePage: React.FC = () => {
   const router = useRouter();
+  const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
-  const { user: loggedInUser } = useSelector((state: RootState) => state.auth || {});
-  const { loading } = useSelector((state: RootState) => state.board || {}); 
-  
-  useEffect(() => {
-    dispatch(clearBoardLoading());
-  }, [dispatch]);
+  const id = params.id ? parseInt(params.id as string, 10) : null;
+  const isEditMode = !!id;
 
+  const { user: loggedInUser } = useSelector((state: RootState) => state.auth || {});
+  const { loading, post } = useSelector((state: RootState) => state.board || {}); 
+  
   const [title, setTitle] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('');
@@ -127,17 +132,34 @@ const WritePage: React.FC = () => {
       Underline, Strike, TextAlign.configure({ types: ['heading', 'paragraph'] }),
       TextStyle, FontFamily, Color,
       ImageExtension.configure({ inline: false }),
-      Placeholder.configure({ placeholder: '여기에 여행 후기, 꿀팁 등 내용을 자유롭게 작성해주세요.' }),
+      Placeholder.configure({ placeholder: '여기에 내용을 작성해주세요.' }),
     ],
     content: '',
     editorProps: { 
       attributes: { 
         class: 'tiptap-editor',
-        // 🔥 인라인 스타일로 에디터 높이를 크게 확장
         style: 'min-height: 500px; padding: 20px; outline: none; cursor: text;'
       } 
     },
   });
+
+  // 초기 데이터 로딩 (수정 모드일 때)
+  useEffect(() => {
+    dispatch(clearBoardLoading());
+    if (isEditMode && id) {
+      dispatch(fetchBoardDetail(id));
+    }
+  }, [dispatch, id, isEditMode]);
+
+  // 불러온 데이터를 에디터와 상태에 채우기
+  useEffect(() => {
+    if (isEditMode && post && editor) {
+      setTitle(post.title);
+      setSelectedRegion(post.region);
+      setSelectedTheme(post.theme);
+      editor.commands.setContent(post.content);
+    }
+  }, [post, editor, isEditMode]);
 
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { setTitle(e.target.value); }, []);
   const handleRegionChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => { setSelectedRegion(e.target.value); }, []);
@@ -148,33 +170,16 @@ const WritePage: React.FC = () => {
   
   const handleSelectPlace = useCallback((place: { name: string; address: string; lat: number; lng: number }) => {
     if (editor) {
-        const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
-        const staticMapUrl = `https://dapi.kakao.com/v2/staticmap?center=${place.lat},${place.lng}&level=4&marker=${place.lng},${place.lat}&w=600&h=200&appkey=${KAKAO_APP_KEY}`;
-        
-        const placeHtml = `
-            <div data-place-name="${place.name}" style="border:1px solid #ddd; padding:10px; border-radius:8px; margin:10px 0; overflow:hidden;">
-                <img src="${staticMapUrl}" alt="${place.name} 지도" style="width:100%; height:150px; object-fit:cover; border-bottom:1px solid #eee; margin-bottom:10px;" />
-                <div style="font-weight:bold; font-size:16px;">${place.name}</div>
-                <div style="font-size: 14px; color: #888;">${place.address}</div>
-            </div>
-            <p></p>
-        `;
+        const staticMapUrl = `https://dapi.kakao.com/v2/staticmap?center=${place.lat},${place.lng}&level=4&marker=${place.lng},${place.lat}&w=600&h=200&appkey=${process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY}`;
+        const placeHtml = `<div style="border:1px solid #ddd; padding:10px; border-radius:8px; margin:10px 0;"><img src="${staticMapUrl}" style="width:100%; height:150px; object-fit:cover;" /><div style="font-weight:bold;">${place.name}</div><div>${place.address}</div></div><p></p>`;
         editor.chain().focus().insertContent(placeHtml).run();
     }
   }, [editor]);
   
   const handleSubmit = useCallback(async () => {
     const htmlContent = editor?.getHTML() || '';
-    
     if (!title.trim() || editor?.isEmpty || !selectedRegion || !selectedTheme) {
-      alert('제목, 내용, 지역, 테마를 모두 입력해주세요.');
-      return;
-    }
-
-    if (!loggedInUser) {
-      alert('로그인이 필요한 서비스입니다.');
-      router.push('/login');
-      return;
+      alert('모든 항목을 입력해주세요.'); return;
     }
 
     const tempDiv = document.createElement('div');
@@ -182,65 +187,40 @@ const WritePage: React.FC = () => {
     const firstImage = tempDiv.querySelector('img');
     const thumbnailPublicUrl = firstImage ? firstImage.src : '';
 
-    const newPost = {
-      title,
-      content: htmlContent,
-      region: selectedRegion,
-      theme: selectedTheme,
-      thumbnailPublicUrl,
-    };
+    const postData = { title, content: htmlContent, region: selectedRegion, theme: selectedTheme, thumbnailPublicUrl };
 
     try {
-      await dispatch(createBoard(newPost)).unwrap();
-      alert('게시글이 성공적으로 등록되었습니다.');
+      if (isEditMode && id) {
+        await dispatch(updateBoard({ id, ...postData })).unwrap();
+        alert('수정되었습니다.');
+      } else {
+        await dispatch(createBoard(postData)).unwrap();
+        alert('등록되었습니다.');
+      }
       router.push('/post');
     } catch (err: any) {
-      alert(`게시글 등록 실패: ${err}`);
+      alert(`실패: ${err}`);
     }
-  }, [dispatch, router, title, editor, selectedRegion, selectedTheme, loggedInUser]);
+  }, [dispatch, router, title, editor, selectedRegion, selectedTheme, id, isEditMode]);
 
   return (
     <div className={styles.pageContainer}>
       <div className={styles.centeredContainer}>
-        <section className={styles.searchSection}>
-          <SearchBar onSearch={(term) => console.log('검색:', term)} />
-        </section>
+        <section className={styles.searchSection}><SearchBar onSearch={() => {}} /></section>
         <div className={styles.editorBackground}>
-          <MenuBar
-            editor={editor}
-            selectedRegion={selectedRegion}
-            onRegionChange={handleRegionChange}
-            selectedTheme={selectedTheme}
-            onThemeChange={handleThemeChange}
-            onSubmit={handleSubmit}
-            onMapClick={openMapModal}
-            loading={loading || false}
-          />
+          <MenuBar editor={editor} selectedRegion={selectedRegion} onRegionChange={handleRegionChange} selectedTheme={selectedTheme} onThemeChange={handleThemeChange} onSubmit={handleSubmit} onMapClick={openMapModal} loading={loading || false} isEditMode={isEditMode} />
           <main className={styles.editorWrapper}>
-            <input
-              type="text"
-              className={styles.titleInput}
-              placeholder="제목을 입력해주세요"
-              value={title}
-              onChange={handleTitleChange}
-            />
+            <input type="text" className={styles.titleInput} placeholder="제목을 입력해주세요" value={title} onChange={handleTitleChange} />
             <div className={styles.contentDivider}></div>
-            {/* 🔥 에디터 컨테이너 스타일 보강 */}
-            <div className={styles.tiptapEditorContainer} style={{ minHeight: '600px', cursor: 'text' }} onClick={() => editor?.commands.focus()}>
+            <div className={styles.tiptapEditorContainer} style={{ minHeight: '600px' }} onClick={() => editor?.commands.focus()}>
               <EditorContent editor={editor} />
             </div>
           </main>
         </div>
       </div>
-      
-      {isMapModalOpen && (
-          <MapModal 
-            onClose={closeMapModal} 
-            onSelectPlace={handleSelectPlace} 
-          />
-      )}
+      {isMapModalOpen && <MapModal onClose={closeMapModal} onSelectPlace={handleSelectPlace} />}
     </div>
   );
 };
 
-export default WritePage;
+export default DynamicWritePage;

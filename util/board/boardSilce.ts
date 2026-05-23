@@ -24,7 +24,7 @@ export interface Comment {
   commentWriter: string;
   commentWriterIdentifier: string;
   commentWriterProfileImageUrl: string | null;
-  content: string;
+  commentContent: string; 
   boardId: number;
   parentCommentId: number | null;
   commentCreatedTime: string;
@@ -61,7 +61,6 @@ const initialState: BoardState = {
   successMessage: null,
 };
 
-// 통합 조회 함수
 export const fetchBoards = createAsyncThunk(
   'board/fetchBoards',
   async ({ page = 0, size = 30, sortType = 'RECENT', region, theme, searchKeyword }: { 
@@ -78,7 +77,6 @@ export const fetchBoards = createAsyncThunk(
   }
 );
 
-// 빌드 에러 해결을 위해 명시적으로 export 추가
 export const fetchBoardsByRegion = createAsyncThunk(
   'board/fetchBoardsByRegion',
   async (args: { region: string; page?: number; size?: number; sortType?: string }, { dispatch }) => {
@@ -133,10 +131,12 @@ export const fetchComments = createAsyncThunk<Comment[], number>(
   async (boardId, { rejectWithValue }) => {
     try {
       const response = await publicApi.get(`/comment/${boardId}`);
-      return response.data.data.content || [];
+      const rawData = response.data.data;
+      if (Array.isArray(rawData)) return rawData;
+      if (rawData && Array.isArray(rawData.content)) return rawData.content;
+      return [];
     } catch (error: any) {
-      if (error.response?.status === 404) return [];
-      return rejectWithValue('댓글 조회 실패');
+      return [];
     }
   }
 );
@@ -159,7 +159,7 @@ export const uploadImage = createAsyncThunk<string, File>(
 
 export const createBoard = createAsyncThunk(
   'board/createBoard',
-  async (newPost: { title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string; writer: string }, { rejectWithValue }) => {
+  async (newPost: { title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }, { rejectWithValue }) => {
     try {
       const response = await api.post('/board', newPost);
       return response.data;
@@ -193,11 +193,11 @@ export const deleteBoard = createAsyncThunk<number, number>(
   }
 );
 
-export const createComment = createAsyncThunk(
+export const createComment = createAsyncThunk<any, { boardId: number; commentContent: string; parentCommentId?: number | null }>(
   'board/createComment',
-  async ({ boardId, content, parentCommentId }: { boardId: number; content: string; parentCommentId?: number | null }, { rejectWithValue }) => {
+  async ({ boardId, commentContent, parentCommentId }, { rejectWithValue }) => {
     try {
-      const response = await api.post(`/comment/${boardId}`, { content, parentCommentId });
+      const response = await api.post(`/comment/${boardId}`, { content: commentContent, parentCommentId });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || '댓글 작성 실패');
@@ -205,11 +205,11 @@ export const createComment = createAsyncThunk(
   }
 );
 
-export const updateComment = createAsyncThunk(
+export const updateComment = createAsyncThunk<any, { id: number; commentContent: string }>(
   'board/updateComment',
-  async ({ id, content }: { id: number; content: string }, { rejectWithValue }) => {
+  async ({ id, commentContent }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/comment/${id}`, { content });
+      const response = await api.put(`/comment/${id}`, { content: commentContent });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || '댓글 수정 실패');
@@ -240,10 +240,6 @@ const boardSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchMyBoards.fulfilled, (state, action: PayloadAction<Board[]>) => {
-        state.loading = false;
-        state.posts = action.payload;
-      })
       .addCase(fetchBoardDetail.fulfilled, (state, action: PayloadAction<Board>) => {
         state.loading = false;
         state.post = action.payload;
