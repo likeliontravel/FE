@@ -14,7 +14,9 @@ import styles from "./WeekCalendar.module.scss";
 
 const MiniCalendar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { mainViewDate, events } = useSelector((s: RootState) => s.schedule);
+  const { mainViewDate, events, scheduleList } = useSelector(
+    (s: RootState) => s.schedule,
+  );
   const selectedCalendarSchedule = useSelector(
     (s: RootState) => s.schedule.selectedCalendarSchedule,
   );
@@ -32,16 +34,38 @@ const MiniCalendar: React.FC = () => {
     [events, selectedCalendarSchedule],
   );
 
+  const currentTrip = useMemo(() => {
+    return scheduleList.find(
+      (opt) => opt.value === selectedCalendarSchedule.value,
+    );
+  }, [scheduleList, selectedCalendarSchedule.value]);
+
   const dayCellClassNames = useCallback(
     (arg: any) => {
-      const dateStr = dayjs(arg.date).format("YYYY-MM-DD");
-      return filteredEvents.some(
-        (ev) => dayjs(ev.start).format("YYYY-MM-DD") === dateStr,
-      )
-        ? ["has-event"]
-        : [];
+      const classes = [];
+      const cellTime = dayjs(arg.date).startOf("day").valueOf();
+
+      const hasEvent = filteredEvents.some(
+        (ev) => dayjs(ev.start).startOf("day").valueOf() === cellTime,
+      );
+      if (hasEvent) {
+        classes.push("has-event");
+      }
+
+      if (currentTrip?.startSchedule && currentTrip?.endSchedule) {
+        const startTime = dayjs(currentTrip.startSchedule)
+          .startOf("day")
+          .valueOf();
+        const endTime = dayjs(currentTrip.endSchedule).startOf("day").valueOf();
+
+        if (cellTime >= startTime && cellTime <= endTime) {
+          classes.push("in-trip-range");
+        }
+      }
+
+      return classes;
     },
-    [filteredEvents],
+    [filteredEvents, currentTrip],
   );
 
   return (

@@ -8,6 +8,7 @@ import { fetchScheduleList } from "../../../util/schedule/scheduleSlice";
 import WeekCalendar from "../../../util/schedule/scheduleCalendar/WeekCalendar";
 import ScheduleList from "../../../util/schedule/scheduleList/ScheduleList";
 import TourOverlay from "./TourOverlay";
+import { useRouter } from "next/navigation";
 
 const SchedulePage = () => {
   const [selectedLocation, setSelectedLocation] = useState("서울");
@@ -15,6 +16,7 @@ const SchedulePage = () => {
   const [showGuide, setShowGuide] = useState(true);
 
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
   const groups = useSelector((state: RootState) => state.group.groups);
   const calendarOptions = useSelector(
@@ -23,8 +25,16 @@ const SchedulePage = () => {
 
   useEffect(() => {
     dispatch(fetchUserGroups());
-    dispatch(fetchScheduleList());
-  }, [dispatch]);
+
+    dispatch(fetchScheduleList()).then((action) => {
+      if (fetchScheduleList.fulfilled.match(action)) {
+        if (action.payload.length === 0) {
+          alert("생성된 일정이 없습니다. 그룹 페이지로 이동합니다.");
+          router.push("/group");
+        }
+      }
+    });
+  }, [dispatch, router]);
 
   return (
     <>

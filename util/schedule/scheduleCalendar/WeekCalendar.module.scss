@@ -139,6 +139,11 @@
     color: #fff;
   }
 
+  :global(.fc-daygrid-day.in-trip-range .fc-daygrid-day-frame) {
+    background-color: #eef7ff !important;
+    border-radius: 10px;
+  }
+
   :global(.fc-daygrid-day-events) {
     display: none;
   }

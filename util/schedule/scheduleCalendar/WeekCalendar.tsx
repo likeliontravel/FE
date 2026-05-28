@@ -45,7 +45,6 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   setSelectedLocation,
   selectedTheme,
   setSelectedTheme,
-  groups,
   calendarOptions,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -58,18 +57,28 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
   useEffect(() => {
     if (selectedSchedule.value !== "default") {
+      const targetSchedule = calendarOptions.find(
+        (opt) => String(opt.value) === String(selectedSchedule.value),
+      );
+
+      const scheduleStartDate = targetSchedule?.startSchedule;
+
+      if (scheduleStartDate) {
+        dispatch(setMainViewDate(new Date(scheduleStartDate)));
+      }
+
       dispatch(fetchScheduleDetails(selectedSchedule.value)).then((action) => {
         if (fetchScheduleDetails.fulfilled.match(action) && action.payload) {
           const fetchedEvents = action.payload.events;
 
-          if (fetchedEvents && fetchedEvents.length > 0) {
+          if (!scheduleStartDate && fetchedEvents && fetchedEvents.length > 0) {
             const sorted = [...fetchedEvents].sort(
               (a, b) =>
-                new Date(a.visitStart).getTime() -
-                new Date(b.visitStart).getTime(),
+                new Date(a.visitStart || a.start).getTime() -
+                new Date(b.visitStart || b.start).getTime(),
             );
 
-            const firstEventDate = sorted[0].visitStart;
+            const firstEventDate = sorted[0].visitStart || sorted[0].start;
 
             if (firstEventDate) {
               dispatch(setMainViewDate(new Date(firstEventDate)));
@@ -80,7 +89,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     } else {
       dispatch(setEvents([]));
     }
-  }, [selectedSchedule.value, dispatch]);
+  }, [selectedSchedule.value, dispatch, calendarOptions]);
 
   const filteredEvents = useMemo(() => {
     return events

@@ -82,20 +82,22 @@ const ScheduleCheck = ({
 
   if (!Array.isArray(schedule) || schedule.length === 0) {
     return (
-      <div className={styles.blurContainer}>
-        <div>
-          <p className={styles.blurText}>아직 그룹일정이 존재하지 않아요!</p>
-          <p className={styles.blurText_2}>
-            일정을 만들면 이곳에 일정이 표시돼요!
-          </p>
-          <h4
-            className={styles.blurText_3}
-            onClick={() => setShowCreateModal(true)}
-          >
-            새로운 일정 만들기
-          </h4>
+      <>
+        <div className={styles.blurContainer}>
+          <div className={styles.blurTextWrapper}>
+            <p className={styles.blurText}>아직 그룹일정이 존재하지 않아요!</p>
+            <p className={styles.blurText_2}>
+              일정을 만들면 이곳에 일정이 표시돼요!
+            </p>
+            <h4
+              className={styles.blurText_3}
+              onClick={() => setShowCreateModal(true)}
+            >
+              새로운 일정 만들기
+            </h4>
+          </div>
+          <img src="/imgs/blur_schedule.png" alt="blur" />
         </div>
-        <img src="/imgs/blur_schedule.png" alt="blur" />
 
         {showCreateModal && (
           <div className={styles.modalOverlay}>
@@ -170,7 +172,7 @@ const ScheduleCheck = ({
             </div>
           </div>
         )}
-      </div>
+      </>
     );
   }
 

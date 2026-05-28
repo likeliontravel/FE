@@ -19,6 +19,8 @@ export interface ScheduleOption {
   label: string;
   prefix?: string;
   suffix?: string;
+  startSchedule?: string;
+  endSchedule?: string;
 }
 
 export interface ScheduleDetailBody {
@@ -170,6 +172,8 @@ export const fetchScheduleList = createAsyncThunk(
           label: `${item.scheduleFirstRegion} 여행`,
           prefix: item.groupName,
           suffix: dDayString,
+          startSchedule: item.startSchedule,
+          endSchedule: item.endSchedule,
         };
       });
 
