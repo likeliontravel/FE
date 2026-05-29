@@ -12,6 +12,8 @@ export interface CalendarEvent {
   end?: string;
   schedule?: string;
   category?: "restaurant" | "hotel" | "tourist_spot";
+  img?: string;
+  address?: string;
 }
 
 export interface ScheduleOption {
@@ -34,7 +36,7 @@ export interface ScheduleDetailBody {
 
 export interface SaveScheduleDetailArgs {
   scheduleId: number;
-  body: ScheduleDetailBody;
+  body: ScheduleDetailBody[];
 }
 
 export interface ScheduleItem {
@@ -115,22 +117,24 @@ export const fetchScheduleDetails = createAsyncThunk(
       }
 
       const data = res.data.data;
-      const scheduleId = data.scheduleId; // 백엔드에서 주는 진짜 숫자 ID
+      const scheduleId = data.scheduleId;
       const places = data.schedulePlaces || [];
 
       const mappedEvents = places.map((item: any) => {
-        // 백엔드의 Enum(PlaceType)을 프론트 카테고리로 매핑
+        // 백엔드의 PlaceType을 프론트 카테고리로 매핑
         let cat = item.placeType?.toLowerCase();
         if (cat === "accommodation") cat = "hotel";
         if (cat === "touristspot") cat = "tourist_spot";
 
         return {
           id: `${item.contentId}-${item.visitStart}`,
-          title: item.title || "장소명", // 백엔드에 title 요청 필요!
+          title: item.title,
           start: item.visitStart,
           end: item.visitedEnd,
           schedule: groupName,
           category: cat,
+          img: item.img,
+          address: item.address,
         };
       });
 
@@ -155,7 +159,11 @@ export const fetchScheduleList = createAsyncThunk(
         return rejectWithValue(res.data.message || "일정 목록 조회 실패");
       }
 
-      const apiOptions = res.data.data.map((item: any) => {
+      const validSchedules = res.data.data.filter(
+        (item: any) => item.startSchedule != null,
+      );
+
+      const apiOptions = validSchedules.map((item: any) => {
         const today = dayjs().startOf("day");
         const targetDate = dayjs(item.startSchedule).startOf("day");
         const diffDays = targetDate.diff(today, "day");

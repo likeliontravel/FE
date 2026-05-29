@@ -334,7 +334,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
           orderInDay += 1;
         }
 
-        const bodyData = {
+        return {
           contentId: event.id.split("-")[0],
           placeType: typeMap[event.category || ""],
           visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
@@ -344,20 +344,16 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
           dayOrder: dayOrder,
           orderInDay: orderInDay,
         };
-
-        return dispatch(createScheduleDetail({ scheduleId, body: bodyData }));
       });
 
-      const results = await Promise.all(promises);
-
-      const hasError = results.some((res) =>
-        createScheduleDetail.rejected.match(res),
+      const actionResult = await dispatch(
+        createScheduleDetail({ scheduleId, body: promises }),
       );
 
-      if (hasError) {
-        alert("일부 세부 일정 저장에 실패했습니다. 다시 시도해주세요.");
-      } else {
+      if (createScheduleDetail.fulfilled.match(actionResult)) {
         alert("모든 세부 일정이 성공적으로 저장되었습니다!");
+      } else {
+        alert(`저장 실패: ${actionResult.payload}`);
       }
     } catch (error) {
       console.error("세부 일정 저장 에러:", error);

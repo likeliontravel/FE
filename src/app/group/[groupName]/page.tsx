@@ -8,7 +8,9 @@ import {
   clearGroupDetail,
   fetchGroupDetail,
   fetchGroupSchedule,
+  fetchUserGroups,
 } from "../../../../util/group/groupSlice";
+import { fetchScheduleDetails } from "../../../../util/schedule/scheduleSlice";
 import style from "../../../../styles/group/groupDetail.module.scss";
 import MiniCalendar from "../../../../util/schedule/scheduleCalendar/MiniCalendar";
 import ScheduleCheck from "../../../../util/schedule/ScheduleCheck";
@@ -23,6 +25,10 @@ export default function groupDetail() {
   const params = useParams();
   const groupName = params.groupName as string;
   const { groupDetail } = useSelector((state: RootState) => state.group);
+  const groups = useSelector((state: RootState) => state.group.groups);
+  const scheduleList = useSelector(
+    (state: RootState) => state.schedule.scheduleList,
+  );
   const [isModalOpen, setIsModalOpen] = useState<null | "notice" | "invite">(
     null,
   );
@@ -31,6 +37,8 @@ export default function groupDetail() {
     if (groupName) {
       dispatch(fetchGroupDetail(groupName));
       dispatch(fetchGroupSchedule(groupName));
+      dispatch(fetchUserGroups());
+      dispatch(fetchScheduleDetails(groupName));
     }
     return () => {
       dispatch(clearGroupDetail());
@@ -89,11 +97,15 @@ export default function groupDetail() {
             <i>{groupDetail?.groupName}</i>의 여행 일정
           </h1>
           <div className={style.group_detail_bottom}>
-            <div className={style.calendar_div}>
+            {/* <div className={style.calendar_div}>
               <UseReactSelect type="calendar" />
               <MiniCalendar />
-            </div>
-            <ScheduleCheck />
+            </div> */}
+            <ScheduleCheck
+              schedule={scheduleList}
+              groups={groups}
+              groupName={groupName}
+            />
           </div>
         </div>
       )}

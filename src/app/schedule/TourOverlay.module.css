@@ -30,16 +30,16 @@
 
 /* 각 스텝 위치 (화면에 맞게 값 조정) */
 .step1 {
-  top: 350px;
-  right: 100px;
+  top: 10px;
+  right: 500px;
 }
 .step2 {
-  top: 100px;
-  left: 700px;
+  bottom: 20px;
+  left: 150px;
 }
 .step3 {
-  bottom: 100px;
-  left: 150px;
+  top: 200px;
+  right: 300px;
 }
 
 .closeBtn {
