@@ -10,14 +10,15 @@ import {
   fetchGroupSchedule,
   fetchUserGroups,
 } from "../../../../util/group/groupSlice";
-import { fetchScheduleDetails } from "../../../../util/schedule/scheduleSlice";
+import {
+  fetchScheduleDetails,
+  fetchScheduleList,
+} from "../../../../util/schedule/scheduleSlice";
 import style from "../../../../styles/group/groupDetail.module.scss";
-import MiniCalendar from "../../../../util/schedule/scheduleCalendar/MiniCalendar";
 import ScheduleCheck from "../../../../util/schedule/ScheduleCheck";
 import Footer from "@/app/_component/Footer";
 import GroupNoticeModal from "./GroupNoticeModal";
 import GroupInviteModal from "./GroupInviteModal";
-import UseReactSelect from "../../../../util/select/UseReactSelect";
 import { AppDispatch, RootState } from "../../../../store/store";
 
 export default function groupDetail() {
@@ -38,6 +39,7 @@ export default function groupDetail() {
       dispatch(fetchGroupDetail(groupName));
       dispatch(fetchGroupSchedule(groupName));
       dispatch(fetchUserGroups());
+      dispatch(fetchScheduleList());
       dispatch(fetchScheduleDetails(groupName));
     }
     return () => {

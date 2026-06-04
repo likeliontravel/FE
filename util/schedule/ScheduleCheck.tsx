@@ -61,11 +61,23 @@ const ScheduleCheck = ({
   const startOfMonthDay = viewDay.startOf("month").day();
   const displayWeek = Math.ceil((viewDay.date() + startOfMonthDay) / 7);
 
-  const dayEvents = events.filter((event) => {
-    const eventDate = new Date(event.start).toDateString();
-    const selectedDate = new Date(mainViewDate).toDateString();
-    return eventDate === selectedDate;
-  });
+  const dayEvents = useMemo(() => {
+    const filtered = events.filter((event) =>
+      dayjs(event.start).isSame(viewDay, "day"),
+    );
+
+    const sorted = filtered.sort(
+      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
+    );
+
+    const uniqueEvents = sorted.filter(
+      (ev, idx, self) =>
+        idx ===
+        self.findIndex((t) => t.title === ev.title && t.start === ev.start),
+    );
+
+    return uniqueEvents;
+  }, [events, viewDay]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -209,14 +221,6 @@ const ScheduleCheck = ({
     );
   }
 
-  const todayEvents = useMemo(() => {
-    return events
-      .filter((event) => dayjs(event.start).isSame(viewDay, "day"))
-      .sort(
-        (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
-      );
-  }, [events, viewDay]);
-
   const currentGroup = groups.find((g) => g.groupName === groupName);
 
   let regionName = "미정";
@@ -230,7 +234,7 @@ const ScheduleCheck = ({
     : 0;
 
   const mergedSchedules = useMemo(() => {
-    if (todayEvents.length === 0) return [];
+    if (dayEvents.length === 0) return [];
 
     const getRegion = (addr?: string) => {
       if (!addr) return regionName;
@@ -241,16 +245,14 @@ const ScheduleCheck = ({
     const result = [];
 
     let currentBlock = {
-      region: getRegion(todayEvents[0].address),
-      start: dayjs(todayEvents[0].start),
-      end: dayjs(
-        todayEvents[0].end || dayjs(todayEvents[0].start).add(1, "hour"),
-      ),
-      ids: [todayEvents[0].id],
+      region: getRegion(dayEvents[0].address),
+      start: dayjs(dayEvents[0].start),
+      end: dayjs(dayEvents[0].end || dayjs(dayEvents[0].start).add(1, "hour")),
+      ids: [dayEvents[0].id],
     };
 
-    for (let i = 1; i < todayEvents.length; i++) {
-      const ev = todayEvents[i];
+    for (let i = 1; i < dayEvents.length; i++) {
+      const ev = dayEvents[i];
       const evRegion = getRegion(ev.address);
       const evStart = dayjs(ev.start);
       const evEnd = dayjs(ev.end || dayjs(ev.start).add(1, "hour"));
@@ -273,7 +275,7 @@ const ScheduleCheck = ({
     result.push(currentBlock);
 
     return result;
-  }, [todayEvents, regionName]);
+  }, [dayEvents, regionName]);
 
   return (
     <div className={styles.container}>
@@ -357,7 +359,10 @@ const ScheduleCheck = ({
                 .filter((e) => e.category === "restaurant")
                 .map((item) => (
                   <div key={item.id} className={styles.card}>
-                    <img src={item.img} alt={item.title} />
+                    <img
+                      src={item.img || "/imgs/character.png"}
+                      alt={item.title}
+                    />
                     <div className={styles.cardContent}>
                       <p className={styles.title}>{item.title}</p>
                       <p className={styles.address}>{item.address}</p>
@@ -384,7 +389,7 @@ const ScheduleCheck = ({
                 .map((item) => (
                   <div key={item.id} className={styles.card}>
                     <img
-                      src={item.img || "/imgs/default_image.png"}
+                      src={item.img || "/imgs/character.png"}
                       alt={item.title}
                     />
                     <div className={styles.cardContent}>
@@ -416,7 +421,7 @@ const ScheduleCheck = ({
                 .map((item) => (
                   <div key={item.id} className={styles.card}>
                     <img
-                      src={item.img || "/imgs/default_image.png"}
+                      src={item.img || "/imgs/character.png"}
                       alt={item.title}
                     />
                     <div className={styles.cardContent}>

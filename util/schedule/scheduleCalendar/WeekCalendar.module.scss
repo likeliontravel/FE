@@ -210,7 +210,12 @@
       color 0.2s ease;
   }
 
-  :global(.fc .fc-timegrid-slots tr:hover .fc-timegrid-slot) {
+  :global(
+    .fc
+      .fc-timegrid-slots
+      tr:hover
+      .fc-timegrid-slot:not(.has-event):not(.selected-slot)
+  ) {
     background-color: #eaecf3 !important;
     color: #6b7280 !important;
   }

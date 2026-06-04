@@ -48,6 +48,9 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   calendarOptions,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+
+  const [dbSavedEvents, setDbSavedEvents] = useState<any[]>([]);
+
   const { events, mainViewDate, currentScheduleId } = useSelector(
     (state: RootState) => state.schedule,
   );
@@ -70,6 +73,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       dispatch(fetchScheduleDetails(selectedSchedule.value)).then((action) => {
         if (fetchScheduleDetails.fulfilled.match(action) && action.payload) {
           const fetchedEvents = action.payload.events;
+          setDbSavedEvents(fetchedEvents);
 
           if (!scheduleStartDate && fetchedEvents && fetchedEvents.length > 0) {
             const sorted = [...fetchedEvents].sort(
@@ -88,6 +92,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       });
     } else {
       dispatch(setEvents([]));
+      setDbSavedEvents([]);
     }
   }, [selectedSchedule.value, dispatch, calendarOptions]);
 
@@ -308,7 +313,19 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     }
     const scheduleId = currentScheduleId;
 
-    const sortedEvents = [...filteredEvents].sort(
+    const newEventsToSave = filteredEvents.filter((currentEv) => {
+      const isAlreadySaved = dbSavedEvents.some(
+        (dbEv) => dbEv.id === currentEv.id && dbEv.start === currentEv.start,
+      );
+      return !isAlreadySaved;
+    });
+
+    if (newEventsToSave.length === 0) {
+      alert("새로 추가되거나 변경된 일정이 없습니다.");
+      return;
+    }
+
+    const sortedEvents = [...newEventsToSave].sort(
       (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
     );
 
@@ -352,6 +369,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
       if (createScheduleDetail.fulfilled.match(actionResult)) {
         alert("모든 세부 일정이 성공적으로 저장되었습니다!");
+        setDbSavedEvents((prev) => [...prev, ...newEventsToSave]);
       } else {
         alert(`저장 실패: ${actionResult.payload}`);
       }
