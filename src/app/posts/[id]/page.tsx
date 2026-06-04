@@ -42,7 +42,20 @@ const unescapeHtml = (html: string) => {
   return doc.documentElement.textContent || "";
 };
 
-// --- 개별 댓글 아이템 (구조 복구) ---
+const getProfileImage = (url: string | null | undefined): string => {
+  if (!url || url === 'null' || url.trim() === '') {
+    return '/imgs/default-profile.png';
+  }
+  if (url.includes('default-profile') || url.includes('default_profile')) {
+    return '/imgs/default-profile.png';
+  }
+  if (!url.startsWith('http') && !url.startsWith('/')) {
+    return '/imgs/default-profile.png';
+  }
+  return url;
+};
+
+// --- 개별 댓글 아이템 컴포넌트 ---
 const CommentItem = ({ 
   comment, isReply, replyingTo, onReplyClick, onReplySubmit, replyContent, onReplyContentChange,
   loading, loggedInUser, editingCommentId, editingContent, onEditingContentChange,
@@ -64,9 +77,10 @@ const CommentItem = ({
           <Image src="/imgs/reply.png" alt="대댓글" width={20} height={20} />
         </div>
       )}
-      <img src={comment.commentWriterProfileImageUrl || '/imgs/default-profile.png'} alt="프사" className={styles.commentAvatar} />
+      <img src={getProfileImage(comment.commentWriterProfileImageUrl)} alt="프사" className={styles.commentAvatar} />
       <div className={styles.commentBody}>
-        <span className={styles.commentAuthor}>{comment.commentWriter}</span>
+        {/* 🔥 백엔드 응답 필드명Fallback 처리: commentWriter 혹은 writer 둘 다 대응 */}
+        <span className={styles.commentAuthor}>{comment.commentWriter || comment.writer}</span>
         
         {isEditing ? (
           <div className={styles.editCommentForm}>
@@ -77,7 +91,8 @@ const CommentItem = ({
             </div>
           </div>
         ) : (
-          <p className={styles.commentText}>{comment.commentContent}</p>
+          /* 🔥 백엔드 응답 필드명Fallback 처리: commentContent 혹은 content 둘 다 대응 */
+          <p className={styles.commentText}>{comment.commentContent || comment.content}</p> 
         )}
 
         <div className={styles.commentMeta}>
@@ -96,17 +111,10 @@ const CommentItem = ({
           )}
         </div>
         
-        {/* 답글 입력창 (구조 복구) */}
         {replyingTo === comment.id && (
           <div className={styles.commentInputWrapper} style={{marginTop: '15px'}}>
             <div className={styles.commentInputContainer}>
-              <textarea 
-                placeholder={`@${comment.commentWriter}님에게 답글 남기기`} 
-                value={replyContent} 
-                onChange={onReplyContentChange} 
-                maxLength={200} 
-                autoFocus 
-              />
+              <textarea placeholder={`@${comment.commentWriter || comment.writer}님에게 답글 남기기`} value={replyContent} onChange={onReplyContentChange} maxLength={200} autoFocus />
               <span className={styles.charCount}>{replyContent.length}/200</span>
             </div>
             <button className={styles.sendButton} onClick={() => onReplySubmit(comment.id)} disabled={loading}>
@@ -151,14 +159,24 @@ const PostDetail = () => {
   const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
   const { user: loggedInUser } = useSelector((state: RootState) => state.auth || {});
-  const { post, comments, loading } = useSelector((state: RootState) => state.board || {});
+  const { post, comments, loading, error } = useSelector((state: RootState) => state.board || {});
   const boardId = useMemo(() => params.id ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id, 10) : 0, [params.id]);
   
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState('');
+  const [activeTab, setActiveTab] = useState<'지역' | '테마'>('지역');
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
+
+  const requireLogin = useCallback(() => { 
+    if (!loggedInUser) { 
+      alert('로그인이 필요한 기능입니다.'); 
+      router.push('/login'); 
+      return false; 
+    } 
+    return true; 
+  }, [loggedInUser, router]);
 
   useEffect(() => { 
     dispatch(clearBoardLoading());
@@ -180,24 +198,35 @@ const PostDetail = () => {
   }, [comments]);
 
   const handleCommentSubmit = useCallback(async () => {
-    if (!loggedInUser) { alert('로그인이 필요합니다.'); return; }
+    if (!requireLogin()) return; 
     if (!newComment.trim() || !boardId) return;
     try {
       await dispatch(createComment({ boardId, commentContent: newComment })).unwrap();
       setNewComment('');
       dispatch(fetchComments(boardId));
     } catch (err) { alert(`댓글 작성 실패: ${err}`); }
-  }, [dispatch, boardId, newComment, loggedInUser]);
+  }, [dispatch, boardId, newComment, requireLogin]);
 
   const handleReplySubmit = useCallback(async (parentId: number) => {
-    if (!loggedInUser) { alert('로그인이 필요합니다.'); return; }
+    if (!requireLogin()) return; 
     if (!replyContent.trim() || !boardId) return;
     try {
       await dispatch(createComment({ boardId, commentContent: replyContent, parentCommentId: parentId })).unwrap();
       setReplyContent(''); setReplyingTo(null); dispatch(fetchComments(boardId));
     } catch (err) { alert(`답글 작성 실패: ${err}`); }
-  }, [dispatch, boardId, replyContent, loggedInUser]);
+  }, [dispatch, boardId, replyContent, requireLogin]);
 
+  const handleEditPost = useCallback(() => router.push(`/postWrite/${boardId}`), [router, boardId]);
+  const handleDeletePost = useCallback(async () => { if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) { try { await dispatch(deleteBoard(boardId)).unwrap(); router.push('/post'); } catch (err) { alert(`삭제 실패: ${err}`); } } }, [dispatch, boardId, router]);
+
+  const handleStartEditComment = useCallback((comment: Comment) => { 
+    if (!requireLogin()) return; 
+    setEditingCommentId(comment.id); 
+    // 🔥 Fallback 적용: commentContent 혹은 content 둘 다 매핑 가능하게 수정
+    setEditingContent(comment.commentContent || comment.content || ''); 
+  }, [requireLogin]);
+
+  const handleCancelEditComment = useCallback(() => { setEditingCommentId(null); setEditingContent(''); }, []);
   const handleUpdateComment = useCallback(async () => {
     if (!editingContent.trim() || editingCommentId === null) return;
     try {
@@ -219,7 +248,16 @@ const PostDetail = () => {
     return { __html: decoded };
   }, [post?.content]);
 
+  const handleTabClick = useCallback((tab: '지역' | '테마') => () => setActiveTab(tab), []);
+  const handleReplyClick = useCallback((id: number) => {
+    if (!requireLogin()) return;
+    setReplyingTo(prev => (prev === id ? null : id));
+  }, [requireLogin]);
+
+  const currentKeywords = activeTab === '지역' ? regionKeywords : themeKeywords;
+
   if (loading && !post) return <div style={{ padding: '50px', textAlign: 'center' }}>로딩 중...</div>;
+  if (error) return <div style={{ padding: '50px', textAlign: 'center' }}>에러: {error}</div>;
   if (!post) return <div style={{ padding: '50px', textAlign: 'center' }}>게시글을 찾을 수 없습니다.</div>;
 
   return (
@@ -232,88 +270,60 @@ const PostDetail = () => {
               <h1 className={styles.title}>{post.title}</h1>
               {isPostAuthor && (
                 <div className={styles.postActions}>
-                  <button onClick={() => router.push(`/postWrite/${boardId}`)}>수정</button>
-                  <button onClick={async () => { if(confirm('삭제?')) { await dispatch(deleteBoard(boardId)).unwrap(); router.push('/post'); }}}>삭제</button>
+                  <button onClick={handleEditPost}>수정</button>
+                  <button onClick={handleDeletePost}>삭제</button>
                 </div>
               )}
             </div>
-            
             <div className={styles.authorInfo}>
-              <div className={styles.authorAvatar} style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}></div>
+              {/* 2. 게시글 작성자 프로필 이미지 예외 처리 */}
+              <div 
+                className={styles.authorAvatar} 
+                style={{ backgroundImage: `url(${getProfileImage(post.writerProfileImageUrl)})` }}
+              ></div>
               <span className={styles.authorName}>{post.writer}</span>
               <span className={styles.postDate}>{formatDate(post.createdTime)}</span>
             </div>
-
             {post.thumbnailPublicUrl && (<div className={styles.imageGrid}><img src={post.thumbnailPublicUrl} alt="썸네일" /></div>)}
             <div className={styles.postBody} dangerouslySetInnerHTML={postBodyContent} />
-            
             <div className={styles.commentsSection}>
-              {/* 메인 댓글 입력창 (구조 복구) */}
               <div className={styles.commentInputWrapper}>
                 <div className={styles.commentInputContainer}>
-                  <textarea 
-                    placeholder={loggedInUser ? "따뜻한 댓글을 남겨주세요 :)" : "댓글을 작성하려면 로그인해주세요."} 
-                    value={newComment} 
-                    onChange={(e) => setNewComment(e.target.value)} 
-                    maxLength={200} 
-                    disabled={!loggedInUser}
-                  />
+                  <textarea placeholder={loggedInUser ? "댓글을 남겨주세요 :)" : "로그인 후 이용 가능합니다."} value={newComment} onChange={(e) => setNewComment(e.target.value)} maxLength={200} disabled={!loggedInUser} />
                   <span className={styles.charCount}>{newComment.length}/200</span>
                 </div>
-                <button className={styles.sendButton} onClick={handleCommentSubmit} disabled={loading || !loggedInUser}>
-                  <Image src="/imgs/comment_send.png" alt="전송" width={48} height={48} />
-                </button>
+                <button className={styles.sendButton} onClick={handleCommentSubmit} disabled={loading || !loggedInUser}><Image src="/imgs/comment_send.png" alt="전송" width={48} height={48} /></button>
               </div>
-
               <div className={styles.commentList}>
-                {nestedComments.length > 0 ? (
-                  nestedComments.map(comment => (
-                    <CommentItem 
-                      key={comment.id} 
-                      comment={comment} 
-                      isReply={false} 
-                      replyingTo={replyingTo} 
-                      onReplyClick={(id) => setReplyingTo(prev => (prev === id ? null : id))} 
-                      onReplySubmit={handleReplySubmit} 
-                      replyContent={replyContent} 
-                      onReplyContentChange={(e) => setReplyContent(e.target.value)} 
-                      loading={loading} 
-                      loggedInUser={loggedInUser} 
-                      editingCommentId={editingCommentId} 
-                      editingContent={editingContent} 
-                      onEditingContentChange={(e) => setEditingContent(e.target.value)} 
-                      onStartEdit={(c) => { setEditingCommentId(c.id); setEditingContent(c.commentContent); }} 
-                      onCancelEdit={() => setEditingCommentId(null)} 
-                      onUpdateComment={handleUpdateComment} 
-                      onDeleteComment={handleDeleteComment} 
-                    />
-                  ))
-                ) : <p>아직 댓글이 없습니다. 첫 댓글을 남겨주세요!</p>}
+                {nestedComments.length > 0 ? nestedComments.map(comment => (
+                  <CommentItem 
+                    key={comment.id} 
+                    comment={comment} 
+                    isReply={false} 
+                    replyingTo={replyingTo} 
+                    onReplyClick={handleReplyClick} 
+                    onReplySubmit={handleReplySubmit} 
+                    replyContent={replyContent} 
+                    onReplyContentChange={(e) => setReplyContent(e.target.value)} 
+                    loading={loading} 
+                    loggedInUser={loggedInUser} 
+                    editingCommentId={editingCommentId} 
+                    editingContent={editingContent} 
+                    onEditingContentChange={(e) => setEditingContent(e.target.value)} 
+                    onStartEdit={handleStartEditComment} 
+                    onCancelEdit={handleCancelEditComment} 
+                    onUpdateComment={handleUpdateComment} 
+                    onDeleteComment={handleDeleteComment} 
+                  />
+                )) : <p>아직 댓글이 없습니다. 첫 댓글을 남겨주세요!</p>}
               </div>
             </div>
           </main>
-
           <aside className={styles.sidebar}>
             <div className={styles.profileCard}>
               {loggedInUser ? (
-                <>
-                  <div className={styles.profileHeader}>
-                    <Image src={loggedInUser.profileImageUrl || "/imgs/default-profile.png"} alt="프사" width={50} height={50} className={styles.profileImage} />
-                    <p className={styles.username}>{loggedInUser.name}님</p>
-                  </div>
-                  <div className={styles.profileDivider} />
-                  <div className={styles.profileActions}>
-                    <button><Image src="/imgs/Popular.png" alt="인기" width={36} height={36} /><span>인기글 보기</span></button>
-                    <button onClick={() => router.push('/postWrite')}><Image src="/imgs/writing.png" alt="작성" width={36} height={36} /><span>글쓰기</span></button>
-                    <button onClick={() => router.push('/posts/mypost')}><Image src="/imgs/myposts.png" alt="내글" width={36} height={36} /><span>내 글보기</span></button>
-                  </div>
-                </>
-              ) : (
-                <div className={styles.loginContainer}>
-                  <p className={styles.loginPrompt}>로그인하고 더 많은 기능을 이용해보세요!</p>
-                  <button className={styles.loginButton} onClick={() => router.push('/login')}>로그인</button>
-                </div>
-              )}
+                <><div className={styles.profileHeader}><Image src={getProfileImage(loggedInUser.profileImageUrl)} alt="프사" width={50} height={50} className={styles.profileImage} /><p className={styles.username}>{loggedInUser.name}님</p></div><div className={styles.profileDivider} /><div className={styles.profileActions}><button><Image src="/imgs/Popular.png" alt="인기" width={36} height={36} /><span>인기글</span></button><button onClick={() => router.push('/postWrite')}><Image src="/imgs/writing.png" alt="작성" width={36} height={36} /><span>글쓰기</span></button><button onClick={() => router.push('/posts/mypost')}><Image src="/imgs/myposts.png" alt="내글" width={36} height={36} /><span>내 글</span></button></div></>
+              ) : (<div className={styles.loginContainer}><p>로그인 후 이용해보세요!</p><button className={styles.loginButton} onClick={() => router.push('/login')}>로그인</button></div>)}
             </div>
           </aside>
         </div>

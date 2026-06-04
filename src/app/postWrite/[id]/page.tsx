@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation'; // useParams 추가
+import { useRouter, useParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../../store/store';
 import { 
@@ -30,6 +30,14 @@ import MapModal from '../MapModal';
 
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
 const themeKeywords = ['자연 속에서 힐링', '미식 여행 및 먹방 중심', '체험 및 액티비티', '문화예술 및 역사탐방', '기타'];
+
+// --- HTML 디코딩 함수 (Tiptap 에디터 내 태그 깨짐/노출 방지) ---
+const decodeHtml = (html: string) => {
+  if (typeof window === 'undefined') return html;
+  const txt = document.createElement('textarea');
+  txt.innerHTML = html;
+  return txt.value;
+};
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -132,7 +140,7 @@ const DynamicWritePage: React.FC = () => {
       Underline, Strike, TextAlign.configure({ types: ['heading', 'paragraph'] }),
       TextStyle, FontFamily, Color,
       ImageExtension.configure({ inline: false }),
-      Placeholder.configure({ placeholder: '여기에 내용을 작성해주세요.' }),
+      Placeholder.configure({ placeholder: '여기에 여행 후기, 꿀팁 등 내용을 자유롭게 작성해주세요.' }),
     ],
     content: '',
     editorProps: { 
@@ -143,7 +151,7 @@ const DynamicWritePage: React.FC = () => {
     },
   });
 
-  // 초기 데이터 로딩 (수정 모드일 때)
+  // 초기 로딩 (수정 모드일 때 기존 게시글 데이터 불러오기)
   useEffect(() => {
     dispatch(clearBoardLoading());
     if (isEditMode && id) {
@@ -151,13 +159,13 @@ const DynamicWritePage: React.FC = () => {
     }
   }, [dispatch, id, isEditMode]);
 
-  // 불러온 데이터를 에디터와 상태에 채우기
   useEffect(() => {
     if (isEditMode && post && editor) {
       setTitle(post.title);
       setSelectedRegion(post.region);
       setSelectedTheme(post.theme);
-      editor.commands.setContent(post.content);
+      const decodedContent = post.content.includes('&lt;') || post.content.includes('&gt;') ? decodeHtml(post.content) : post.content;
+      editor.commands.setContent(decodedContent);
     }
   }, [post, editor, isEditMode]);
 
@@ -182,6 +190,12 @@ const DynamicWritePage: React.FC = () => {
       alert('모든 항목을 입력해주세요.'); return;
     }
 
+    if (!loggedInUser) {
+      alert('로그인이 필요한 서비스입니다.');
+      router.push('/login');
+      return;
+    }
+
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
     const firstImage = tempDiv.querySelector('img');
@@ -191,17 +205,19 @@ const DynamicWritePage: React.FC = () => {
 
     try {
       if (isEditMode && id) {
+        // 수정 요청 발송
         await dispatch(updateBoard({ id, ...postData })).unwrap();
-        alert('수정되었습니다.');
+        alert('성공적으로 수정되었습니다.');
       } else {
+        // 신규 등록 발송
         await dispatch(createBoard(postData)).unwrap();
-        alert('등록되었습니다.');
+        alert('성공적으로 등록되었습니다.');
       }
       router.push('/post');
     } catch (err: any) {
-      alert(`실패: ${err}`);
+      alert(`처리 실패: ${err}`);
     }
-  }, [dispatch, router, title, editor, selectedRegion, selectedTheme, id, isEditMode]);
+  }, [dispatch, router, title, editor, selectedRegion, selectedTheme, id, isEditMode, loggedInUser]);
 
   return (
     <div className={styles.pageContainer}>
@@ -212,7 +228,7 @@ const DynamicWritePage: React.FC = () => {
           <main className={styles.editorWrapper}>
             <input type="text" className={styles.titleInput} placeholder="제목을 입력해주세요" value={title} onChange={handleTitleChange} />
             <div className={styles.contentDivider}></div>
-            <div className={styles.tiptapEditorContainer} style={{ minHeight: '600px' }} onClick={() => editor?.commands.focus()}>
+            <div className={styles.tiptapEditorContainer} style={{ minHeight: '600px', cursor: 'text' }} onClick={() => editor?.commands.focus()}>
               <EditorContent editor={editor} />
             </div>
           </main>

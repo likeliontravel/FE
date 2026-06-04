@@ -9,7 +9,6 @@ import Link from 'next/link';
 import styles from '../../../styles/login/login.module.scss';
 import Image from 'next/image';
 
-// 실제 로그인 로직을 담은 내부 컴포넌트
 const LoginForm = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
@@ -116,7 +115,6 @@ const LoginForm = () => {
     </div>
   );
 };
-
 
 const Login = () => {
   return (

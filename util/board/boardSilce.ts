@@ -21,10 +21,12 @@ export interface Board {
 
 export interface Comment {
   id: number;
-  commentWriter: string;
-  commentWriterIdentifier: string;
-  commentWriterProfileImageUrl: string | null;
-  commentContent: string; 
+  commentWriter?: string; 
+  writer?: string; // 대체 필드
+  commentWriterIdentifier?: string;
+  commentWriterProfileImageUrl?: string | null;
+  commentContent?: string; // 조회 시 사용되는 필드
+  content?: string; // 등록/수정 시 사용되는 필드
   boardId: number;
   parentCommentId: number | null;
   commentCreatedTime: string;
@@ -136,7 +138,8 @@ export const fetchComments = createAsyncThunk<Comment[], number>(
       if (rawData && Array.isArray(rawData.content)) return rawData.content;
       return [];
     } catch (error: any) {
-      return [];
+      if (error.response?.status === 404) return [];
+      return rejectWithValue('댓글 조회 실패');
     }
   }
 );
@@ -197,6 +200,7 @@ export const createComment = createAsyncThunk<any, { boardId: number; commentCon
   'board/createComment',
   async ({ boardId, commentContent, parentCommentId }, { rejectWithValue }) => {
     try {
+      // 보낼 때는 content로 매핑하여 백엔드 500에러 방지
       const response = await api.post(`/comment/${boardId}`, { content: commentContent, parentCommentId });
       return response.data;
     } catch (error: any) {
@@ -209,6 +213,7 @@ export const updateComment = createAsyncThunk<any, { id: number; commentContent:
   'board/updateComment',
   async ({ id, commentContent }, { rejectWithValue }) => {
     try {
+      // 보낼 때는 content로 매핑하여 백엔드 500에러 방지
       const response = await api.put(`/comment/${id}`, { content: commentContent });
       return response.data;
     } catch (error: any) {
@@ -240,6 +245,10 @@ const boardSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchMyBoards.fulfilled, (state, action: PayloadAction<Board[]>) => {
+        state.loading = false;
+        state.posts = action.payload;
+      })
       .addCase(fetchBoardDetail.fulfilled, (state, action: PayloadAction<Board>) => {
         state.loading = false;
         state.post = action.payload;

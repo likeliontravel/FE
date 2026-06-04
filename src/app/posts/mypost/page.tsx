@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,20 +8,42 @@ import { AppDispatch, RootState } from '../../../../store/store';
 import { 
   fetchMyBoards,
   Board 
-} from '../../../../util/board/boardSilce';
+} from '../../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
 import styles from '../../../../styles/post/postList.module.scss';
 import SearchBar from '../../SearchBar/SearchBar';
 import Image from 'next/image';
 
+// --- 프로필 이미지 예외 처리 전용 헬퍼 함수 ---
+const getProfileImage = (url: string | null | undefined): string => {
+  if (!url || url === 'null' || url.trim() === '') {
+    return '/imgs/default-profile.png';
+  }
+  if (url.includes('default-profile') || url.includes('default_profile')) {
+    return '/imgs/default-profile.png';
+  }
+  if (!url.startsWith('http') && !url.startsWith('/')) {
+    return '/imgs/default-profile.png';
+  }
+  return url;
+};
+
+// --- 안전한 엔티티 디코딩 및 태그 제거 함수 (수화 오류 및 태그 노출 방지) ---
 const createExcerpt = (htmlContent: string, maxLength: number = 100): string => {
-  if (typeof window === 'undefined' || !htmlContent) return '';
+  if (!htmlContent) return '';
   try {
-    const parser = new DOMParser();
-    const unescapedHtml = parser.parseFromString(`<!doctype html><body>${htmlContent}`, 'text/html').body.textContent || '';
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = unescapedHtml;
-    const plainText = tempDiv.textContent || tempDiv.innerText || '';
-    return plainText.length > maxLength ? plainText.substring(0, maxLength) + '...' : plainText;
+    const decodedHtml = htmlContent
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'");
+
+    const plainText = decodedHtml.replace(/<[^>]*>/g, '');
+    if (plainText.length > maxLength) {
+      return plainText.substring(0, maxLength) + '...';
+    }
+    return plainText;
   } catch (e) {
     return '';
   }
@@ -48,6 +70,14 @@ const MyPostsPage = () => {
     }
   }, [dispatch, loggedInUser, authLoading, router]);
 
+  const myFilteredPosts = useMemo(() => {
+    if (!posts || !Array.isArray(posts) || !loggedInUser) return [];
+    
+    // 이메일이나 userIdentifier 둘 중 하나라도 매칭되도록 보강
+    const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
+    return posts.filter(post => post.writerIdentifier === myIdentifier);
+  }, [posts, loggedInUser]);
+
   const goToPostWrite = useCallback(() => router.push('/postWrite'), [router]);
   const goToMyPosts = useCallback(() => router.push('/posts/mypost'), [router]);
 
@@ -68,7 +98,8 @@ const MyPostsPage = () => {
             <div className={styles.postList}>
               {loading && <p>게시글을 불러오는 중...</p>}
               {error && <p>에러: {error}</p>}
-              {!loading && !error && posts && posts.map((post: Board) => (
+              
+              {!loading && !error && myFilteredPosts.map((post: Board) => (
                 <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
@@ -76,7 +107,7 @@ const MyPostsPage = () => {
                       <div className={styles.postMeta}>
                           <div 
                             className={styles.authorAvatar} 
-                            style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}
+                            style={{ backgroundImage: `url(${getProfileImage(post.writerProfileImageUrl)})` }}
                           ></div>
                           <span className={styles.authorName}>{post.writer}</span>
                       </div>
@@ -90,7 +121,7 @@ const MyPostsPage = () => {
                   </div>
                 </Link>
               ))}
-               {!loading && posts?.length === 0 && <p>작성한 게시글이 없습니다.</p>}
+               {!loading && myFilteredPosts.length === 0 && <p>작성한 게시글이 없습니다.</p>}
             </div>
           </main>
 
@@ -99,7 +130,7 @@ const MyPostsPage = () => {
                 <>
                   <div className={styles.profileHeader}>
                     <Image 
-                      src={loggedInUser.profileImageUrl || "/imgs/default-profile.png"} 
+                      src={getProfileImage(loggedInUser.profileImageUrl)} 
                       alt={`${loggedInUser.name}님의 프로필`}
                       width={50} 
                       height={50} 

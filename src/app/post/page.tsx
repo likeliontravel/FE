@@ -11,7 +11,7 @@ import {
   fetchBoardsByRegion,
   fetchBoardsByTheme,
   Board 
-} from '../../../util/board/boardSilce'; 
+} from '../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
 import styles from '../../../styles/post/postList.module.scss';
 import SearchBar from '../SearchBar/SearchBar';
 import Image from 'next/image';
@@ -21,15 +21,40 @@ const regionKeywords = [
 ];
 const themeKeywords = ['자연 속에서 힐링', '미식 여행 및 먹방 중심', '체험 및 액티비티', '문화예술 및 역사탐방', '기타'];
 
+// --- 프로필 이미지 예외 처리 전용 헬퍼 함수 ---
+const getProfileImage = (url: string | null | undefined): string => {
+  if (!url || url === 'null' || url.trim() === '') {
+    return '/imgs/default-profile.png';
+  }
+  if (url.includes('default-profile') || url.includes('default_profile')) {
+    return '/imgs/default-profile.png';
+  }
+  if (!url.startsWith('http') && !url.startsWith('/')) {
+    return '/imgs/default-profile.png';
+  }
+  return url;
+};
+
+// --- 안전한 엔티티 디코딩 및 태그 제거 함수 (수화 불일치 완벽 예방) ---
 const createExcerpt = (htmlContent: string, maxLength: number = 100): string => {
-  if (typeof window === 'undefined' || !htmlContent) return '';
+  if (!htmlContent) return '';
   try {
-    const parser = new DOMParser();
-    const unescapedHtml = parser.parseFromString(`<!doctype html><body>${htmlContent}`, 'text/html').body.textContent || '';
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = unescapedHtml;
-    const plainText = tempDiv.textContent || tempDiv.innerText || '';
-    return plainText.length > maxLength ? plainText.substring(0, maxLength) + '...' : plainText;
+    // 1. 인코딩된 HTML 엔티티 디코딩 (&lt; -> <, &gt; -> >)
+    const decodedHtml = htmlContent
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'");
+
+    // 2. 디코딩된 진짜 HTML 태그 제거 정규식 적용
+    const plainText = decodedHtml.replace(/<[^>]*>/g, '');
+
+    if (plainText.length > maxLength) {
+      return plainText.substring(0, maxLength) + '...';
+    }
+    return plainText;
   } catch (e) {
     return '';
   }
@@ -141,9 +166,10 @@ const PostList = () => {
                     <div className={styles.postTextContent}>
                       <h3 className={styles.postTitle}>{post.title}</h3>
                       <div className={styles.postMeta}>
+                          {/* 1. 게시글 목록 작성자 프로필 예외 처리 (배경 이미지 방식) */}
                           <div 
                             className={styles.authorAvatar} 
-                            style={{ backgroundImage: `url(${post.writerProfileImageUrl || '/imgs/default-profile.png'})` }}
+                            style={{ backgroundImage: `url(${getProfileImage(post.writerProfileImageUrl)})` }}
                           ></div>
                           <span className={styles.authorName}>{post.writer}</span>
                           <span className={styles.viewCount}>조회수 {post.boardHits}</span>
@@ -163,13 +189,14 @@ const PostList = () => {
           </main>
 
           <aside className={styles.sidebar}>
-            {/* 🔥 프로필 카드 영역: 기존 디자인 원복 */}
+            {/* 🔥 프로필 카드 영역: 기존 디자인 원복 및 본인 프로필 사진 예외 처리 */}
             <div className={styles.profileCard}>
               {loggedInUser && loggedInUser.name ? (
                 <>
                   <div className={styles.profileHeader}>
+                    {/* 2. 로그인한 유저 본인 프로필 이미지 예외 처리 */}
                     <Image 
-                      src={loggedInUser.profileImageUrl || "/imgs/default-profile.png"} 
+                      src={getProfileImage(loggedInUser.profileImageUrl)} 
                       alt={`${loggedInUser.name}님의 프로필`}
                       width={50} 
                       height={50} 
