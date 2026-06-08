@@ -98,18 +98,15 @@ const CommentItem = ({
   onDeleteComment: (id: number) => void;
 }) => {
   const isEditing = editingCommentId === comment.id;
-
-  // 🔥 보안 수정: 댓글 단위의 본인 확인 2단계 가드 계산
+  
   const isAuthor = useMemo(() => {
     if (!comment || !loggedInUser) return false;
     const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
     const myName = loggedInUser.name;
 
-    // 1단계: 작성자 식별자(이메일 또는 ID)가 존재하면 비교
     if (comment.commentWriterIdentifier && myIdentifier) {
       return comment.commentWriterIdentifier === myIdentifier;
     }
-    // 2단계: 식별자가 없을 경우 이름 대조 가드
     const writerName = comment.commentWriter || comment.writer;
     if (writerName && myName) {
       return writerName === myName;
@@ -260,17 +257,14 @@ const PostDetail = () => {
     } 
   }, [dispatch, boardId]);
 
-  // 🔥 보안 수정: 게시글 단위의 본인 확인 2단계 가드 계산
   const isPostAuthor = useMemo(() => {
     if (!post || !loggedInUser) return false;
     const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
     const myName = loggedInUser.name;
 
-    // 1단계: 작성자 식별자(이메일 또는 ID)가 존재하면 비교
     if (post.writerIdentifier && myIdentifier) {
       return post.writerIdentifier === myIdentifier;
     }
-    // 2단계: 목록 조회 시 식별자가 누락되었을 경우 이름으로 최종 방어 가드
     if (post.writer && myName) {
       return post.writer === myName;
     }
@@ -325,7 +319,6 @@ const PostDetail = () => {
     }
   }, [dispatch, boardId, replyContent, requireLogin]);
 
-  // 본인 확인 후 수정 창 진입
   const handleEditPost = useCallback(() => {
     if (!isPostAuthor) {
       alert('본인이 작성한 게시글만 수정할 수 있습니다.');
@@ -334,7 +327,6 @@ const PostDetail = () => {
     router.push(`/postWrite/${boardId}`);
   }, [router, boardId, isPostAuthor]);
 
-  // 🔥 수정 완료: 본인 글 삭제 2차 가드 적용
   const handleDeletePost = useCallback(async () => {
     if (!isPostAuthor) {
       alert('본인이 작성한 게시글만 삭제할 수 있습니다.');
@@ -354,6 +346,7 @@ const PostDetail = () => {
   const handleStartEditComment = useCallback((comment: Comment) => { 
     if (!requireLogin()) return; 
     setEditingCommentId(comment.id); 
+    // 🔥 comment.content도 가질 수 있도록 타입 검사 오류 해결
     setEditingContent(comment.commentContent || comment.content || ''); 
   }, [requireLogin]);
 
@@ -365,7 +358,6 @@ const PostDetail = () => {
   const handleUpdateComment = useCallback(async () => {
     if (!editingContent.trim() || editingCommentId === null) return;
 
-    // 🔥 보안 가드: 수정할 댓글을 찾아 2차 가드 체크
     const commentToUpdate = comments.find(c => c.id === editingCommentId);
     if (!commentToUpdate) return;
 
@@ -396,7 +388,6 @@ const PostDetail = () => {
     }
   }, [dispatch, boardId, editingCommentId, editingContent, comments, loggedInUser]);
 
-  // 🔥 수정 완료: 본인 댓글 삭제 2차 가드 적용
   const handleDeleteComment = useCallback(async (id: number) => {
     const commentToDelete = comments.find(c => c.id === id);
     if (!commentToDelete) return;

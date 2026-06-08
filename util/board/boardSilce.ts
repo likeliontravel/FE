@@ -22,11 +22,11 @@ export interface Board {
 export interface Comment {
   id: number;
   commentWriter?: string; 
-  writer?: string; // 대체 필드
+  writer?: string; 
   commentWriterIdentifier?: string;
   commentWriterProfileImageUrl?: string | null;
-  commentContent?: string; // 조회 시 사용되는 필드
-  content?: string; // 등록/수정 시 사용되는 필드
+  commentContent: string; // 필수 필드 고정
+  content?: string; // 🔥 타입 오류 방지용 선택적 필드 추가!
   boardId: number;
   parentCommentId: number | null;
   commentCreatedTime: string;
@@ -63,7 +63,6 @@ const initialState: BoardState = {
   successMessage: null,
 };
 
-// 통합 조회 함수
 export const fetchBoards = createAsyncThunk(
   'board/fetchBoards',
   async ({ page = 0, size = 30, sortType = 'RECENT', region, theme, searchKeyword }: { 
@@ -104,14 +103,12 @@ export const searchBoards = createAsyncThunk(
   }
 );
 
-// 내 게시글 조회 (🔥 수정: 식별자 매칭 실패 시 이름으로도 매칭되도록 2중 가드 적용)
 export const fetchMyBoards = createAsyncThunk(
   'board/fetchMyBoards',
   async (userIdentifier: string, { rejectWithValue }) => {
     try {
       const response = await publicApi.get('/board', { params: { page: 0, size: 1000, sortType: 'RECENT' } });
       const allPosts: Board[] = response.data.data.content;
-      
       return allPosts.filter(post => 
         (post.writerIdentifier && post.writerIdentifier === userIdentifier) || 
         (post.writer && post.writer === userIdentifier)
@@ -178,14 +175,12 @@ export const createBoard = createAsyncThunk(
   }
 );
 
-// 🔥 수정: 명세서 공식 규격에 맞춰 PATCH 메서드로 복원 및 바디(RequestBody)에 id 주입
 export const updateBoard = createAsyncThunk<Board, { id: number; title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }>(
   'board/updateBoard',
   async (updateData, { rejectWithValue }) => {
     try {
-      // 명세서 규격: PATCH /board/{id}
       const response = await api.patch(`/board/${updateData.id}`, {
-        id: String(updateData.id), // 명세서 요구 사항: 문자열 형태의 ID 추가
+        id: String(updateData.id),
         title: updateData.title,
         content: updateData.content,
         theme: updateData.theme,
@@ -217,7 +212,6 @@ export const createComment = createAsyncThunk<any, { boardId: number; commentCon
   'board/createComment',
   async ({ boardId, commentContent, parentCommentId }, { rejectWithValue }) => {
     try {
-      // 보낼 때는 content로 매핑하여 백엔드 500에러 방지
       const response = await api.post(`/comment/${boardId}`, { content: commentContent, parentCommentId });
       return response.data;
     } catch (error: any) {
@@ -230,7 +224,6 @@ export const updateComment = createAsyncThunk<any, { id: number; commentContent:
   'board/updateComment',
   async ({ id, commentContent }, { rejectWithValue }) => {
     try {
-      // 보낼 때는 content로 매핑하여 백엔드 500에러 방지
       const response = await api.put(`/comment/${id}`, { content: commentContent });
       return response.data;
     } catch (error: any) {
@@ -282,7 +275,6 @@ const boardSlice = createSlice({
         state.loading = false;
         state.comments = state.comments.filter(comment => comment.id !== action.payload);
       })
-      // 페이징 처리 매처
       .addMatcher(
         (action) => action.type.endsWith('/fulfilled') && action.payload?.content,
         (state, action: PayloadAction<any>) => {
@@ -296,19 +288,16 @@ const boardSlice = createSlice({
           };
         }
       )
-      // 로딩 상태 시작 매처
       .addMatcher((action) => action.type.endsWith('/pending'), (state) => {
         state.loading = true;
         state.error = null;
       })
-      // 모든 비동기 작업 종료(성공/실패) 시 로딩 해제 매처
       .addMatcher(
         (action) => action.type.endsWith('/fulfilled') || action.type.endsWith('/rejected'),
         (state) => {
           state.loading = false;
         }
       )
-      // 에러 처리 매처
       .addMatcher((action) => action.type.endsWith('/rejected'), (state, action: any) => {
         state.loading = false;
         state.error = action.payload as string;
