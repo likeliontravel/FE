@@ -58,13 +58,15 @@ const LoginForm = () => {
     [dispatch, formData, router]
   );
 
-  const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao') => { 
+  // 구글(google) 프로바이더 허용 타입 추가
+  const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao' | 'google') => { 
     const API_BASE_URL = 'https://api.toleave.cloud'; 
     window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
   }, []);
 
   const handleKakaoLogin = useCallback(() => handleOAuthLogin('kakao'), [handleOAuthLogin]);
   const handleNaverLogin = useCallback(() => handleOAuthLogin('naver'), [handleOAuthLogin]);
+  const handleGoogleLogin = useCallback(() => handleOAuthLogin('google'), [handleOAuthLogin]); // 구글 로그인 핸들러 추가
 
   return (
     <div className={styles.container}>
@@ -107,8 +109,16 @@ const LoginForm = () => {
         <div className={styles.socialLogin}>
           <p>소셜 계정으로 로그인</p>
           <div className={styles.socialButtons}>
-            <button type="button" onClick={handleKakaoLogin}><img src="/imgs/kakao.png" alt="카카오 로그인" className={styles.kakao} /></button>
-            <button type="button" onClick={handleNaverLogin}><img src="/imgs/naver.png" alt="네이버 로그인" className={styles.naver} /></button>
+            <button type="button" onClick={handleKakaoLogin}>
+              <img src="/imgs/kakao.png" alt="카카오 로그인" className={styles.kakao} />
+            </button>
+            <button type="button" onClick={handleNaverLogin}>
+              <img src="/imgs/naver.png" alt="네이버 로그인" className={styles.naver} />
+            </button>
+            {/* 구글 로그인 버튼 추가 */}
+            <button type="button" onClick={handleGoogleLogin}>
+              <img src="/imgs/google.png" alt="구글 로그인" className={styles.google} />
+            </button>
           </div>
         </div>
       </div>

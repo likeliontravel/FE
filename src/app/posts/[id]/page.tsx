@@ -79,7 +79,6 @@ const CommentItem = ({
       )}
       <img src={getProfileImage(comment.commentWriterProfileImageUrl)} alt="프사" className={styles.commentAvatar} />
       <div className={styles.commentBody}>
-        {/* 🔥 백엔드 응답 필드명Fallback 처리: commentWriter 혹은 writer 둘 다 대응 */}
         <span className={styles.commentAuthor}>{comment.commentWriter || comment.writer}</span>
         
         {isEditing ? (
@@ -91,8 +90,7 @@ const CommentItem = ({
             </div>
           </div>
         ) : (
-          /* 🔥 백엔드 응답 필드명Fallback 처리: commentContent 혹은 content 둘 다 대응 */
-          <p className={styles.commentText}>{comment.commentContent || comment.content}</p> 
+          <p className={styles.commentText}>{comment.content}</p> 
         )}
 
         <div className={styles.commentMeta}>
@@ -217,12 +215,35 @@ const PostDetail = () => {
   }, [dispatch, boardId, replyContent, requireLogin]);
 
   const handleEditPost = useCallback(() => router.push(`/postWrite/${boardId}`), [router, boardId]);
-  const handleDeletePost = useCallback(async () => { if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) { try { await dispatch(deleteBoard(boardId)).unwrap(); router.push('/post'); } catch (err) { alert(`삭제 실패: ${err}`); } } }, [dispatch, boardId, router]);
+  
+  // 🔥 보안 강화: 게시글 삭제 시 로그인 여부 및 작성자 본인 일치 검증 추가
+  const handleDeletePost = useCallback(async () => {
+    if (!loggedInUser || !post) {
+      alert('로그인이 필요한 서비스입니다.');
+      router.push('/login');
+      return;
+    }
+
+    const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
+    if (post.writerIdentifier !== myIdentifier) {
+      alert('본인이 작성한 게시글만 삭제할 수 있습니다.');
+      return;
+    }
+
+    if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      try {
+        await dispatch(deleteBoard(boardId)).unwrap();
+        alert('게시글이 삭제되었습니다.');
+        router.push('/post');
+      } catch (err) {
+        alert(`삭제 실패: ${err}`);
+      }
+    }
+  }, [dispatch, boardId, router, loggedInUser, post]);
 
   const handleStartEditComment = useCallback((comment: Comment) => { 
     if (!requireLogin()) return; 
     setEditingCommentId(comment.id); 
-    // 🔥 Fallback 적용: commentContent 혹은 content 둘 다 매핑 가능하게 수정
     setEditingContent(comment.commentContent || comment.content || ''); 
   }, [requireLogin]);
 
@@ -235,12 +256,26 @@ const PostDetail = () => {
     } catch (err) { alert(`수정 실패: ${err}`); }
   }, [dispatch, boardId, editingCommentId, editingContent]);
 
+  // 🔥 보안 강화: 댓글 삭제 요청 전 본인 글 여부 검증 가드 적용
   const handleDeleteComment = useCallback(async (id: number) => {
-    if (confirm('댓글을 삭제하시겠습니까?')) {
-      try { await dispatch(deleteComment(id)).unwrap(); dispatch(fetchComments(boardId)); }
-      catch (err) { alert(`삭제 실패: ${err}`); }
+    const commentToDelete = comments.find(c => c.id === id);
+    if (!commentToDelete) return;
+
+    const myIdentifier = loggedInUser?.userIdentifier || loggedInUser?.email;
+    if (commentToDelete.commentWriterIdentifier !== myIdentifier) {
+      alert('본인이 작성한 댓글만 삭제할 수 있습니다.');
+      return;
     }
-  }, [dispatch, boardId]);
+
+    if (confirm('댓글을 삭제하시겠습니까?')) {
+      try { 
+        await dispatch(deleteComment(id)).unwrap(); 
+        dispatch(fetchComments(boardId)); 
+      } catch (err) { 
+        alert(`삭제 실패: ${err}`); 
+      }
+    }
+  }, [dispatch, boardId, comments, loggedInUser]);
 
   const postBodyContent = useMemo(() => {
     if (!post?.content) return { __html: '' };

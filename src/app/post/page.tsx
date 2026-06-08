@@ -189,7 +189,6 @@ const PostList = () => {
           </main>
 
           <aside className={styles.sidebar}>
-            {/* 🔥 프로필 카드 영역: 기존 디자인 원복 및 본인 프로필 사진 예외 처리 */}
             <div className={styles.profileCard}>
               {loggedInUser && loggedInUser.name ? (
                 <>
@@ -221,7 +220,6 @@ const PostList = () => {
               )}
             </div>
 
-            {/* 🔥 카테고리 필터 영역: 기존 디자인 원복 */}
             <div className={styles.categoryContainer}>
               <div className={styles.categoryTabs}>
                 <button 

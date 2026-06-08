@@ -31,7 +31,7 @@ import MapModal from '../MapModal';
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
 const themeKeywords = ['자연 속에서 힐링', '미식 여행 및 먹방 중심', '체험 및 액티비티', '문화예술 및 역사탐방', '기타'];
 
-// --- HTML 디코딩 함수 (Tiptap 에디터 내 태그 깨짐/노출 방지) ---
+// --- HTML 디코딩 함수 ---
 const decodeHtml = (html: string) => {
   if (typeof window === 'undefined') return html;
   const txt = document.createElement('textarea');
@@ -159,6 +159,20 @@ const DynamicWritePage: React.FC = () => {
     }
   }, [dispatch, id, isEditMode]);
 
+  // 🔥 본인 글 검증 가드 로직 추가
+  useEffect(() => {
+    // 수정 모드이고, 게시글 정보가 로드되었으며, 로그인 상태일 때 대조 검사 실행
+    if (isEditMode && post && loggedInUser) {
+      const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
+      
+      // 작성자의 식별자와 현재 로그인 유저의 식별자가 불일치할 경우 차단
+      if (post.writerIdentifier !== myIdentifier) {
+        alert('본인이 작성한 게시글만 수정할 수 있습니다.');
+        router.replace('/post'); // 게시판 홈으로 추방
+      }
+    }
+  }, [isEditMode, post, loggedInUser, router]);
+
   useEffect(() => {
     if (isEditMode && post && editor) {
       setTitle(post.title);
@@ -205,11 +219,15 @@ const DynamicWritePage: React.FC = () => {
 
     try {
       if (isEditMode && id) {
-        // 수정 요청 발송
+        // 2차 검증: 전송 직전 최종적으로 한번 더 본인 확인 수행
+        const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
+        if (post && post.writerIdentifier !== myIdentifier) {
+          alert('본인 글만 수정할 수 있습니다.');
+          return;
+        }
         await dispatch(updateBoard({ id, ...postData })).unwrap();
         alert('성공적으로 수정되었습니다.');
       } else {
-        // 신규 등록 발송
         await dispatch(createBoard(postData)).unwrap();
         alert('성공적으로 등록되었습니다.');
       }
@@ -217,7 +235,7 @@ const DynamicWritePage: React.FC = () => {
     } catch (err: any) {
       alert(`처리 실패: ${err}`);
     }
-  }, [dispatch, router, title, editor, selectedRegion, selectedTheme, id, isEditMode, loggedInUser]);
+  }, [dispatch, router, title, editor, selectedRegion, selectedTheme, id, isEditMode, loggedInUser, post]);
 
   return (
     <div className={styles.pageContainer}>
