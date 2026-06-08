@@ -56,6 +56,7 @@ const MyPostsPage = () => {
   const { user: loggedInUser, loading: authLoading } = useSelector((state: RootState) => state.auth || {});
   const { posts, loading, error } = useSelector((state: RootState) => state.board || {});
 
+  // 🔥 수정: userIdentifier가 유실되었을 경우를 대비해 email이나 name을 식별자로 대체 사용하여 API 호출 보장
   useEffect(() => {
     if (authLoading) return;
 
@@ -65,17 +66,30 @@ const MyPostsPage = () => {
       return;
     }
 
-    if (loggedInUser.userIdentifier) {
-      dispatch(fetchMyBoards(loggedInUser.userIdentifier));
+    const myId = loggedInUser.userIdentifier || loggedInUser.email || loggedInUser.name;
+    if (myId) {
+      dispatch(fetchMyBoards(myId));
     }
   }, [dispatch, loggedInUser, authLoading, router]);
 
+  // 🔥 2차 방어 필터링: 식별자가 없거나 누락되어 undefined === undefined로 필터가 풀리는 현상을 완벽 차단
   const myFilteredPosts = useMemo(() => {
     if (!posts || !Array.isArray(posts) || !loggedInUser) return [];
     
-    // 이메일이나 userIdentifier 둘 중 하나라도 매칭되도록 보강
     const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
-    return posts.filter(post => post.writerIdentifier === myIdentifier);
+    const myName = loggedInUser.name;
+
+    return posts.filter(post => {
+      // 1단계: 작성자 고유 식별자(이메일 또는 ID)가 존재하면 먼저 대조
+      if (post.writerIdentifier && myIdentifier) {
+        return post.writerIdentifier === myIdentifier;
+      }
+      // 2단계: 목록 조회 시 식별자가 누락되어 들어올 경우 이름(writer)으로 최종 가드 적용
+      if (post.writer && myName) {
+        return post.writer === myName;
+      }
+      return false; // 본인 확인이 불가능한 글은 모두 제외
+    });
   }, [posts, loggedInUser]);
 
   const goToPostWrite = useCallback(() => router.push('/postWrite'), [router]);
@@ -98,13 +112,13 @@ const MyPostsPage = () => {
             <div className={styles.postList}>
               {loading && <p>게시글을 불러오는 중...</p>}
               {error && <p>에러: {error}</p>}
-              
               {!loading && !error && myFilteredPosts.map((post: Board) => (
                 <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
                       <h3 className={styles.postTitle}>{post.title}</h3>
                       <div className={styles.postMeta}>
+                          {/* 내 글 목록 내 작성자 프로필 이미지 예외 처리 */}
                           <div 
                             className={styles.authorAvatar} 
                             style={{ backgroundImage: `url(${getProfileImage(post.writerProfileImageUrl)})` }}
@@ -129,6 +143,7 @@ const MyPostsPage = () => {
             <div className={styles.profileCard}>
                 <>
                   <div className={styles.profileHeader}>
+                    {/* 내 글 보기 사이드바 본인 프로필 이미지 예외 처리 */}
                     <Image 
                       src={getProfileImage(loggedInUser.profileImageUrl)} 
                       alt={`${loggedInUser.name}님의 프로필`}

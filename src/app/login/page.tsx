@@ -117,7 +117,7 @@ const LoginForm = () => {
             </button>
             {/* 구글 로그인 버튼 추가 */}
             <button type="button" onClick={handleGoogleLogin}>
-              <img src="/imgs/google.png" alt="구글 로그인" className={styles.google} />
+              <img src="/imgs/google.png" alt="구글 로그인" className={styles.naver} />
             </button>
           </div>
         </div>

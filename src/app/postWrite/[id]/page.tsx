@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../../store/store';
@@ -19,7 +19,7 @@ import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
 import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
+import Color from '@tiptap/extension-color'; // 올바른 Tiptap Color 임포트 유지
 import { Image as ImageExtension } from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'; 
 import Heading from '@tiptap/extension-heading';
@@ -125,7 +125,7 @@ const DynamicWritePage: React.FC = () => {
   const id = params.id ? parseInt(params.id as string, 10) : null;
   const isEditMode = !!id;
 
-  const { user: loggedInUser } = useSelector((state: RootState) => state.auth || {});
+  const { user: loggedInUser, loading: authLoading } = useSelector((state: RootState) => state.auth || {});
   const { loading, post } = useSelector((state: RootState) => state.board || {}); 
   
   const [title, setTitle] = useState('');
@@ -151,7 +151,15 @@ const DynamicWritePage: React.FC = () => {
     },
   });
 
-  // 초기 로딩 (수정 모드일 때 기존 게시글 데이터 불러오기)
+  // 1. 비로그인 자 차단 및 로그인 페이지 우회 리다이렉트
+  useEffect(() => {
+    if (!authLoading && !loggedInUser) {
+      alert('로그인이 필요한 서비스입니다.');
+      router.replace('/login');
+    }
+  }, [loggedInUser, authLoading, router]);
+
+  // 2. 초기 로딩 (수정 모드일 때 기존 게시글 데이터 불러오기)
   useEffect(() => {
     dispatch(clearBoardLoading());
     if (isEditMode && id) {
@@ -159,19 +167,32 @@ const DynamicWritePage: React.FC = () => {
     }
   }, [dispatch, id, isEditMode]);
 
-  // 🔥 본인 글 검증 가드 로직 추가
+  // 🔥 3. 본인 글 검증용 2단계 안심 계산식
+  const isAuthor = useMemo(() => {
+    if (!post || !loggedInUser) return false;
+    const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
+    const myName = loggedInUser.name;
+
+    // 1단계: 고유 식별자가 존재할 경우 비교
+    if (post.writerIdentifier && myIdentifier) {
+      return post.writerIdentifier === myIdentifier;
+    }
+    // 2단계: 목록 조회 시 식별자가 유실되었을 경우 이름으로 최종 방어 가드
+    if (post.writer && myName) {
+      return post.writer === myName;
+    }
+    return false;
+  }, [post, loggedInUser]);
+
+  // 🔥 4. 본인 글 검증 가드 로직 (비정상 진입 시 홈으로 강제 퇴출)
   useEffect(() => {
-    // 수정 모드이고, 게시글 정보가 로드되었으며, 로그인 상태일 때 대조 검사 실행
     if (isEditMode && post && loggedInUser) {
-      const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
-      
-      // 작성자의 식별자와 현재 로그인 유저의 식별자가 불일치할 경우 차단
-      if (post.writerIdentifier !== myIdentifier) {
+      if (!isAuthor) {
         alert('본인이 작성한 게시글만 수정할 수 있습니다.');
         router.replace('/post'); // 게시판 홈으로 추방
       }
     }
-  }, [isEditMode, post, loggedInUser, router]);
+  }, [isEditMode, post, loggedInUser, isAuthor, router]);
 
   useEffect(() => {
     if (isEditMode && post && editor) {
@@ -219,9 +240,8 @@ const DynamicWritePage: React.FC = () => {
 
     try {
       if (isEditMode && id) {
-        // 2차 검증: 전송 직전 최종적으로 한번 더 본인 확인 수행
-        const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
-        if (post && post.writerIdentifier !== myIdentifier) {
+        // 🔥 전송 직전 2단계 최후방 본인 검증 가드
+        if (!isAuthor) {
           alert('본인 글만 수정할 수 있습니다.');
           return;
         }
@@ -235,7 +255,7 @@ const DynamicWritePage: React.FC = () => {
     } catch (err: any) {
       alert(`처리 실패: ${err}`);
     }
-  }, [dispatch, router, title, editor, selectedRegion, selectedTheme, id, isEditMode, loggedInUser, post]);
+  }, [dispatch, router, title, editor, selectedRegion, selectedTheme, id, isEditMode, loggedInUser, isAuthor]);
 
   return (
     <div className={styles.pageContainer}>
