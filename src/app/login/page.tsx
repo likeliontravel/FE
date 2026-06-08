@@ -58,7 +58,6 @@ const LoginForm = () => {
     [dispatch, formData, router]
   );
 
-  // 구글(google) 프로바이더 허용 타입 추가
   const handleOAuthLogin = useCallback((provider: 'naver' | 'kakao' | 'google') => { 
     const API_BASE_URL = 'https://api.toleave.cloud'; 
     window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
@@ -66,7 +65,7 @@ const LoginForm = () => {
 
   const handleKakaoLogin = useCallback(() => handleOAuthLogin('kakao'), [handleOAuthLogin]);
   const handleNaverLogin = useCallback(() => handleOAuthLogin('naver'), [handleOAuthLogin]);
-  const handleGoogleLogin = useCallback(() => handleOAuthLogin('google'), [handleOAuthLogin]); // 구글 로그인 핸들러 추가
+  const handleGoogleLogin = useCallback(() => handleOAuthLogin('google'), [handleOAuthLogin]);
 
   return (
     <div className={styles.container}>
@@ -115,9 +114,14 @@ const LoginForm = () => {
             <button type="button" onClick={handleNaverLogin}>
               <img src="/imgs/naver.png" alt="네이버 로그인" className={styles.naver} />
             </button>
-            {/* 구글 로그인 버튼 추가 */}
+            {/* 구글 로그인 버튼 (클래스명 교체 및 인라인 스타일 가드 적용) */}
             <button type="button" onClick={handleGoogleLogin}>
-              <img src="/imgs/google.png" alt="구글 로그인" className={styles.naver} />
+              <img 
+                src="/imgs/google.png" 
+                alt="구글 로그인" 
+                className={styles.google} 
+                style={{ width: '48px', height: '48px', objectFit: 'contain' }} // 카카오/네이버와 동일한 정사각형 규격 강제 고정
+              />
             </button>
           </div>
         </div>
