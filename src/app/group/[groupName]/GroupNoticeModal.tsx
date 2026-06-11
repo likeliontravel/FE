@@ -8,6 +8,7 @@ import {
   clearNotices,
   createGroupNotice,
   fetchGroupNotices,
+  CreateNoticePayload,
 } from "../../../../util/group/groupSlice";
 
 export default function GroupNoticeModal({
@@ -39,16 +40,14 @@ export default function GroupNoticeModal({
     if (loading || !groupName) return;
 
     try {
-      await dispatch(
-        createGroupNotice({
-          groupName: groupName as string,
-          title: title.trim(),
-          content: content.trim(),
-        }),
-      ).unwrap();
+      const payload: CreateNoticePayload = {
+        groupName: groupName as string,
+        title: title.trim(),
+        content: content.trim(),
+      };
 
+      await dispatch(createGroupNotice(payload)).unwrap();
       alert("공지가 성공적으로 생성되었습니다!");
-
       dispatch(fetchGroupNotices(groupName as string));
 
       setTitle("");

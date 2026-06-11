@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../store/store";
-import { createGroup, fetchUserGroups } from "../../../util/group/groupSlice";
+import {
+  createGroup,
+  fetchUserGroups,
+  CreateGroupPayload,
+} from "../../../util/group/groupSlice";
 import style from "../../../styles/group/groupPage.module.scss";
 
 export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
@@ -21,15 +25,13 @@ export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
     try {
       setIsSubmitting(true);
 
-      await dispatch(
-        createGroup({
-          groupName: groupName.trim(),
-          description: description.trim(),
-        })
-      ).unwrap();
+      const payload: CreateGroupPayload = {
+        groupName: groupName.trim(),
+        description: description.trim(),
+      };
 
+      await dispatch(createGroup(payload)).unwrap();
       alert("그룹이 성공적으로 생성되었습니다!");
-
       dispatch(fetchUserGroups());
 
       onClose();
