@@ -164,7 +164,17 @@ const PostList = () => {
                 <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
-                      <h3 className={styles.postTitle}>{post.title}</h3>
+                      {/* 🔥 수정: 제목 영역에 '지역'과 '테마' 배지를 인라인 스타일로 깔끔하게 나열 */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                        <h3 className={styles.postTitle} style={{ margin: 0, lineHeight: '1.2' }}>{post.title}</h3>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', backgroundColor: '#eef2f3', color: '#555', whiteSpace: 'nowrap' }}>
+                          {post.region}
+                        </span>
+                        <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', backgroundColor: '#eef3fe', color: '#3a7bd5', whiteSpace: 'nowrap' }}>
+                          {post.theme}
+                        </span>
+                      </div>
+                      
                       <div className={styles.postMeta}>
                           {/* 1. 게시글 목록 작성자 프로필 예외 처리 (배경 이미지 방식) */}
                           <div 
@@ -189,6 +199,7 @@ const PostList = () => {
           </main>
 
           <aside className={styles.sidebar}>
+            {/* 🔥 프로필 카드 영역 */}
             <div className={styles.profileCard}>
               {loggedInUser && loggedInUser.name ? (
                 <>
@@ -220,6 +231,7 @@ const PostList = () => {
               )}
             </div>
 
+            {/* 🔥 카테고리 필터 영역 */}
             <div className={styles.categoryContainer}>
               <div className={styles.categoryTabs}>
                 <button 

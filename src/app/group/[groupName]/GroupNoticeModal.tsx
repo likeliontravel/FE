@@ -8,8 +8,13 @@ import {
   clearNotices,
   createGroupNotice,
   fetchGroupNotices,
-  CreateNoticePayload,
 } from "../../../../util/group/groupSlice";
+
+export interface CreateNoticePayload {
+  groupName: string;
+  title: string;
+  content: string;
+}
 
 export default function GroupNoticeModal({
   onClose,

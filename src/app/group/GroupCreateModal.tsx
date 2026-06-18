@@ -6,9 +6,13 @@ import { AppDispatch } from "../../../store/store";
 import {
   createGroup,
   fetchUserGroups,
-  CreateGroupPayload,
 } from "../../../util/group/groupSlice";
 import style from "../../../styles/group/groupPage.module.scss";
+
+export interface CreateGroupPayload {
+  groupName: string;
+  description?: string;
+}
 
 export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
   const dispatch = useDispatch<AppDispatch>();

@@ -280,8 +280,9 @@ const authSlice = createSlice({
       .addCase(uploadProfileImage.fulfilled, (state, action: PayloadAction<string>) => {
         if (state.user) state.user.profileImageUrl = action.payload;
       })
+      // 🔥 격리 조치: 오직 "auth/"로 시작하는 액션들만 로딩 및 상태를 제어하도록 제한
       .addMatcher(
-        (action) => action.type.endsWith("/pending"),
+        (action) => action.type.startsWith("auth/") && action.type.endsWith("/pending"),
         (state) => {
           state.loading = true;
           state.error = null;
@@ -289,13 +290,13 @@ const authSlice = createSlice({
         }
       )
       .addMatcher(
-        (action) => action.type.endsWith("/fulfilled"),
+        (action) => action.type.startsWith("auth/") && action.type.endsWith("/fulfilled"),
         (state) => {
           state.loading = false;
         }
       )
       .addMatcher(
-        (action) => action.type.endsWith("/rejected"),
+        (action) => action.type.startsWith("auth/") && action.type.endsWith("/rejected"),
         (state, action: any) => {
           state.loading = false;
           const payload = action.payload;

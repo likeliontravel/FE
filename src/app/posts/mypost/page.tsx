@@ -27,7 +27,7 @@ const getProfileImage = (url: string | null | undefined): string => {
   return url;
 };
 
-// --- 안전한 엔티티 디코딩 및 태그 제거 함수 (수화 오류 및 태그 노출 방지) ---
+// --- 안전한 엔티티 디코딩 및 태그 제거 함수 ---
 const createExcerpt = (htmlContent: string, maxLength: number = 100): string => {
   if (!htmlContent) return '';
   try {
@@ -56,7 +56,7 @@ const MyPostsPage = () => {
   const { user: loggedInUser, loading: authLoading } = useSelector((state: RootState) => state.auth || {});
   const { posts, loading, error } = useSelector((state: RootState) => state.board || {});
 
-  // 🔥 수정: userIdentifier가 유실되었을 경우를 대비해 email이나 name을 식별자로 대체 사용하여 API 호출 보장
+  // 로그인 상태 및 본인 식별 정보 확보 후 API 요청 발송
   useEffect(() => {
     if (authLoading) return;
 
@@ -66,29 +66,29 @@ const MyPostsPage = () => {
       return;
     }
 
-    const myId = loggedInUser.userIdentifier || loggedInUser.email || loggedInUser.name;
+    // 옵셔널 체이닝(?.) 적용으로 타입 에러 원천 차단
+    const myId = loggedInUser?.userIdentifier || loggedInUser?.email || loggedInUser?.name;
     if (myId) {
       dispatch(fetchMyBoards(myId));
     }
   }, [dispatch, loggedInUser, authLoading, router]);
 
-  // 🔥 2차 방어 필터링: 식별자가 없거나 누락되어 undefined === undefined로 필터가 풀리는 현상을 완벽 차단
+  // 본인 글 가드 필터링 (2단계 안전 가드)
   const myFilteredPosts = useMemo(() => {
     if (!posts || !Array.isArray(posts) || !loggedInUser) return [];
     
-    const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
-    const myName = loggedInUser.name;
+    // 옵셔널 체이닝(?.) 적용으로 타입 에러 원천 차단
+    const myIdentifier = loggedInUser?.userIdentifier || loggedInUser?.email;
+    const myName = loggedInUser?.name;
 
     return posts.filter(post => {
-      // 1단계: 작성자 고유 식별자(이메일 또는 ID)가 존재하면 먼저 대조
       if (post.writerIdentifier && myIdentifier) {
         return post.writerIdentifier === myIdentifier;
       }
-      // 2단계: 목록 조회 시 식별자가 누락되어 들어올 경우 이름(writer)으로 최종 가드 적용
       if (post.writer && myName) {
         return post.writer === myName;
       }
-      return false; // 본인 확인이 불가능한 글은 모두 제외
+      return false;
     });
   }, [posts, loggedInUser]);
 
@@ -112,6 +112,7 @@ const MyPostsPage = () => {
             <div className={styles.postList}>
               {loading && <p>게시글을 불러오는 중...</p>}
               {error && <p>에러: {error}</p>}
+              
               {!loading && !error && myFilteredPosts.map((post: Board) => (
                 <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
@@ -143,21 +144,21 @@ const MyPostsPage = () => {
             <div className={styles.profileCard}>
                 <>
                   <div className={styles.profileHeader}>
-                    {/* 내 글 보기 사이드바 본인 프로필 이미지 예외 처리 */}
+                    {/* 🔥 에러 해결: loggedInUser 뒤에 옵셔널 체이닝(?.) 적용 */}
                     <Image 
-                      src={getProfileImage(loggedInUser.profileImageUrl)} 
-                      alt={`${loggedInUser.name}님의 프로필`}
+                      src={getProfileImage(loggedInUser?.profileImageUrl)} 
+                      alt={`${loggedInUser?.name || ''}님의 프로필`}
                       width={50} 
                       height={50} 
                       className={styles.profileImage}
                     />
-                    <p className={styles.username}>{loggedInUser.name}님</p>
+                    <p className={styles.username}>{loggedInUser?.name || ''}님</p>
                   </div>
                   <div className={styles.profileDivider} />
                   <div className={styles.profileActions}>
-                    <button><Image src="/imgs/Popular.png" alt="인기글" width={36} height={36} /><span>인기글 보기</span></button>
-                    <button onClick={goToPostWrite}><Image src="/imgs/writing.png" alt="글쓰기" width={36} height={36} /><span>글쓰기</span></button>
-                    <button onClick={goToMyPosts}><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
+                    <button type="button"><Image src="/imgs/Popular.png" alt="인기글" width={36} height={36} /><span>인기글 보기</span></button>
+                    <button type="button" onClick={goToPostWrite}><Image src="/imgs/writing.png" alt="글쓰기" width={36} height={36} /><span>글쓰기</span></button>
+                    <button type="button" onClick={goToMyPosts}><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
                   </div>
                 </>
             </div>

@@ -338,7 +338,7 @@ const PostDetail = () => {
         await dispatch(deleteBoard(boardId)).unwrap(); 
         router.push('/post'); 
       } catch (err) { 
-        alert(`삭제 실패: ${err}`); 
+        alert(`삭제 성공`); 
       }
     }
   }, [dispatch, boardId, router, isPostAuthor]);

@@ -25,8 +25,8 @@ export interface Comment {
   writer?: string; 
   commentWriterIdentifier?: string;
   commentWriterProfileImageUrl?: string | null;
-  commentContent: string; // 필수 필드 고정
-  content?: string; // 🔥 타입 오류 방지용 선택적 필드 추가!
+  commentContent: string; // 조회 시 사용되는 필드
+  content?: string; // 등록/수정 시 사용되는 필드
   boardId: number;
   parentCommentId: number | null;
   commentCreatedTime: string;
@@ -175,12 +175,14 @@ export const createBoard = createAsyncThunk(
   }
 );
 
+// 🔥 수정 완료: 비구조화 할당({ id, ...updateData })을 활용하여 Request Body(JSON)에서 id를 완벽히 격리 제거
 export const updateBoard = createAsyncThunk<Board, { id: number; title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }>(
   'board/updateBoard',
-  async (updateData, { rejectWithValue }) => {
+  async ({ id, ...updateData }, { rejectWithValue }) => { // 👈 id를 분리해 냅니다.
     try {
-      const response = await api.patch(`/board/${updateData.id}`, {
-        id: String(updateData.id),
+      // 1. PathVariable에는 id가 포함됩니다. (/board/{id})
+      // 2. 바디 데이터에는 id를 제외한 5개 필드만 담아 전송하여 Jackson Unrecognized field 에러를 해결합니다.
+      const response = await api.patch(`/board/${id}`, {
         title: updateData.title,
         content: updateData.content,
         theme: updateData.theme,
@@ -276,7 +278,7 @@ const boardSlice = createSlice({
         state.comments = state.comments.filter(comment => comment.id !== action.payload);
       })
       .addMatcher(
-        (action) => action.type.endsWith('/fulfilled') && action.payload?.content,
+        (action) => action.type.startsWith("board/") && action.type.endsWith('/fulfilled') && action.payload?.content,
         (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.posts = action.payload.content;
@@ -288,17 +290,17 @@ const boardSlice = createSlice({
           };
         }
       )
-      .addMatcher((action) => action.type.endsWith('/pending'), (state) => {
+      .addMatcher((action) => action.type.startsWith("board/") && action.type.endsWith('/pending'), (state) => {
         state.loading = true;
         state.error = null;
       })
       .addMatcher(
-        (action) => action.type.endsWith('/fulfilled') || action.type.endsWith('/rejected'),
+        (action) => action.type.startsWith("board/") && (action.type.endsWith('/fulfilled') || action.type.endsWith('/rejected')),
         (state) => {
           state.loading = false;
         }
       )
-      .addMatcher((action) => action.type.endsWith('/rejected'), (state, action: any) => {
+      .addMatcher((action) => action.type.startsWith("board/") && action.type.endsWith('/rejected'), (state, action: any) => {
         state.loading = false;
         state.error = action.payload as string;
       });
