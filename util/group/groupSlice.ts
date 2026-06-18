@@ -1,3 +1,4 @@
+import { SchedulePlace } from "../schedule/scheduleSlice";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { api } from "../api";
 
@@ -5,7 +6,12 @@ export interface Group {
   id: number;
   groupName: string;
   description?: string;
-  createdTime: string;
+  createdByMemberId: string;
+}
+
+export interface CreateGroupPayload {
+  groupName: string;
+  description?: string;
 }
 
 export interface GroupDetail {
@@ -14,13 +20,13 @@ export interface GroupDetail {
   createdName: string;
   members: any[];
   latestAnnouncement?: any;
+  schedules: GroupSchedule;
 }
 
 export interface GroupSchedule {
-  id: number;
-  title: string;
   startDate: string;
   endDate: string;
+  places: SchedulePlace[];
 }
 
 export interface Notice {
@@ -29,6 +35,12 @@ export interface Notice {
   content: string;
   writerName: string;
   createdTime: string;
+}
+
+export interface CreateNoticePayload {
+  groupName: string;
+  title: string;
+  content: string;
 }
 
 interface GroupState {
@@ -65,12 +77,9 @@ export const fetchUserGroups = createAsyncThunk<Group[]>(
   },
 );
 
-export const createGroup = createAsyncThunk(
+export const createGroup = createAsyncThunk<Group, CreateGroupPayload>(
   "group/createGroup",
-  async (
-    { groupName, description }: { groupName: string; description?: string },
-    { rejectWithValue },
-  ) => {
+  async ({ groupName, description }, { rejectWithValue }) => {
     try {
       const res = await api.post("/group/create", {
         groupName,
@@ -105,23 +114,6 @@ export const fetchGroupDetail = createAsyncThunk<GroupDetail, string>(
       return rejectWithValue(
         err?.response?.data?.message || "그룹 상세 조회 오류",
       );
-    }
-  },
-);
-
-export const fetchGroupSchedule = createAsyncThunk<GroupSchedule[], string>(
-  "group/fetchGroupSchedule",
-  async (groupName, { rejectWithValue }) => {
-    try {
-      const res = await api.get(`/schedule/get/${groupName}`);
-
-      if (!res.data.success) {
-        return rejectWithValue("일정 조회 실패");
-      }
-
-      return res.data.data;
-    } catch (err: any) {
-      return rejectWithValue(err?.response?.data?.message || "일정 조회 오류");
     }
   },
 );
@@ -185,16 +177,9 @@ export const fetchGroupNotices = createAsyncThunk<Notice[], string>(
   },
 );
 
-export const createGroupNotice = createAsyncThunk(
+export const createGroupNotice = createAsyncThunk<Notice, CreateNoticePayload>(
   "group/createGroupNotice",
-  async (
-    {
-      groupName,
-      title,
-      content,
-    }: { groupName: string; title: string; content: string },
-    { rejectWithValue },
-  ) => {
+  async ({ groupName, title, content }, { rejectWithValue }) => {
     try {
       const res = await api.post("/group/announcement/create", {
         groupName,
@@ -274,22 +259,6 @@ const groupSlice = createSlice({
         },
       )
       .addCase(fetchGroupDetail.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-
-      .addCase(fetchGroupSchedule.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(
-        fetchGroupSchedule.fulfilled,
-        (state, action: PayloadAction<GroupSchedule[]>) => {
-          state.loading = false;
-          state.schedule = action.payload;
-        },
-      )
-      .addCase(fetchGroupSchedule.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

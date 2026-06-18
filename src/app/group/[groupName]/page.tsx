@@ -7,13 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   clearGroupDetail,
   fetchGroupDetail,
-  fetchGroupSchedule,
-  fetchUserGroups,
 } from "../../../../util/group/groupSlice";
-import {
-  fetchScheduleDetails,
-  fetchScheduleList,
-} from "../../../../util/schedule/scheduleSlice";
 import style from "../../../../styles/group/groupDetail.module.scss";
 import ScheduleCheck from "../../../../util/schedule/ScheduleCheck";
 import Footer from "@/app/_component/Footer";
@@ -26,10 +20,6 @@ export default function groupDetail() {
   const params = useParams();
   const groupName = params.groupName as string;
   const { groupDetail } = useSelector((state: RootState) => state.group);
-  const groups = useSelector((state: RootState) => state.group.groups);
-  const scheduleList = useSelector(
-    (state: RootState) => state.schedule.scheduleList,
-  );
   const [isModalOpen, setIsModalOpen] = useState<null | "notice" | "invite">(
     null,
   );
@@ -37,10 +27,6 @@ export default function groupDetail() {
   useEffect(() => {
     if (groupName) {
       dispatch(fetchGroupDetail(groupName));
-      dispatch(fetchGroupSchedule(groupName));
-      dispatch(fetchUserGroups());
-      dispatch(fetchScheduleList());
-      dispatch(fetchScheduleDetails(groupName));
     }
     return () => {
       dispatch(clearGroupDetail());
@@ -103,11 +89,7 @@ export default function groupDetail() {
               <UseReactSelect type="calendar" />
               <MiniCalendar />
             </div> */}
-            <ScheduleCheck
-              schedule={scheduleList}
-              groups={groups}
-              groupName={groupName}
-            />
+            <ScheduleCheck groupName={groupName} />
           </div>
         </div>
       )}

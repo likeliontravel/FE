@@ -14,38 +14,47 @@ import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 
 interface ScheduleCheckProps {
-  schedule?: any[];
-  groups?: any[];
   groupName?: string;
 }
 
-const ScheduleCheck = ({
-  schedule = [] as any[],
-  groups = [] as any[],
-  groupName,
-}: ScheduleCheckProps) => {
+const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
   const route = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const mainViewDate = useSelector(
-    (state: RootState) => state.schedule.mainViewDate,
+  const { mainViewDate } = useSelector((state: RootState) => state.schedule);
+  const { groupDetail, groups } = useSelector(
+    (state: RootState) => state.group,
   );
 
   const handleDateClick = (date: Date) => {
     dispatch(setMainViewDate(date));
   };
 
-  const events = useSelector((state: RootState) => state.schedule.events);
-  const currentScheduleInfo = schedule.find((opt) => opt.value === groupName);
+  const currentSchedule = groupDetail?.schedules;
+  const startSchedule = currentSchedule?.startDate;
+  const endSchedule = currentSchedule?.endDate;
+
+  const events = useMemo(() => {
+    if (!currentSchedule?.places) return [];
+    return currentSchedule.places.map((place) => {
+      let cat = place.placeType?.toLowerCase();
+
+      return {
+        id: place.contentId,
+        title: place.title,
+        start: place.visitStart,
+        end: place.visitEnd,
+        category: cat as "restaurant" | "hotel" | "tourist_spot",
+        img: place.img,
+        address: place.address,
+      };
+    });
+  }, [currentSchedule]);
 
   const tripDays = useMemo(() => {
-    if (
-      !currentScheduleInfo?.startSchedule ||
-      !currentScheduleInfo?.endSchedule
-    )
-      return [];
+    if (!startSchedule || !endSchedule) return [];
 
-    const start = dayjs(currentScheduleInfo.startSchedule).startOf("day");
-    const end = dayjs(currentScheduleInfo.endSchedule).startOf("day");
+    const start = dayjs(startSchedule).startOf("day");
+    const end = dayjs(endSchedule).startOf("day");
     const days = [];
 
     let curr = start;
@@ -54,7 +63,7 @@ const ScheduleCheck = ({
       curr = curr.add(1, "day");
     }
     return days;
-  }, [currentScheduleInfo]);
+  }, [startSchedule, endSchedule]);
 
   const viewDay = dayjs(mainViewDate);
   const displayMonth = viewDay.format("M월");
@@ -83,7 +92,7 @@ const ScheduleCheck = ({
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [modalData, setModalData] = useState({
-    groupName: "",
+    groupName: groupName,
     startSchedule: "",
     endSchedule: "",
   });
@@ -117,13 +126,7 @@ const ScheduleCheck = ({
     });
   };
 
-  const hasCurrentGroupSchedule = schedule.some(
-    (opt) => opt.value === groupName,
-  );
-
-  const isScheduleEmpty = groupName
-    ? !hasCurrentGroupSchedule
-    : schedule.filter((opt) => opt.value !== "default").length === 0;
+  const isScheduleEmpty = !currentSchedule;
 
   if (isScheduleEmpty) {
     return (
@@ -221,16 +224,12 @@ const ScheduleCheck = ({
     );
   }
 
-  const currentGroup = groups.find((g) => g.groupName === groupName);
-
-  let regionName = "미정";
-  if (currentScheduleInfo?.label) {
-    regionName = currentScheduleInfo.label.replace(" 여행", "");
-  }
-
-  const creatorName = currentGroup?.createdName || "방장";
-  const extraMembersCount = currentGroup?.members
-    ? currentGroup.members.length - 1
+  const regionName = groupDetail?.description?.includes("여행")
+    ? groupDetail.groupName
+    : "미정";
+  const creatorName = groupDetail?.createdName || "방장";
+  const extraMembersCount = groupDetail?.members
+    ? groupDetail.members.length - 1
     : 0;
 
   const mergedSchedules = useMemo(() => {

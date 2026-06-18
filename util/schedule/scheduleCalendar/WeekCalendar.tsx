@@ -28,8 +28,37 @@ import {
   createScheduleDetail,
   ScheduleOption,
   setMainViewDate,
+  ScheduleDetailBody,
 } from "../../../util/schedule/scheduleSlice";
 import GuideOverlay from "./GuideOverlay";
+
+const REGION_ROWS = [
+  ["서울", "인천", "대전", "대구", "광주"],
+  ["부산", "울산", "경기", "강원", "충북"],
+  ["충남", "세종", "경북", "경남", "전북"],
+  ["전남", "제주", "가평", "양평", "강릉"],
+  ["경주", "전주", "여수", "춘천", "홍천"],
+  ["태안", "통영", "거제", "포항", "안동"],
+];
+
+const THEME_LIST = [
+  "체험 및 액티비티",
+  "자연 속에서 힐링",
+  "열정적인 쇼핑투어",
+  "미식 여행, 먹방 중심",
+  "문화 예술 및 역사 탐방",
+];
+
+const EVENT_COLORS: Record<string, { bg: string; txt: string }> = {
+  restaurant: { bg: "#FF5F92", txt: "#FFFFFF" },
+  touristspot: { bg: "#6FC6F4", txt: "#FFFFFF" },
+  accommodation: { bg: "#C6EE6A", txt: "#333333" },
+};
+
+const getWeekDates = (baseDate: Date) => {
+  const startOfWeek = dayjs(baseDate).startOf("week");
+  return Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, "day"));
+};
 
 interface WeekCalendarProps {
   selectedLocation: string;
@@ -72,17 +101,21 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
       dispatch(fetchScheduleDetails(selectedSchedule.value)).then((action) => {
         if (fetchScheduleDetails.fulfilled.match(action) && action.payload) {
-          const fetchedEvents = action.payload.events;
-          setDbSavedEvents(fetchedEvents);
+          const fetchedPlaces = action.payload.schedulePlaces;
+          const backupEvents = fetchedPlaces.map((place) => ({
+            id: `${place.contentId}-${place.visitStart}`,
+            start: place.visitStart,
+          }));
+          setDbSavedEvents(backupEvents);
 
-          if (!scheduleStartDate && fetchedEvents && fetchedEvents.length > 0) {
-            const sorted = [...fetchedEvents].sort(
+          if (!scheduleStartDate && fetchedPlaces.length > 0) {
+            const sorted = [...fetchedPlaces].sort(
               (a, b) =>
-                new Date(a.visitStart || a.start).getTime() -
-                new Date(b.visitStart || b.start).getTime(),
+                new Date(a.visitStart).getTime() -
+                new Date(b.visitStart).getTime(),
             );
 
-            const firstEventDate = sorted[0].visitStart || sorted[0].start;
+            const firstEventDate = sorted[0].visitStart;
 
             if (firstEventDate) {
               dispatch(setMainViewDate(new Date(firstEventDate)));
@@ -100,77 +133,63 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     return events
       .filter((event) => event.schedule === selectedSchedule.value)
       .map((event) => {
-        let bgColor = "#e2e8f0";
-        let txtColor = "#333333";
-
-        if (event.category === "restaurant") {
-          bgColor = "#FF5F92";
-          txtColor = "#FFFFFF";
-        } else if (event.category === "tourist_spot") {
-          bgColor = "#6FC6F4";
-          txtColor = "#FFFFFF";
-        } else if (event.category === "hotel") {
-          bgColor = "#C6EE6A";
-          txtColor = "#333333";
-        }
-
-        return {
-          ...event,
-          color: bgColor,
-          textColor: txtColor,
+        const colorSet = EVENT_COLORS[event.category || ""] || {
+          bg: "#e2e8f0",
+          txt: "#333333",
         };
+        return { ...event, color: colorSet.bg, textColor: colorSet.txt };
       });
   }, [events, selectedSchedule]);
 
   const pluginsMain = useMemo(() => [timeGridPlugin, interactionPlugin], []);
   const localesArray = useMemo(() => [koLocale], []);
 
-  const handleEventDidMount = useCallback((arg: EventMountArg) => {
-    const start = arg.event.start;
-    if (!start) return;
-
-    const timeStr = dayjs(start).format("HH:mm:00");
-    const dateStr = dayjs(start).format("YYYY-MM-DD");
-
-    const slotLaneEl = document.querySelector(
-      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`,
-    ) as HTMLElement;
-    const slotLabelEl = document.querySelector(
-      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
-    ) as HTMLElement;
-    if (slotLaneEl && slotLabelEl) {
-      slotLaneEl.classList.remove("selected-slot");
-      slotLabelEl.classList.remove("selected-slot");
-
-      slotLaneEl.classList.add("has-event");
-      slotLabelEl.classList.add("has-event");
-
-      const bgColor = arg.event.backgroundColor || "#e6e9ee";
-      slotLaneEl.style.backgroundColor = bgColor;
-      slotLabelEl.style.backgroundColor = bgColor;
-    }
+  const getSlotElements = useCallback((date: Date) => {
+    const timeStr = dayjs(date).format("HH:mm:00");
+    const dateStr = dayjs(date).format("YYYY-MM-DD");
+    return {
+      laneEl: document.querySelector(
+        `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`,
+      ) as HTMLElement | null,
+      labelEl: document.querySelector(
+        `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
+      ) as HTMLElement | null,
+    };
   }, []);
 
-  const handleEventWillUnmount = useCallback((arg: EventMountArg) => {
-    const start = arg.event.start;
-    if (!start) return;
+  const handleEventDidMount = useCallback(
+    (arg: EventMountArg) => {
+      if (!arg.event.start) return;
+      const { laneEl, labelEl } = getSlotElements(arg.event.start);
 
-    const timeStr = dayjs(start).format("HH:mm:00");
-    const dateStr = dayjs(start).format("YYYY-MM-DD");
+      if (laneEl && labelEl) {
+        laneEl.classList.remove("selected-slot");
+        labelEl.classList.remove("selected-slot");
+        laneEl.classList.add("has-event");
+        labelEl.classList.add("has-event");
 
-    const slotLaneEl = document.querySelector(
-      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`,
-    ) as HTMLElement;
-    const slotLabelEl = document.querySelector(
-      `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
-    ) as HTMLElement;
-    if (slotLaneEl && slotLabelEl) {
-      slotLaneEl.classList.remove("has-event", "selected-slot");
-      slotLabelEl.classList.remove("has-event", "selected-slot");
-      slotLaneEl.style.backgroundColor = "";
-      slotLabelEl.style.backgroundColor = "";
-    }
-  }, []);
+        const bgColor = arg.event.backgroundColor || "#e6e9ee";
+        laneEl.style.backgroundColor = bgColor;
+        labelEl.style.backgroundColor = bgColor;
+      }
+    },
+    [getSlotElements],
+  );
+
+  const handleEventWillUnmount = useCallback(
+    (arg: EventMountArg) => {
+      if (!arg.event.start) return;
+      const { laneEl, labelEl } = getSlotElements(arg.event.start);
+
+      if (laneEl && labelEl) {
+        laneEl.classList.remove("has-event", "selected-slot");
+        labelEl.classList.remove("has-event", "selected-slot");
+        laneEl.style.backgroundColor = "";
+        labelEl.style.backgroundColor = "";
+      }
+    },
+    [getSlotElements],
+  );
 
   const handleMainSelect = useCallback(
     (arg: DateClickArg) => {
@@ -179,35 +198,23 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         return;
       }
 
-      dispatch(addSelectedSlot(arg.date));
-      const timeStr = dayjs(arg.date).format("HH:mm:00");
-      const dateStr = dayjs(arg.date).format("YYYY-MM-DD");
-      const slotLaneEl = document.querySelector(
-        `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-lane`,
-      );
-      const slotLabelEl = document.querySelector(
-        `[data-date="${dateStr}"] [data-time="${timeStr}"].fc-timegrid-slot-label`,
-      );
-      if (slotLaneEl && slotLabelEl) {
-        const isSelected = slotLaneEl.classList.contains("selected-slot");
+      const { laneEl, labelEl } = getSlotElements(arg.date);
+
+      if (laneEl && labelEl) {
+        const isSelected = laneEl.classList.contains("selected-slot");
         if (isSelected) {
           dispatch(removeSelectedSlot(arg.date));
-          slotLaneEl.classList.remove("selected-slot");
-          slotLabelEl.classList.remove("selected-slot");
+          laneEl.classList.remove("selected-slot");
+          labelEl.classList.remove("selected-slot");
         } else {
           dispatch(addSelectedSlot(arg.date));
-          slotLaneEl.classList.add("selected-slot");
-          slotLabelEl.classList.add("selected-slot");
+          laneEl.classList.add("selected-slot");
+          labelEl.classList.add("selected-slot");
         }
       }
     },
-    [dispatch, selectedSchedule],
+    [dispatch, selectedSchedule, getSlotElements],
   );
-
-  const getWeekDates = (baseDate: Date) => {
-    const startOfWeek = dayjs(baseDate).startOf("week");
-    return Array.from({ length: 7 }).map((_, i) => startOfWeek.add(i, "day"));
-  };
 
   const weekDates = getWeekDates(new Date(mainViewDate));
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
@@ -340,7 +347,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     };
 
     try {
-      const promises = sortedEvents.map((event) => {
+      const promises: ScheduleDetailBody[] = sortedEvents.map((event) => {
         const startDay = dayjs(event.start).format("YYYY-MM-DD");
 
         if (startDay !== currentDayStr) {
@@ -355,7 +362,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
           contentId: event.id.split("-")[0],
           placeType: typeMap[event.category || ""],
           visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
-          visitedEnd: dayjs(
+          visitEnd: dayjs(
             event.end || dayjs(event.start).add(1, "hour"),
           ).format("YYYY-MM-DDTHH:mm:ss"),
           dayOrder: dayOrder,
@@ -463,306 +470,36 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
           <div className={styles.locate}>
             <table>
               <tbody>
-                <tr>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "서울" ? styles.selected : ""
-                    }
-                  >
-                    서울
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "인천" ? styles.selected : ""
-                    }
-                  >
-                    인천
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "대전" ? styles.selected : ""
-                    }
-                  >
-                    대전
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "대구" ? styles.selected : ""
-                    }
-                  >
-                    대구
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "광주" ? styles.selected : ""
-                    }
-                  >
-                    광주
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "부산" ? styles.selected : ""
-                    }
-                  >
-                    부산
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "울산" ? styles.selected : ""
-                    }
-                  >
-                    울산
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "경기" ? styles.selected : ""
-                    }
-                  >
-                    경기
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "강원" ? styles.selected : ""
-                    }
-                  >
-                    강원
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "충북" ? styles.selected : ""
-                    }
-                  >
-                    충북
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "충남" ? styles.selected : ""
-                    }
-                  >
-                    충남
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "세종" ? styles.selected : ""
-                    }
-                  >
-                    세종
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "경북" ? styles.selected : ""
-                    }
-                  >
-                    경북
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "경남" ? styles.selected : ""
-                    }
-                  >
-                    경남
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "전북" ? styles.selected : ""
-                    }
-                  >
-                    전북
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "전남" ? styles.selected : ""
-                    }
-                  >
-                    전남
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "제주" ? styles.selected : ""
-                    }
-                  >
-                    제주
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "가평" ? styles.selected : ""
-                    }
-                  >
-                    가평
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "양평" ? styles.selected : ""
-                    }
-                  >
-                    양평
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "강릉" ? styles.selected : ""
-                    }
-                  >
-                    강릉
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "경주" ? styles.selected : ""
-                    }
-                  >
-                    경주
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "전주" ? styles.selected : ""
-                    }
-                  >
-                    전주
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "여수" ? styles.selected : ""
-                    }
-                  >
-                    여수
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "춘천" ? styles.selected : ""
-                    }
-                  >
-                    춘천
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "홍천" ? styles.selected : ""
-                    }
-                  >
-                    홍천
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "태안" ? styles.selected : ""
-                    }
-                  >
-                    태안
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "통영" ? styles.selected : ""
-                    }
-                  >
-                    통영
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "거제" ? styles.selected : ""
-                    }
-                  >
-                    거제
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "포항" ? styles.selected : ""
-                    }
-                  >
-                    포항
-                  </td>
-                  <td
-                    onClick={handleLocationClick}
-                    className={
-                      selectedLocation === "안동" ? styles.selected : ""
-                    }
-                  >
-                    안동
-                  </td>
-                </tr>
+                {REGION_ROWS.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {row.map((region) => (
+                      <td
+                        key={region}
+                        onClick={handleLocationClick}
+                        className={
+                          selectedLocation === region ? styles.selected : ""
+                        }
+                      >
+                        {region}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         )}
         {activeTab === "테마" && (
           <div className={styles.theme}>
-            <div
-              onClick={handleThemeClick}
-              className={
-                selectedTheme === "체험 및 액티비티" ? styles.selected : ""
-              }
-            >
-              체험 및 액티비티
-            </div>
-            <div
-              onClick={handleThemeClick}
-              className={
-                selectedTheme === "자연 속에서 힐링" ? styles.selected : ""
-              }
-            >
-              자연 속에서 힐링
-            </div>
-            <div
-              onClick={handleThemeClick}
-              className={
-                selectedTheme === "열정적인 쇼핑투어" ? styles.selected : ""
-              }
-            >
-              열정적인 쇼핑투어
-            </div>
-            <div
-              onClick={handleThemeClick}
-              className={
-                selectedTheme === "미식 여행, 먹방 중심" ? styles.selected : ""
-              }
-            >
-              미식 여행, 먹방 중심
-            </div>
-            <div
-              onClick={handleThemeClick}
-              className={
-                selectedTheme === "문화 예술 및 역사 탐방"
-                  ? styles.selected
-                  : ""
-              }
-            >
-              문화 예술 및 역사 탐방
-            </div>
+            {THEME_LIST.map((theme) => (
+              <div
+                key={theme}
+                onClick={handleThemeClick}
+                className={selectedTheme === theme ? styles.selected : ""}
+              >
+                {theme}
+              </div>
+            ))}
           </div>
         )}
         <div className={styles.create_schedule}>

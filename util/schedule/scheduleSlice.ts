@@ -2,9 +2,6 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { api } from "../api";
 import dayjs from "dayjs";
 
-// ==========================================
-// 1. 타입 및 인터페이스 정의
-// ==========================================
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -25,11 +22,41 @@ export interface ScheduleOption {
   endSchedule?: string;
 }
 
+export interface ScheduleItem {
+  id: string;
+  title: string;
+  address: string;
+  img: string;
+  category: "restaurant" | "hotel" | "tourist_spot";
+  [key: string]: any;
+}
+
+interface ScheduleState {
+  events: CalendarEvent[];
+  mainViewDate: string;
+  selectedSlots: Date[];
+  selectedCalendarSchedule: ScheduleOption;
+  selectedListSchedule: ScheduleOption;
+  currentScheduleId: number | null;
+  scheduleItems: ScheduleItem[];
+  scheduleList: ScheduleOption[];
+  startSchedule: string | null;
+  endSchedule: string | null;
+  loading: boolean;
+  error: string | null;
+}
+
+export interface CreateSchedulePayload {
+  groupName: string;
+  startSchedule: string;
+  endSchedule: string;
+}
+
 export interface ScheduleDetailBody {
   contentId: string;
   placeType: string;
   visitStart: string;
-  visitedEnd: string;
+  visitEnd: string;
   dayOrder: number;
   orderInDay: number;
 }
@@ -37,20 +64,6 @@ export interface ScheduleDetailBody {
 export interface SaveScheduleDetailArgs {
   scheduleId: number;
   body: ScheduleDetailBody[];
-}
-
-export interface ScheduleItem {
-  id: string;
-  title: string;
-  address: string;
-  category: "restaurant" | "hotel" | "tourist_spot";
-  [key: string]: any;
-}
-
-export interface CreateSchedulePayload {
-  groupName: string;
-  startSchedule: string;
-  endSchedule: string;
 }
 
 interface FetchScheduleItemsArgs {
@@ -61,23 +74,25 @@ interface FetchScheduleItemsArgs {
   page: number;
 }
 
-// ==========================================
-// 2. 통합된 State 정의
-// ==========================================
-interface ScheduleState {
-  // Calendar 관련 상태
-  events: CalendarEvent[];
-  mainViewDate: string;
-  selectedSlots: Date[];
-  selectedCalendarSchedule: ScheduleOption;
-  selectedListSchedule: ScheduleOption;
-  currentScheduleId: number | null; // 세부 일정 저장 시 사용할 숫자형 ID 보관소!
+export interface SchedulePlace {
+  id: number;
+  contentId: string;
+  title: string;
+  img: string;
+  address: string;
+  placeType: string;
+  visitStart: string;
+  visitEnd: string;
+  dayOrder: number;
+  orderInDay: number;
+}
 
-  // List 관련 상태
-  scheduleItems: ScheduleItem[];
-  scheduleList: ScheduleOption[];
-  loading: boolean;
-  error: string | null;
+export interface ScheduleDetailResponse {
+  scheduleId: number;
+  startSchedule: string;
+  endSchedule: string;
+  groupName: string;
+  schedulePlaces: SchedulePlace[];
 }
 
 const initialState: ScheduleState = {
@@ -91,65 +106,39 @@ const initialState: ScheduleState = {
     suffix: "D-",
   },
   selectedListSchedule: { value: "restaurant", label: "맛집" },
-  currentScheduleId: null, // 초기값 null
-
+  currentScheduleId: null,
   scheduleItems: [],
   scheduleList: [
     { value: "default", label: "-", prefix: "내일정", suffix: "D-" },
   ],
+  startSchedule: null,
+  endSchedule: null,
   loading: false,
   error: null,
 };
 
-// ==========================================
-// 3. 비동기 Thunk 함수들
-// ==========================================
-
-// [달력] 세부 일정 가져오기 (+ 실제 scheduleId 저장)
-export const fetchScheduleDetails = createAsyncThunk(
-  "schedule/fetchScheduleDetails",
+export const fetchScheduleDetails = createAsyncThunk<
+  ScheduleDetailResponse,
+  string
+>(
+  "group/fetchScheduleDetails",
   async (groupName: string, { rejectWithValue }) => {
     try {
       const res = await api.get(`/schedule/get/${groupName}`);
 
       if (!res.data.success) {
-        return rejectWithValue(res.data.message || "일정 조회 실패");
+        return rejectWithValue("일정 조회 실패");
       }
 
-      const data = res.data.data;
-      const scheduleId = data.scheduleId;
-      const places = data.schedulePlaces || [];
-
-      const mappedEvents = places.map((item: any) => {
-        // 백엔드의 PlaceType을 프론트 카테고리로 매핑
-        let cat = item.placeType?.toLowerCase();
-        if (cat === "accommodation") cat = "hotel";
-        if (cat === "touristspot") cat = "tourist_spot";
-
-        return {
-          id: `${item.contentId}-${item.visitStart}`,
-          title: item.title,
-          start: item.visitStart,
-          end: item.visitedEnd,
-          schedule: groupName,
-          category: cat,
-          img: item.img,
-          address: item.address,
-        };
-      });
-
-      // 이벤트 목록과 실제 숫자 ID를 같이 반환합니다.
-      return { events: mappedEvents, scheduleId };
-    } catch (error: any) {
-      return rejectWithValue(
-        error?.response?.data?.message || "일정 조회 에러",
-      );
+      return res.data.data;
+    } catch (err: any) {
+      return rejectWithValue(err?.response?.data?.message || "일정 조회 오류");
     }
   },
 );
 
-// [리스트] 드롭다운용 일정 목록 가져오기
-export const fetchScheduleList = createAsyncThunk(
+// 드롭다운용 일정 목록
+export const fetchScheduleList = createAsyncThunk<ScheduleOption[], void>(
   "schedule/fetchScheduleList",
   async (_, { rejectWithValue }) => {
     try {
@@ -163,7 +152,7 @@ export const fetchScheduleList = createAsyncThunk(
         (item: any) => item.startSchedule != null,
       );
 
-      const apiOptions = validSchedules.map((item: any) => {
+      return validSchedules.map((item: any) => {
         const today = dayjs().startOf("day");
         const targetDate = dayjs(item.startSchedule).startOf("day");
         const diffDays = targetDate.diff(today, "day");
@@ -184,8 +173,6 @@ export const fetchScheduleList = createAsyncThunk(
           endSchedule: item.endSchedule,
         };
       });
-
-      return apiOptions;
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message || "일정 목록 불러오기 실패",
@@ -203,7 +190,7 @@ const getEndpoint = (category: string) => {
   return map[category] || "touristspots";
 };
 
-// [리스트] 하단 장소 아이템 목록 가져오기
+// 일정 관련 아이템
 export const fetchScheduleItems = createAsyncThunk<
   { items: ScheduleItem[]; page: number },
   FetchScheduleItemsArgs
@@ -229,6 +216,8 @@ export const fetchScheduleItems = createAsyncThunk<
     const items = res.data.data.content.map((item: any) => ({
       ...item,
       id: item.contentId,
+      address: item.address || item.addr,
+      img: item.imageUrl || item.thumbnailImageUrl,
       category: category,
     }));
 
@@ -240,7 +229,7 @@ export const fetchScheduleItems = createAsyncThunk<
   }
 });
 
-// [달력] 새로운 큰 일정 껍데기 생성
+// 일정 생성
 export const createSchedule = createAsyncThunk(
   "schedule/createSchedule",
   async (payload: CreateSchedulePayload, { rejectWithValue }) => {
@@ -257,7 +246,7 @@ export const createSchedule = createAsyncThunk(
   },
 );
 
-// [달력] 세부 장소들 저장하기 (Body + PathVariable 완벽 분리)
+// 세부 일정 저장
 export const createScheduleDetail = createAsyncThunk(
   "schedule/createScheduleDetail",
   async ({ scheduleId, body }: SaveScheduleDetailArgs, { rejectWithValue }) => {
@@ -274,14 +263,10 @@ export const createScheduleDetail = createAsyncThunk(
   },
 );
 
-// ==========================================
-// 4. 통합 Slice 및 Reducers
-// ==========================================
 const scheduleSlice = createSlice({
   name: "schedule",
   initialState,
   reducers: {
-    // 캘린더 관련 동기 액션
     addEvent(state, action: PayloadAction<CalendarEvent>) {
       state.events = state.events.filter(
         (event) => event.start !== action.payload.start,
@@ -317,7 +302,6 @@ const scheduleSlice = createSlice({
     setSelectedListSchedule(state, action: PayloadAction<ScheduleOption>) {
       state.selectedListSchedule = action.payload;
     },
-    // 리스트 관련 동기 액션
     clearScheduleItems: (state) => {
       state.scheduleItems = [];
       state.error = null;
@@ -326,10 +310,29 @@ const scheduleSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // fetchScheduleDetails
-      .addCase(fetchScheduleDetails.fulfilled, (state, action) => {
-        state.events = action.payload.events; // 가공된 캘린더용 데이터
-        state.currentScheduleId = action.payload.scheduleId; // 숫자형 ID 저장!
-      })
+      .addCase(
+        fetchScheduleDetails.fulfilled,
+        (state, action: PayloadAction<ScheduleDetailResponse>) => {
+          const data = action.payload;
+
+          state.events = data.schedulePlaces.map((place) => {
+            let cat = place.placeType?.toLowerCase();
+
+            return {
+              id: place.contentId,
+              title: place.title,
+              start: place.visitStart,
+              end: place.visitEnd,
+              schedule: data.groupName,
+              category: cat as "restaurant" | "hotel" | "tourist_spot",
+              img: place.img,
+              address: place.address,
+            };
+          });
+
+          state.currentScheduleId = data.scheduleId;
+        },
+      )
       .addCase(fetchScheduleDetails.rejected, (state, action) => {
         console.error("일정 조회 실패:", action.payload);
         state.events = [];
