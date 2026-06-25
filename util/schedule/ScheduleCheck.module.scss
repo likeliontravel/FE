@@ -13,6 +13,7 @@
 }
 
 .dateNav {
+  width: 70%;
   display: flex;
   gap: 8px;
   align-items: center;
@@ -32,16 +33,17 @@
 }
 
 .dateDay {
+  width: 20%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 120px;
-  border-radius: 6px;
-  background-color: white;
   button {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 6px;
+    width: 25px;
+    height: 25px;
+    padding: 5px;
+    border-radius: 100%;
+    border: none;
+    cursor: pointer;
   }
 }
 
@@ -105,14 +107,15 @@
   }
 }
 
-.activeTime,
-.inactiveTime {
+.activeTime {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  width: 80%;
+  width: 100%;
   height: 50px;
   border-radius: 8px;
+  color: #5d4037;
+  margin-bottom: 5%;
   .location {
     font-family: Inter;
     font-weight: 600;
@@ -125,17 +128,6 @@
     font-size: 14px;
     line-height: 100%;
   }
-}
-
-.activeTime {
-  background-color: #27abf1;
-  color: white;
-  margin-bottom: 3%;
-}
-
-.inactiveTime {
-  background-color: #afb2b7;
-  color: #c1c4c7;
 }
 
 .cardSection {

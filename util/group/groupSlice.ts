@@ -20,12 +20,12 @@ export interface GroupDetail {
   createdName: string;
   members: any[];
   latestAnnouncement?: any;
-  schedules: GroupSchedule;
+  schedule: GroupSchedule;
 }
 
 export interface GroupSchedule {
-  startDate: string;
-  endDate: string;
+  startSchedule: string;
+  endSchedule: string;
   places: SchedulePlace[];
 }
 
@@ -46,7 +46,7 @@ export interface CreateNoticePayload {
 interface GroupState {
   groups: Group[];
   groupDetail: GroupDetail | null;
-  schedule: GroupSchedule[] | null;
+  schedule: GroupSchedule | null;
   notices: Notice[];
   inviteLink: string | null;
   loading: boolean;

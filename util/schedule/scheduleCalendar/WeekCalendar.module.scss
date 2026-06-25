@@ -99,7 +99,6 @@
   :global(.fc-daygrid-day-frame) {
     @include display_flex-align_items_center-justify_content_center;
     @include font_size-font_weight-line_height(13px, 600, 100%);
-    border-radius: 10px;
     cursor: pointer !important;
   }
 
@@ -134,14 +133,11 @@
   }
 
   :global(.fc-daygrid-day.has-event .fc-daygrid-day-top) {
-    background-color: #007bff;
-    border-radius: 10%;
     color: #fff;
   }
 
   :global(.fc-daygrid-day.in-trip-range .fc-daygrid-day-frame) {
-    background-color: #eef7ff !important;
-    border-radius: 10px;
+    background-color: #007bff !important;
   }
 
   :global(.fc-daygrid-day-events) {

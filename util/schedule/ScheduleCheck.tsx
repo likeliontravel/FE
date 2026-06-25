@@ -7,11 +7,58 @@ import {
   setMainViewDate,
   createSchedule,
 } from "../../util/schedule/scheduleSlice";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ScheduleModal from "./ScheduleModal";
 import styles from "./ScheduleCheck.module.scss";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
+
+const REGION_COLORS = [
+  "#FFD1DC",
+  "#FFB3BA",
+  "#FFDFBA",
+  "#FFFFBA",
+  "#BAFFC9",
+  "#BAE1FF",
+  "#C7CEEA",
+  "#E2F0CB",
+  "#F3B0C3",
+  "#C6DBDA",
+  "#FEE1E8",
+  "#FED7C3",
+  "#F6EAC2",
+  "#ECD5E3",
+  "#D4F0F0",
+  "#8FCACA",
+  "#CCE2CB",
+  "#B6CFB6",
+  "#97C1A9",
+  "#FCB9AA",
+  "#FFDBCC",
+  "#ECEAE4",
+  "#A2E1DB",
+  "#55CBCD",
+  "#FFC4C4",
+  "#FFDAB9",
+  "#E6E6FA",
+  "#D8BFD8",
+  "#F08080",
+  "#FFF0F5",
+  "#E0FFFF",
+  "#F0FFF0",
+  "#F5F5DC",
+  "#FFE4E1",
+  "#FFFACD",
+  "#E6E6FA",
+];
+
+const getRegionColor = (region: string) => {
+  let hash = 0;
+  for (let i = 0; i < region.length; i++) {
+    hash = region.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return REGION_COLORS[(Math.abs(hash) % 997) % REGION_COLORS.length];
+};
 
 interface ScheduleCheckProps {
   groupName?: string;
@@ -25,13 +72,19 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
     (state: RootState) => state.group,
   );
 
-  const handleDateClick = (date: Date) => {
-    dispatch(setMainViewDate(date));
+  const handleDateClick = (dateStr: string) => {
+    dispatch(setMainViewDate(dateStr));
   };
 
-  const currentSchedule = groupDetail?.schedules;
-  const startSchedule = currentSchedule?.startDate;
-  const endSchedule = currentSchedule?.endDate;
+  const currentSchedule = groupDetail?.schedule;
+  const startSchedule = currentSchedule?.startSchedule;
+  const endSchedule = currentSchedule?.endSchedule;
+
+  useEffect(() => {
+    if (startSchedule) {
+      dispatch(setMainViewDate(startSchedule));
+    }
+  }, [startSchedule, dispatch]);
 
   const events = useMemo(() => {
     if (!currentSchedule?.places) return [];
@@ -43,7 +96,7 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
         title: place.title,
         start: place.visitStart,
         end: place.visitEnd,
-        category: cat as "restaurant" | "hotel" | "tourist_spot",
+        category: cat as "restaurant" | "accommodation" | "touristspot",
         img: place.img,
         address: place.address,
       };
@@ -79,13 +132,29 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
       (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
     );
 
-    const uniqueEvents = sorted.filter(
-      (ev, idx, self) =>
-        idx ===
-        self.findIndex((t) => t.title === ev.title && t.start === ev.start),
-    );
+    const mergedEvents: typeof sorted = [];
 
-    return uniqueEvents;
+    for (const ev of sorted) {
+      if (mergedEvents.length === 0) {
+        mergedEvents.push({ ...ev });
+        continue;
+      }
+
+      const lastEv = mergedEvents[mergedEvents.length - 1];
+
+      if (lastEv.title === ev.title) {
+        const lastEnd = dayjs(lastEv.end || dayjs(lastEv.start).add(1, "hour"));
+        const currEnd = dayjs(ev.end || dayjs(ev.start).add(1, "hour"));
+
+        if (currEnd.isAfter(lastEnd)) {
+          lastEv.end = currEnd.format("YYYY-MM-DDTHH:mm:ss");
+        }
+      } else {
+        mergedEvents.push({ ...ev });
+      }
+    }
+
+    return mergedEvents;
   }, [events, viewDay]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -293,7 +362,9 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
                   <button
                     key={idx}
                     className={isSelected ? styles.date : ""}
-                    onClick={() => handleDateClick(day.toDate())}
+                    onClick={() =>
+                      handleDateClick(day.format("YYYY-MM-DDTHH:mm:ss"))
+                    }
                   >
                     {day.format("D")}
                   </button>
@@ -327,14 +398,13 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
           </p>
           <div className={styles.schedule}>
             {mergedSchedules.length > 0 ? (
-              mergedSchedules.map((block, idx) => (
+              mergedSchedules.map((block) => (
                 <div
                   key={block.ids.join("-")}
-                  className={
-                    idx % 2 === 0 ? styles.activeTime : styles.inactiveTime
-                  }
+                  className={styles.activeTime}
+                  style={{ backgroundColor: getRegionColor(block.region) }}
                 >
-                  <span className={styles.location}>📍 {block.region}</span>
+                  <span className={styles.location}>{block.region}</span>
                   <span className={styles.scheduleTime}>
                     {block.start.format("HH:mm")}~{block.end.format("HH:mm")}
                   </span>
@@ -382,9 +452,10 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
           {/* 숙소 */}
           <div className={styles.cardColumn}>
             <h3>숙소 🏨</h3>
-            {dayEvents.filter((e) => e.category === "hotel").length > 0 ? (
+            {dayEvents.filter((e) => e.category === "accommodation").length >
+            0 ? (
               dayEvents
-                .filter((e) => e.category === "hotel")
+                .filter((e) => e.category === "accommodation")
                 .map((item) => (
                   <div key={item.id} className={styles.card}>
                     <img
@@ -413,10 +484,10 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
           {/* 관광지 */}
           <div className={styles.cardColumn}>
             <h3>관광지 🎄</h3>
-            {dayEvents.filter((e) => e.category === "tourist_spot").length >
+            {dayEvents.filter((e) => e.category === "touristspot").length >
             0 ? (
               dayEvents
-                .filter((e) => e.category === "tourist_spot")
+                .filter((e) => e.category === "touristspot")
                 .map((item) => (
                   <div key={item.id} className={styles.card}>
                     <img

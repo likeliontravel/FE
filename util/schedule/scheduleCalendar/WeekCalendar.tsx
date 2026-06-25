@@ -29,6 +29,7 @@ import {
   ScheduleOption,
   setMainViewDate,
   ScheduleDetailBody,
+  updateScheduleDetail,
 } from "../../../util/schedule/scheduleSlice";
 import GuideOverlay from "./GuideOverlay";
 
@@ -96,7 +97,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       const scheduleStartDate = targetSchedule?.startSchedule;
 
       if (scheduleStartDate) {
-        dispatch(setMainViewDate(new Date(scheduleStartDate)));
+        dispatch(setMainViewDate(scheduleStartDate));
       }
 
       dispatch(fetchScheduleDetails(selectedSchedule.value)).then((action) => {
@@ -118,7 +119,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
             const firstEventDate = sorted[0].visitStart;
 
             if (firstEventDate) {
-              dispatch(setMainViewDate(new Date(firstEventDate)));
+              dispatch(setMainViewDate(firstEventDate));
             }
           }
         }
@@ -199,15 +200,16 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       }
 
       const { laneEl, labelEl } = getSlotElements(arg.date);
+      const dateString = arg.date.toISOString();
 
       if (laneEl && labelEl) {
         const isSelected = laneEl.classList.contains("selected-slot");
         if (isSelected) {
-          dispatch(removeSelectedSlot(arg.date));
+          dispatch(removeSelectedSlot(dateString as any));
           laneEl.classList.remove("selected-slot");
           labelEl.classList.remove("selected-slot");
         } else {
-          dispatch(addSelectedSlot(arg.date));
+          dispatch(addSelectedSlot(dateString as any));
           laneEl.classList.add("selected-slot");
           labelEl.classList.add("selected-slot");
         }
@@ -370,15 +372,27 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         };
       });
 
-      const actionResult = await dispatch(
-        createScheduleDetail({ scheduleId, body: promises }),
-      );
+      let actionResult;
+
+      if (selectedSchedule.value !== "default" && dbSavedEvents.length > 0) {
+        actionResult = await dispatch(
+          updateScheduleDetail({ scheduleId, body: promises }),
+        );
+      } else {
+        actionResult = await dispatch(
+          createScheduleDetail({ scheduleId, body: promises }),
+        );
+      }
 
       if (createScheduleDetail.fulfilled.match(actionResult)) {
-        alert("모든 세부 일정이 성공적으로 저장되었습니다!");
+        alert(
+          selectedSchedule.value !== "default" && dbSavedEvents.length > 0
+            ? "일정이 성공적으로 수정되었습니다!"
+            : "모든 세부 일정이 성공적으로 저장되었습니다!",
+        );
         setDbSavedEvents((prev) => [...prev, ...newEventsToSave]);
       } else {
-        alert(`저장 실패: ${actionResult.payload}`);
+        alert(`저장/수정 실패: ${actionResult.payload}`);
       }
     } catch (error) {
       console.error("세부 일정 저장 에러:", error);
@@ -503,7 +517,11 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
           </div>
         )}
         <div className={styles.create_schedule}>
-          <p onClick={handleSaveDetails}>일정 저장하기</p>
+          <p onClick={handleSaveDetails}>
+            {selectedSchedule.value !== "default"
+              ? "일정 수정하기"
+              : "일정 저장하기"}
+          </p>
         </div>
 
         {/* <div onClick={() => setShowGuide(true)} className={styles.ai_schedule}>

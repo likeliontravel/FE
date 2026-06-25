@@ -25,7 +25,10 @@ const MiniCalendar: React.FC = () => {
   const localesArray = useMemo(() => [koLocale], []);
 
   const handleSelect = useCallback(
-    (arg: DateSelectArg) => dispatch(setMainViewDate(arg.start)),
+    (arg: DateSelectArg) => {
+      const dateStr = dayjs(arg.start).format("YYYY-MM-DDTHH:mm:ss");
+      dispatch(setMainViewDate(dateStr));
+    },
     [dispatch],
   );
 

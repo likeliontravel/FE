@@ -34,7 +34,7 @@ export interface ScheduleItem {
 interface ScheduleState {
   events: CalendarEvent[];
   mainViewDate: string;
-  selectedSlots: Date[];
+  selectedSlots: string[];
   selectedCalendarSchedule: ScheduleOption;
   selectedListSchedule: ScheduleOption;
   currentScheduleId: number | null;
@@ -62,6 +62,11 @@ export interface ScheduleDetailBody {
 }
 
 export interface SaveScheduleDetailArgs {
+  scheduleId: number;
+  body: ScheduleDetailBody[];
+}
+
+export interface UpdateScheduleDetailArgs {
   scheduleId: number;
   body: ScheduleDetailBody[];
 }
@@ -263,6 +268,26 @@ export const createScheduleDetail = createAsyncThunk(
   },
 );
 
+// 세부 일정 수정
+export const updateScheduleDetail = createAsyncThunk(
+  "schedule/updateScheduleDetail",
+  async (
+    { scheduleId, body }: UpdateScheduleDetailArgs,
+    { rejectWithValue },
+  ) => {
+    try {
+      const res = await api.put(`/schedule/${scheduleId}`, body);
+      if (!res.data.success)
+        return rejectWithValue(res.data.message || "세부 일정 수정 실패");
+      return res.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "세부 일정 수정 중 오류 발생",
+      );
+    }
+  },
+);
+
 const scheduleSlice = createSlice({
   name: "schedule",
   initialState,
@@ -279,18 +304,14 @@ const scheduleSlice = createSlice({
     setMainViewDate(state, action: PayloadAction<any>) {
       state.mainViewDate = action.payload;
     },
-    addSelectedSlot(state, action: PayloadAction<Date>) {
-      if (
-        !state.selectedSlots.some(
-          (s) => s.getTime() === action.payload.getTime(),
-        )
-      ) {
+    addSelectedSlot(state, action: PayloadAction<string>) {
+      if (!state.selectedSlots.includes(action.payload)) {
         state.selectedSlots.push(action.payload);
       }
     },
-    removeSelectedSlot(state, action: PayloadAction<Date>) {
+    removeSelectedSlot(state, action: PayloadAction<string>) {
       state.selectedSlots = state.selectedSlots.filter(
-        (s) => s.getTime() !== action.payload.getTime(),
+        (s) => s !== action.payload,
       );
     },
     clearSelectedSlots(state) {
