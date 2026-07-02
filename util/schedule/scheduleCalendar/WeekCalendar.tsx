@@ -53,7 +53,7 @@ const THEME_LIST = [
 const EVENT_COLORS: Record<string, { bg: string; txt: string }> = {
   restaurant: { bg: "#FF5F92", txt: "#FFFFFF" },
   touristspot: { bg: "#6FC6F4", txt: "#FFFFFF" },
-  accommodation: { bg: "#C6EE6A", txt: "#333333" },
+  accommodation: { bg: "#C6EE6A", txt: "#5e0e0e" },
 };
 
 const getWeekDates = (baseDate: Date) => {
@@ -104,7 +104,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         if (fetchScheduleDetails.fulfilled.match(action) && action.payload) {
           const fetchedPlaces = action.payload.schedulePlaces;
           const backupEvents = fetchedPlaces.map((place) => ({
-            id: `${place.contentId}-${place.visitStart}`,
+            id: String(place.id),
             start: place.visitStart,
           }));
           setDbSavedEvents(backupEvents);
@@ -183,10 +183,15 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       const { laneEl, labelEl } = getSlotElements(arg.event.start);
 
       if (laneEl && labelEl) {
-        laneEl.classList.remove("has-event", "selected-slot");
-        labelEl.classList.remove("has-event", "selected-slot");
-        laneEl.style.backgroundColor = "";
-        labelEl.style.backgroundColor = "";
+        setTimeout(() => {
+          const remainingEvents = laneEl.querySelectorAll(".fc-event");
+          if (remainingEvents.length === 0) {
+            laneEl.classList.remove("has-event", "selected-slot");
+            labelEl.classList.remove("has-event", "selected-slot");
+            laneEl.style.backgroundColor = "";
+            labelEl.style.backgroundColor = "";
+          }
+        }, 10);
       }
     },
     [getSlotElements],
@@ -200,7 +205,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       }
 
       const { laneEl, labelEl } = getSlotElements(arg.date);
-      const dateString = arg.date.toISOString();
+      const dateString = dayjs(arg.date).format("YYYY-MM-DDTHH:mm:ss");
 
       if (laneEl && labelEl) {
         const isSelected = laneEl.classList.contains("selected-slot");
@@ -361,7 +366,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         }
 
         return {
-          contentId: event.id.split("-")[0],
+          contentId: event.contentId || "",
           placeType: typeMap[event.category || ""],
           visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
           visitEnd: dayjs(

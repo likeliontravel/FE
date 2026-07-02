@@ -39,10 +39,11 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
       const newEvents = selectedSlots.map((slot) => {
         const start = dayjs(slot);
         return {
-          id: `${item.contentId}-${start.toISOString()}`,
+          id: `temp-${Date.now()}-${Math.random()}`,
+          contentId: item.contentId,
           title: item.title,
-          start: start.toISOString(),
-          end: start.add(1, "hour").toISOString(),
+          start: start.format("YYYY-MM-DDTHH:mm:ss"),
+          end: start.add(1, "hour").format("YYYY-MM-DDTHH:mm:ss"),
           schedule: selectedCalendarSchedule.value,
           category: item.category,
         };

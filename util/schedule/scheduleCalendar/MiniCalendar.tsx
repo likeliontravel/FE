@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useRef, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -21,8 +21,16 @@ const MiniCalendar: React.FC = () => {
     (s: RootState) => s.schedule.selectedCalendarSchedule,
   );
 
+  const calendarRef = useRef<FullCalendar>(null);
+
   const pluginMini = useMemo(() => [dayGridPlugin, interactionPlugin], []);
   const localesArray = useMemo(() => [koLocale], []);
+
+  useEffect(() => {
+    if (calendarRef.current && mainViewDate) {
+      calendarRef.current.getApi().gotoDate(mainViewDate);
+    }
+  }, [mainViewDate]);
 
   const handleSelect = useCallback(
     (arg: DateSelectArg) => {
@@ -32,16 +40,16 @@ const MiniCalendar: React.FC = () => {
     [dispatch],
   );
 
-  const filteredEvents = useMemo(
-    () => events.filter((ev) => ev.schedule === selectedCalendarSchedule.value),
-    [events, selectedCalendarSchedule],
-  );
-
   const currentTrip = useMemo(() => {
     return scheduleList.find(
       (opt) => opt.value === selectedCalendarSchedule.value,
     );
   }, [scheduleList, selectedCalendarSchedule.value]);
+
+  const filteredEvents = useMemo(
+    () => events.filter((ev) => ev.schedule === selectedCalendarSchedule.value),
+    [events, selectedCalendarSchedule],
+  );
 
   const dayCellClassNames = useCallback(
     (arg: any) => {
@@ -74,6 +82,7 @@ const MiniCalendar: React.FC = () => {
   return (
     <div className={styles.miniCalendar}>
       <FullCalendar
+        ref={calendarRef}
         plugins={pluginMini}
         initialView="dayGridMonth"
         initialDate={mainViewDate}

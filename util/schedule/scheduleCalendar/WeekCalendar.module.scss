@@ -140,6 +140,10 @@
     background-color: #007bff !important;
   }
 
+  :global(.fc-daygrid-day.has-event:not(.in-trip-range) .fc-daygrid-day-top) {
+    color: #007bff;
+  }
+
   :global(.fc-daygrid-day-events) {
     display: none;
   }

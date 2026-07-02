@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 
 export interface CalendarEvent {
   id: string;
+  contentId?: string;
   title: string;
   start: string;
   end?: string;
@@ -293,9 +294,6 @@ const scheduleSlice = createSlice({
   initialState,
   reducers: {
     addEvent(state, action: PayloadAction<CalendarEvent>) {
-      state.events = state.events.filter(
-        (event) => event.start !== action.payload.start,
-      );
       state.events.push(action.payload);
     },
     setEvents(state, action: PayloadAction<CalendarEvent[]>) {
@@ -340,7 +338,8 @@ const scheduleSlice = createSlice({
             let cat = place.placeType?.toLowerCase();
 
             return {
-              id: place.contentId,
+              id: String(place.id),
+              contentId: place.contentId,
               title: place.title,
               start: place.visitStart,
               end: place.visitEnd,
