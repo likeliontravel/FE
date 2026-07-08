@@ -89,14 +89,12 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
   const events = useMemo(() => {
     if (!currentSchedule?.places) return [];
     return currentSchedule.places.map((place) => {
-      let cat = place.placeType?.toLowerCase();
-
       return {
         id: place.contentId,
         title: place.title,
         start: place.visitStart,
-        end: place.visitEnd,
-        category: cat as "restaurant" | "accommodation" | "touristspot",
+        end: place.visitedEnd,
+        category: place.placeType,
         img: place.img,
         address: place.address,
       };
@@ -423,9 +421,9 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
           {/* 맛집 */}
           <div className={styles.cardColumn}>
             <h3>맛집 🍜</h3>
-            {dayEvents.filter((e) => e.category === "restaurant").length > 0 ? (
+            {dayEvents.filter((e) => e.category === "RESTAURANT").length > 0 ? (
               dayEvents
-                .filter((e) => e.category === "restaurant")
+                .filter((e) => e.category === "RESTAURANT")
                 .map((item) => (
                   <div key={item.id} className={styles.card}>
                     <img
@@ -452,10 +450,10 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
           {/* 숙소 */}
           <div className={styles.cardColumn}>
             <h3>숙소 🏨</h3>
-            {dayEvents.filter((e) => e.category === "accommodation").length >
+            {dayEvents.filter((e) => e.category === "ACCOMMODATION").length >
             0 ? (
               dayEvents
-                .filter((e) => e.category === "accommodation")
+                .filter((e) => e.category === "ACCOMMODATION")
                 .map((item) => (
                   <div key={item.id} className={styles.card}>
                     <img
@@ -484,10 +482,10 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
           {/* 관광지 */}
           <div className={styles.cardColumn}>
             <h3>관광지 🎄</h3>
-            {dayEvents.filter((e) => e.category === "touristspot").length >
+            {dayEvents.filter((e) => e.category === "TOURISTSPOT").length >
             0 ? (
               dayEvents
-                .filter((e) => e.category === "touristspot")
+                .filter((e) => e.category === "TOURISTSPOT")
                 .map((item) => (
                   <div key={item.id} className={styles.card}>
                     <img

@@ -9,7 +9,7 @@ export interface CalendarEvent {
   start: string;
   end?: string;
   schedule?: string;
-  category?: "restaurant" | "hotel" | "tourist_spot";
+  category?: "RESTAURANT" | "ACCOMMODATION" | "TOURISTSPOT";
   img?: string;
   address?: string;
 }
@@ -28,7 +28,7 @@ export interface ScheduleItem {
   title: string;
   address: string;
   img: string;
-  category: "restaurant" | "hotel" | "tourist_spot";
+  category: "RESTAURANT" | "ACCOMMODATION" | "TOURISTSPOT";
   [key: string]: any;
 }
 
@@ -54,10 +54,11 @@ export interface CreateSchedulePayload {
 }
 
 export interface ScheduleDetailBody {
+  schedulePlaceId?: number | null;
   contentId: string;
   placeType: string;
   visitStart: string;
-  visitEnd: string;
+  visitedEnd: string;
   dayOrder: number;
   orderInDay: number;
 }
@@ -88,7 +89,7 @@ export interface SchedulePlace {
   address: string;
   placeType: string;
   visitStart: string;
-  visitEnd: string;
+  visitedEnd: string;
   dayOrder: number;
   orderInDay: number;
 }
@@ -111,7 +112,7 @@ const initialState: ScheduleState = {
     prefix: "내일정",
     suffix: "D-",
   },
-  selectedListSchedule: { value: "restaurant", label: "맛집" },
+  selectedListSchedule: { value: "restaurants", label: "맛집" },
   currentScheduleId: null,
   scheduleItems: [],
   scheduleList: [
@@ -172,7 +173,9 @@ export const fetchScheduleList = createAsyncThunk<ScheduleOption[], void>(
 
         return {
           value: item.groupName,
-          label: `${item.scheduleFirstRegion} 여행`,
+          label: item.scheduleFirstRegion
+            ? `${item.scheduleFirstRegion} 여행`
+            : "일정 없음",
           prefix: item.groupName,
           suffix: dDayString,
           startSchedule: item.startSchedule,
@@ -187,15 +190,6 @@ export const fetchScheduleList = createAsyncThunk<ScheduleOption[], void>(
   },
 );
 
-const getEndpoint = (category: string) => {
-  const map: Record<string, string> = {
-    restaurant: "restaurants",
-    hotel: "accommodations",
-    tourist_spot: "touristspots",
-  };
-  return map[category] || "touristspots";
-};
-
 // 일정 관련 아이템
 export const fetchScheduleItems = createAsyncThunk<
   { items: ScheduleItem[]; page: number },
@@ -203,11 +197,11 @@ export const fetchScheduleItems = createAsyncThunk<
 >("schedule/fetchScheduleItems", async (args, { rejectWithValue }) => {
   try {
     const { category, location, theme, keyword, page } = args;
-    const endpoint = getEndpoint(category);
+    const endpoint = category;
 
     const params = new URLSearchParams();
     if (location) params.append("regions", location);
-    if (theme && category === "tourist_spot") params.append("themes", theme);
+    if (theme && category === "touristspots") params.append("themes", theme);
     if (keyword?.trim()) params.append("keyword", keyword.trim());
 
     params.append("page", page.toString());
@@ -277,7 +271,9 @@ export const updateScheduleDetail = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const res = await api.put(`/schedule/${scheduleId}`, body);
+      const res = await api.put(`/schedule/detail/${scheduleId}`, {
+        schedulePlaces: body,
+      });
       if (!res.data.success)
         return rejectWithValue(res.data.message || "세부 일정 수정 실패");
       return res.data.data;
@@ -335,16 +331,17 @@ const scheduleSlice = createSlice({
           const data = action.payload;
 
           state.events = data.schedulePlaces.map((place) => {
-            let cat = place.placeType?.toLowerCase();
-
             return {
               id: String(place.id),
               contentId: place.contentId,
               title: place.title,
               start: place.visitStart,
-              end: place.visitEnd,
+              end: place.visitedEnd,
               schedule: data.groupName,
-              category: cat as "restaurant" | "hotel" | "tourist_spot",
+              category: place.placeType as
+                | "RESTAURANT"
+                | "ACCOMMODATION"
+                | "TOURISTSPOT",
               img: place.img,
               address: place.address,
             };

@@ -51,9 +51,9 @@ const THEME_LIST = [
 ];
 
 const EVENT_COLORS: Record<string, { bg: string; txt: string }> = {
-  restaurant: { bg: "#FF5F92", txt: "#FFFFFF" },
-  touristspot: { bg: "#6FC6F4", txt: "#FFFFFF" },
-  accommodation: { bg: "#C6EE6A", txt: "#5e0e0e" },
+  RESTAURANT: { bg: "#FF5F92", txt: "#FFFFFF" },
+  TOURISTSPOT: { bg: "#6FC6F4", txt: "#FFFFFF" },
+  ACCOMMODATION: { bg: "#C6EE6A", txt: "#5e0e0e" },
 };
 
 const getWeekDates = (baseDate: Date) => {
@@ -184,14 +184,17 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
       if (laneEl && labelEl) {
         setTimeout(() => {
-          const remainingEvents = laneEl.querySelectorAll(".fc-event");
-          if (remainingEvents.length === 0) {
+          const allEvents = arg.view.calendar.getEvents();
+          const hasEventInSlot = allEvents.some(
+            (e) => e.start?.getTime() === arg.event.start?.getTime(),
+          );
+          if (!hasEventInSlot) {
             laneEl.classList.remove("has-event", "selected-slot");
             labelEl.classList.remove("has-event", "selected-slot");
             laneEl.style.backgroundColor = "";
             labelEl.style.backgroundColor = "";
           }
-        }, 10);
+        }, 50);
       }
     },
     [getSlotElements],
@@ -327,19 +330,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     }
     const scheduleId = currentScheduleId;
 
-    const newEventsToSave = filteredEvents.filter((currentEv) => {
-      const isAlreadySaved = dbSavedEvents.some(
-        (dbEv) => dbEv.id === currentEv.id && dbEv.start === currentEv.start,
-      );
-      return !isAlreadySaved;
-    });
-
-    if (newEventsToSave.length === 0) {
-      alert("새로 추가되거나 변경된 일정이 없습니다.");
-      return;
-    }
-
-    const sortedEvents = [...newEventsToSave].sort(
+    const sortedEvents = [...filteredEvents].sort(
       (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
     );
 
@@ -348,9 +339,9 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     let orderInDay = 0;
 
     const typeMap: Record<string, string> = {
-      restaurant: "RESTAURANT",
-      hotel: "ACCOMMODATION",
-      tourist_spot: "TOURISTSPOT",
+      RESTAURANT: "RESTAURANT",
+      ACCOMMODATION: "ACCOMMODATION",
+      TOURISTSPOT: "TOURISTSPOT",
     };
 
     try {
@@ -365,11 +356,15 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
           orderInDay += 1;
         }
 
+        const isNewEvent = isNaN(Number(event.id));
+        const schedulePlaceId = isNewEvent ? null : Number(event.id);
+
         return {
+          schedulePlaceId: schedulePlaceId,
           contentId: event.contentId || "",
           placeType: typeMap[event.category || ""],
           visitStart: dayjs(event.start).format("YYYY-MM-DDTHH:mm:ss"),
-          visitEnd: dayjs(
+          visitedEnd: dayjs(
             event.end || dayjs(event.start).add(1, "hour"),
           ).format("YYYY-MM-DDTHH:mm:ss"),
           dayOrder: dayOrder,
@@ -378,8 +373,10 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       });
 
       let actionResult;
+      const isUpdate =
+        selectedSchedule.value !== "default" && dbSavedEvents.length > 0;
 
-      if (selectedSchedule.value !== "default" && dbSavedEvents.length > 0) {
+      if (isUpdate) {
         actionResult = await dispatch(
           updateScheduleDetail({ scheduleId, body: promises }),
         );
@@ -389,15 +386,19 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         );
       }
 
-      if (createScheduleDetail.fulfilled.match(actionResult)) {
+      const isSuccess = isUpdate
+        ? updateScheduleDetail.fulfilled.match(actionResult)
+        : createScheduleDetail.fulfilled.match(actionResult);
+
+      if (isSuccess) {
         alert(
-          selectedSchedule.value !== "default" && dbSavedEvents.length > 0
+          isUpdate
             ? "일정이 성공적으로 수정되었습니다!"
             : "모든 세부 일정이 성공적으로 저장되었습니다!",
         );
-        setDbSavedEvents((prev) => [...prev, ...newEventsToSave]);
+        dispatch(fetchScheduleDetails(selectedSchedule.value));
       } else {
-        alert(`저장/수정 실패: ${actionResult.payload}`);
+        alert(`저장/수정 실패: ${actionResult.payload || "알 수 없는 오류"}`);
       }
     } catch (error) {
       console.error("세부 일정 저장 에러:", error);

@@ -15,7 +15,6 @@
 
   :global(.custom-select-list__control) {
     @include width-height(90px, 28px);
-    background-color: #ff9ebf !important;
     border: none !important;
     box-shadow: none !important;
   }
@@ -52,37 +51,24 @@
       transform: translateY(0);
     }
   }
-
-  /* 옵션(Option) 관련 */
-  :global(.custom-select-calendar__option),
-  :global(.custom-select-list__option) {
-    transition:
-      background-color 500ms ease,
-      border-radius 500ms ease;
-  }
-
+  // 옵션 스타일
   :global(.custom-select-list__option) {
     @include font_size-font_weight-line_height(14px, 600, 100%);
-    color: black;
-    background-color: #c1c4c7 !important;
+  }
+  :global(.custom-select-list__menu-list),
+  :global(.custom-select-calendar__menu-list) {
+    padding: 0 !important;
   }
 
-  :global(.custom-select-calendar__option:hover) {
-    background-color: #e6e9ee !important;
+  :global(.custom-select-list__menu),
+  :global(.custom-select-calendar__menu) {
+    overflow: hidden !important;
     border-radius: 4px;
-    cursor: pointer !important;
   }
 
-  :global(.custom-select-list__option:hover) {
-    background-color: #27abf1 !important;
-    color: #fff !important;
-    border-radius: 4px;
-    cursor: pointer !important;
-  }
-
-  :global(.custom-select-calendar__option--is-focused),
-  :global(.custom-select-list__option--is-focused) {
-    background-color: transparent !important;
+  :global(.custom-select-list__option),
+  :global(.custom-select-calendar__option) {
+    border-radius: 0 !important;
   }
 }
 
@@ -155,7 +141,6 @@
 
 .show_list_div {
   @include display_flex-align_items_center-justify_content_center;
-  background-color: #ff9ebf;
   border-radius: 4px;
 }
 

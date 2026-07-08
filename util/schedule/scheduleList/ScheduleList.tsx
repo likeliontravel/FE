@@ -36,6 +36,13 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
         alert("먼저 달력에서 시간을 하나 이상 선택하세요.");
         return;
       }
+
+      const categoryMap: Record<string, string> = {
+        restaurants: "RESTAURANT",
+        accommodations: "ACCOMMODATION",
+        touristspots: "TOURISTSPOT",
+      };
+
       const newEvents = selectedSlots.map((slot) => {
         const start = dayjs(slot);
         return {
@@ -45,10 +52,10 @@ const ScheduleListItem: React.FC<{ item: ScheduleItem }> = React.memo(
           start: start.format("YYYY-MM-DDTHH:mm:ss"),
           end: start.add(1, "hour").format("YYYY-MM-DDTHH:mm:ss"),
           schedule: selectedCalendarSchedule.value,
-          category: item.category,
+          category: categoryMap[item.category],
         };
       });
-      newEvents.forEach((ev) => dispatch(addEvent(ev)));
+      newEvents.forEach((ev: any) => dispatch(addEvent(ev)));
       dispatch(clearSelectedSlots());
     }, [dispatch, item, selectedSlots, selectedCalendarSchedule]);
 
@@ -109,7 +116,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
 
     dispatch(
       fetchScheduleItems({
-        category: selectedListSchedule.value, // "restaurant", "hotel", "tourist_spot"
+        category: selectedListSchedule.value, // "restaurants", "accommodations", "touristspots"
         location: selectedLocation,
         theme: selectedTheme,
         keyword: keyword,
