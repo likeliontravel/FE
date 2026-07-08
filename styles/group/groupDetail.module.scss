@@ -30,13 +30,14 @@
 
 .group_detail_top {
   width: 75%;
-  height: 15vh;
+  min-height: 130px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: #d3f0ff;
   padding: 2%;
-  div {
+  .left_info {
+    width: 70%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -56,12 +57,54 @@
       line-height: 100%;
     }
   }
-  p {
-    font-family: Inter;
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 100%;
-    margin-bottom: 5%;
+  .right_actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+
+    .btn_wrapper {
+      display: flex;
+      gap: 8px;
+
+      button {
+        padding: 8px 14px;
+        font-family: Inter;
+        font-weight: 600;
+        font-size: 13px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .edit_desc_btn {
+        background-color: #27abf1;
+        color: white;
+        &:hover {
+          background-color: #1a94db;
+        }
+      }
+
+      .delete_group_btn,
+      .leave_group_btn {
+        background-color: #ff5f92;
+        color: white;
+        &:hover {
+          background-color: #e04477;
+        }
+      }
+    }
+
+    /* 멤버 정보 텍스트 */
+    .member_count {
+      font-family: Inter;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 100%;
+      color: #64748b;
+      margin: 0;
+    }
   }
 }
 
@@ -181,7 +224,7 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 5;
+  z-index: 15;
 }
 
 .modal_content {

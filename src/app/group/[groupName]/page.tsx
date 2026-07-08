@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import {
   clearGroupDetail,
   fetchGroupDetail,
+  updateGroupDescription,
+  deleteGroup,
+  leaveGroup,
 } from "../../../../util/group/groupSlice";
 import style from "../../../../styles/group/groupDetail.module.scss";
 import ScheduleCheck from "../../../../util/schedule/ScheduleCheck";
@@ -18,11 +21,42 @@ import { AppDispatch, RootState } from "../../../../store/store";
 export default function groupDetail() {
   const dispatch = useDispatch<AppDispatch>();
   const params = useParams();
+  const route = useRouter();
   const groupName = params.groupName as string;
+
+  const { user } = useSelector((state: RootState) => state.auth);
   const { groupDetail } = useSelector((state: RootState) => state.group);
   const [isModalOpen, setIsModalOpen] = useState<null | "notice" | "invite">(
     null,
   );
+
+  const isCreator =
+    user && groupDetail ? user.name === groupDetail.createdName : false;
+
+  const handleEditDescriptionClick = async () => {
+    if (!groupDetail) return;
+
+    const newDescription = prompt(
+      "변경할 그룹 설명을 입력해주세요:",
+      groupDetail.description || "",
+    );
+
+    if (newDescription === null) return;
+    if (!newDescription.trim()) {
+      alert("그룹 설명은 한 글자 이상 입력해야 합니다.");
+      return;
+    }
+
+    const actionResult = await dispatch(
+      updateGroupDescription({ groupName, description: newDescription.trim() }),
+    );
+
+    if (updateGroupDescription.fulfilled.match(actionResult)) {
+      alert("그룹 설명이 성공적으로 변경되었습니다.");
+    } else {
+      alert(`설명 변경 실패: ${actionResult.payload}`);
+    }
+  };
 
   useEffect(() => {
     if (groupName) {
@@ -34,19 +68,84 @@ export default function groupDetail() {
   }, [dispatch, groupName]);
   const notice = groupDetail?.latestAnnouncement;
 
+  const handleDeleteGroupClick = async () => {
+    if (
+      !confirm(
+        `정말로 '${groupName}' 그룹을 삭제하시겠습니까?\n이 그룹의 모든 일정과 데이터가 영구 삭제되며 복구할 수 없습니다.`,
+      )
+    ) {
+      return;
+    }
+
+    const actionResult = await dispatch(deleteGroup(groupName));
+
+    if (deleteGroup.fulfilled.match(actionResult)) {
+      alert("그룹이 정상적으로 삭제되었습니다.");
+      route.push("/");
+    } else {
+      alert(`그룹 삭제 실패: ${actionResult.payload}`);
+    }
+  };
+
+  const handleLeaveGroupClick = async () => {
+    if (
+      !confirm(
+        `'${groupName}' 그룹에서 나가시겠습니까?\n나간 이후에는 그룹원들이 다시 초대해 주기 전까지 진입할 수 없습니다.`,
+      )
+    ) {
+      return;
+    }
+
+    const actionResult = await dispatch(leaveGroup(groupName));
+
+    if (leaveGroup.fulfilled.match(actionResult)) {
+      alert("그룹에서 탈출 완료! 안전하게 리다이렉트합니다.");
+      route.push("/");
+    } else {
+      alert(`그룹 나가기 실패: ${actionResult.payload}`);
+    }
+  };
+
   return (
     <>
       {groupDetail && (
         <div className={style.group_detail}>
           <div className={style.group_detail_top}>
-            <div>
+            <div className={style.left_info}>
               <h1>{groupDetail.groupName}</h1>
               <p>{groupDetail.description}</p>
             </div>
-            <p>
-              {groupDetail.createdName} 외 {groupDetail.members.length - 1}명의
-              멤버가 있어요
-            </p>
+            <div className={style.right_actions}>
+              <div className={style.btn_wrapper}>
+                <button
+                  className={style.edit_desc_btn}
+                  onClick={handleEditDescriptionClick}
+                >
+                  그룹설명 변경
+                </button>
+
+                {isCreator ? (
+                  <button
+                    className={style.delete_group_btn}
+                    onClick={handleDeleteGroupClick}
+                  >
+                    그룹 삭제
+                  </button>
+                ) : (
+                  <button
+                    className={style.leave_group_btn}
+                    onClick={handleLeaveGroupClick}
+                  >
+                    그룹 나가기
+                  </button>
+                )}
+              </div>
+
+              <p className={style.member_count}>
+                {groupDetail.createdName} 외 {groupDetail.members.length - 1}
+                명의 멤버가 있어요
+              </p>
+            </div>
           </div>
           <div className={style.group_detail_middle}>
             <div

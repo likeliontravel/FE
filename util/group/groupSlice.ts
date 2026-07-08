@@ -14,6 +14,11 @@ export interface CreateGroupPayload {
   description?: string;
 }
 
+export interface UpdateDescriptionPayload {
+  groupName: string;
+  description: string;
+}
+
 export interface GroupDetail {
   groupName: string;
   description?: string | null;
@@ -94,6 +99,32 @@ export const createGroup = createAsyncThunk<Group, CreateGroupPayload>(
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message || "그룹 생성 오류 발생",
+      );
+    }
+  },
+);
+
+// 그룹 설명 변경
+export const updateGroupDescription = createAsyncThunk<
+  string,
+  UpdateDescriptionPayload
+>(
+  "group/updateGroupDescription",
+  async ({ groupName, description }, { rejectWithValue }) => {
+    try {
+      const res = await api.post("/group/modify/description", {
+        groupName,
+        description,
+      });
+
+      if (!res.data.success) {
+        return rejectWithValue(res.data.message || "그룹 설명 변경 실패");
+      }
+
+      return description;
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "그룹 설명 변경 중 오류 발생",
       );
     }
   },
@@ -198,6 +229,44 @@ export const createGroupNotice = createAsyncThunk<Notice, CreateNoticePayload>(
   },
 );
 
+// 그룹 완전 삭제 API (DELETE /group/delete)
+export const deleteGroup = createAsyncThunk<void, string>(
+  "group/deleteGroup",
+  async (groupName: string, { rejectWithValue }) => {
+    try {
+      const res = await api.delete("/group/delete", {
+        data: { groupName },
+      });
+
+      if (!res.data.success) {
+        return rejectWithValue(res.data.message || "그룹 삭제 실패");
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "그룹 삭제 중 오류 발생",
+      );
+    }
+  },
+);
+
+// 그룹 나가기 API (POST /group/exit)
+export const leaveGroup = createAsyncThunk<void, string>(
+  "group/leaveGroup",
+  async (groupName: string, { rejectWithValue }) => {
+    try {
+      const res = await api.post("/group/exit", { groupName });
+
+      if (!res.data.success) {
+        return rejectWithValue(res.data.message || "그룹 나가기 실패");
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "그룹 나가기 중 오류 발생",
+      );
+    }
+  },
+);
+
 const groupSlice = createSlice({
   name: "group",
   initialState,
@@ -243,6 +312,20 @@ const groupSlice = createSlice({
         state.groups.push(action.payload);
       })
       .addCase(createGroup.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(
+        updateGroupDescription.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.loading = false;
+          if (state.groupDetail) {
+            state.groupDetail.description = action.payload;
+          }
+        },
+      )
+      .addCase(updateGroupDescription.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -321,6 +404,32 @@ const groupSlice = createSlice({
         state.loading = false;
       })
       .addCase(createGroupNotice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(deleteGroup.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteGroup.fulfilled, (state) => {
+        state.loading = false;
+        state.groupDetail = null;
+      })
+      .addCase(deleteGroup.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(leaveGroup.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(leaveGroup.fulfilled, (state) => {
+        state.loading = false;
+        state.groupDetail = null;
+      })
+      .addCase(leaveGroup.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
