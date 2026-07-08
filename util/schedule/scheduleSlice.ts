@@ -246,12 +246,32 @@ export const createSchedule = createAsyncThunk(
   },
 );
 
+// 일정 삭제
+export const deleteSchedule = createAsyncThunk<void, number>(
+  "schedule/deleteSchedule",
+  async (scheduleId: number, { rejectWithValue }) => {
+    try {
+      const res = await api.delete(`/schedule/${scheduleId}`);
+      if (!res.data.success) {
+        return rejectWithValue(res.data.message || "일정 전체 삭제 실패");
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "일정 전체 삭제 중 오류 발생",
+      );
+    }
+  },
+);
+
 // 세부 일정 저장
 export const createScheduleDetail = createAsyncThunk(
   "schedule/createScheduleDetail",
   async ({ scheduleId, body }: SaveScheduleDetailArgs, { rejectWithValue }) => {
     try {
-      const res = await api.post(`/schedule/detail/${scheduleId}`, body);
+      const cleanedBody = body.map(({ schedulePlaceId, ...rest }) => rest);
+      const res = await api.post(`/schedule/detail/${scheduleId}`, {
+        schedulePlaces: cleanedBody,
+      });
       if (!res.data.success)
         return rejectWithValue(res.data.message || "세부 일정 저장 실패");
       return res.data.data;
@@ -280,6 +300,23 @@ export const updateScheduleDetail = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message || "세부 일정 수정 중 오류 발생",
+      );
+    }
+  },
+);
+
+// 세부 일정 삭제 (DELETE)
+export const deleteScheduleDetailAll = createAsyncThunk<void, number>(
+  "schedule/deleteScheduleDetailAll",
+  async (scheduleId: number, { rejectWithValue }) => {
+    try {
+      const res = await api.delete(`/schedule/detail/${scheduleId}`);
+      if (!res.data.success) {
+        return rejectWithValue(res.data.message || "세부 일정 전체 삭제 실패");
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "세부 일정 전체 삭제 중 오류 발생",
       );
     }
   },
@@ -401,6 +438,20 @@ const scheduleSlice = createSlice({
         state.error = action.payload as string;
       })
 
+      // deleteSchedule
+      .addCase(deleteSchedule.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteSchedule.fulfilled, (state) => {
+        state.loading = false;
+        state.currentScheduleId = null; // 스케줄 ID 비우기
+      })
+      .addCase(deleteSchedule.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
       // createScheduleDetail
       .addCase(createScheduleDetail.pending, (state) => {
         state.loading = true;
@@ -410,6 +461,19 @@ const scheduleSlice = createSlice({
         state.loading = false;
       })
       .addCase(createScheduleDetail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // deleteScheduleDetailAll
+      .addCase(deleteScheduleDetailAll.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteScheduleDetailAll.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteScheduleDetailAll.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

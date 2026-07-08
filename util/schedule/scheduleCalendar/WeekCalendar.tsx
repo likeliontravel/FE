@@ -524,7 +524,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         )}
         <div className={styles.create_schedule}>
           <p onClick={handleSaveDetails}>
-            {selectedSchedule.value !== "default"
+            {selectedSchedule.value !== "default" && dbSavedEvents.length > 0
               ? "일정 수정하기"
               : "일정 저장하기"}
           </p>

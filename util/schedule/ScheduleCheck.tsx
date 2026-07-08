@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
 import {
   setMainViewDate,
   createSchedule,
+  deleteSchedule,
 } from "../../util/schedule/scheduleSlice";
 import { useEffect, useMemo, useState } from "react";
 import ScheduleModal from "./ScheduleModal";
@@ -67,7 +67,9 @@ interface ScheduleCheckProps {
 const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
   const route = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { mainViewDate } = useSelector((state: RootState) => state.schedule);
+  const { mainViewDate, currentScheduleId } = useSelector(
+    (state: RootState) => state.schedule,
+  );
   const { groupDetail, groups } = useSelector(
     (state: RootState) => state.group,
   );
@@ -156,6 +158,29 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
   }, [events, viewDay]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleDeleteScheduleClick = async () => {
+    if (!currentScheduleId) {
+      alert("삭제할 일정 ID를 찾을 수 없습니다.");
+      return;
+    }
+
+    if (
+      confirm(
+        "이 그룹의 전체 일정을 삭제하시겠습니까?\n내부 세부 일정을 포함한 모든 데이터가 삭제되며 되돌릴 수 없습니다.",
+      )
+    ) {
+      // 전체 삭제 /schedule/{scheduleId} 호출!
+      const actionResult = await dispatch(deleteSchedule(currentScheduleId));
+
+      if (deleteSchedule.fulfilled.match(actionResult)) {
+        alert("그룹 일정이 성공적으로 완전히 삭제되었습니다!");
+        window.location.reload();
+      } else {
+        alert(`일정 삭제 실패: ${actionResult.payload}`);
+      }
+    }
+  };
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [modalData, setModalData] = useState({
@@ -375,11 +400,14 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
         </div>
         <div className={styles.controls}>
           <button className={styles.btn} onClick={() => setIsModalOpen(true)}>
-            🛠 일정 관리
+            🛠 일정 수정
           </button>
-          <Link href={"/schedule"}>
-            <button className={styles.btn}>📅 타임테이블</button>
-          </Link>
+          <button
+            className={`${styles.btn} ${styles.deleteBtn}`}
+            onClick={handleDeleteScheduleClick}
+          >
+            🗑️ 일정 삭제
+          </button>
         </div>
       </div>
 
