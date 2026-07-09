@@ -127,6 +127,7 @@
   padding: 1%;
   cursor: pointer;
   p {
+    width: 10%;
     background-color: #f83e79;
     color: white;
     font-family: Inter;
@@ -139,7 +140,8 @@
     margin-bottom: 9%;
   }
   .notice {
-    margin-left: 10%;
+    width: 80%;
+    margin-left: 5%;
     h4 {
       color: #2c2d2e;
       font-family: Inter;
@@ -149,6 +151,7 @@
       margin: 0;
     }
     p {
+      width: 100%;
       background: none;
       color: #2c2d2e;
       font-family: Inter;
@@ -157,6 +160,9 @@
       line-height: 26px;
       margin: 0;
       padding: 0;
+      text-align: start;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }
@@ -244,16 +250,17 @@
 
 .modal_top {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
-  width: 100%;
+  width: 90%;
   height: 72px;
+  padding: 0 5%;
   border-bottom: solid 1px #e6e6e6;
   img {
     cursor: pointer;
   }
   h3 {
-    width: 70%;
+    width: 50%;
     font-family: Inter;
     font-weight: 600;
     font-size: 24px;
@@ -268,6 +275,27 @@
     background: none;
     border: none;
     cursor: pointer;
+  }
+}
+
+.top_right_actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .delete_notice_btn {
+    font-family: Inter;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ff5f92;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 

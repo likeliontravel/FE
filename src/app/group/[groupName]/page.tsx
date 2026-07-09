@@ -10,6 +10,7 @@ import {
   updateGroupDescription,
   deleteGroup,
   leaveGroup,
+  fetchLatestGroupNotice,
 } from "../../../../util/group/groupSlice";
 import style from "../../../../styles/group/groupDetail.module.scss";
 import ScheduleCheck from "../../../../util/schedule/ScheduleCheck";
@@ -25,7 +26,9 @@ export default function groupDetail() {
   const groupName = params.groupName as string;
 
   const { user } = useSelector((state: RootState) => state.auth);
-  const { groupDetail } = useSelector((state: RootState) => state.group);
+  const { groupDetail, latestNotice } = useSelector(
+    (state: RootState) => state.group,
+  );
   const [isModalOpen, setIsModalOpen] = useState<null | "notice" | "invite">(
     null,
   );
@@ -61,12 +64,14 @@ export default function groupDetail() {
   useEffect(() => {
     if (groupName) {
       dispatch(fetchGroupDetail(groupName));
+      dispatch(fetchLatestGroupNotice(groupName));
     }
     return () => {
       dispatch(clearGroupDetail());
     };
   }, [dispatch, groupName]);
-  const notice = groupDetail?.latestAnnouncement;
+
+  const notice = latestNotice;
 
   const handleDeleteGroupClick = async () => {
     if (

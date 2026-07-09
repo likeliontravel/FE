@@ -8,6 +8,7 @@ import {
   clearNotices,
   createGroupNotice,
   fetchGroupNotices,
+  deleteGroupNotice,
 } from "../../../../util/group/groupSlice";
 
 export interface CreateNoticePayload {
@@ -24,6 +25,8 @@ export default function GroupNoticeModal({
   groupName: string | string[] | undefined;
 }) {
   const dispatch = useDispatch<AppDispatch>();
+
+  const { user } = useSelector((state: RootState) => state.auth);
   const { notices, loading } = useSelector((state: RootState) => state.group);
   const [selectedNoticeIndex, setSelectedNoticeIndex] = useState<number | null>(
     null,
@@ -53,14 +56,33 @@ export default function GroupNoticeModal({
 
       await dispatch(createGroupNotice(payload)).unwrap();
       alert("공지가 성공적으로 생성되었습니다!");
-      dispatch(fetchGroupNotices(groupName as string));
-
-      setTitle("");
-      setContent("");
-      setIsEditMode(false);
+      window.location.reload();
     } catch (err: any) {
       console.error(err);
       alert(err || "요청 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleDeleteNotice = async (noticeId: number) => {
+    if (!confirm("정말로 이 공지를 삭제하시겠습니까?")) return;
+
+    try {
+      const payload = {
+        id: noticeId,
+        groupName: groupName as string,
+      };
+
+      const actionResult = await dispatch(deleteGroupNotice(payload));
+
+      if (deleteGroupNotice.fulfilled.match(actionResult)) {
+        alert("공지가 성공적으로 삭제되었습니다!");
+        setSelectedNoticeIndex(null);
+        window.location.reload();
+      } else {
+        alert(`공지 삭제 실패: ${actionResult.payload}`);
+      }
+    } catch (err: any) {
+      alert("공지 삭제 중 시스템 오류가 발생했습니다.");
     }
   };
 
@@ -79,7 +101,20 @@ export default function GroupNoticeModal({
                 onClick={() => setSelectedNoticeIndex(null)}
               />
               <h3>그룹 공지</h3>
-              <button onClick={onClose}>×</button>
+
+              <div className={styles.top_right_actions}>
+                {user?.name === notices[selectedNoticeIndex].writerName && (
+                  <button
+                    className={styles.delete_notice_btn}
+                    onClick={() =>
+                      handleDeleteNotice(notices[selectedNoticeIndex].id)
+                    }
+                  >
+                    공지 삭제
+                  </button>
+                )}
+                <button onClick={onClose}>×</button>
+              </div>
             </div>
             <div className={styles.modal_detail}>
               <div>

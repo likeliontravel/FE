@@ -48,11 +48,17 @@ export interface CreateNoticePayload {
   content: string;
 }
 
+export interface DeleteNoticePayload {
+  id: number;
+  groupName: string;
+}
+
 interface GroupState {
   groups: Group[];
   groupDetail: GroupDetail | null;
   schedule: GroupSchedule | null;
   notices: Notice[];
+  latestNotice: Notice | null;
   inviteLink: string | null;
   loading: boolean;
   error: string | null;
@@ -63,6 +69,7 @@ const initialState: GroupState = {
   groupDetail: null,
   schedule: null,
   notices: [],
+  latestNotice: null,
   inviteLink: null,
   loading: false,
   error: null,
@@ -208,6 +215,27 @@ export const fetchGroupNotices = createAsyncThunk<Notice[], string>(
   },
 );
 
+// 최근 공지 단건 조회 API (GET /group/announcement/latestOne)
+export const fetchLatestGroupNotice = createAsyncThunk<Notice, string>(
+  "group/fetchLatestGroupNotice",
+  async (groupName, { rejectWithValue }) => {
+    try {
+      const res = await api.get(
+        `/group/announcement/latestOne?groupName=${groupName}`,
+      );
+      if (res.data.success) {
+        return res.data.data;
+      } else {
+        return rejectWithValue(res.data.message || "최근 공지 조회 실패");
+      }
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message || "최근 공지 조회 에러",
+      );
+    }
+  },
+);
+
 export const createGroupNotice = createAsyncThunk<Notice, CreateNoticePayload>(
   "group/createGroupNotice",
   async ({ groupName, title, content }, { rejectWithValue }) => {
@@ -225,6 +253,26 @@ export const createGroupNotice = createAsyncThunk<Notice, CreateNoticePayload>(
       }
     } catch (err: any) {
       return rejectWithValue(err?.response?.data?.message || "공지 생성 에러");
+    }
+  },
+);
+
+// 💡 그룹 공지 삭제 API (DELETE /group/announcement/delete)
+export const deleteGroupNotice = createAsyncThunk<void, DeleteNoticePayload>(
+  "group/deleteGroupNotice",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await api.delete("/group/announcement/delete", {
+        data: payload,
+      });
+
+      if (!res.data.success) {
+        return rejectWithValue(res.data.message || "공지 삭제 실패");
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "공지 삭제 중 오류 발생",
+      );
     }
   },
 );
@@ -280,6 +328,7 @@ const groupSlice = createSlice({
     clearGroupDetail: (state) => {
       state.groupDetail = null;
       state.schedule = null;
+      state.latestNotice = null;
     },
     clearError: (state) => {
       state.error = null;
@@ -396,6 +445,22 @@ const groupSlice = createSlice({
         state.error = action.payload as string;
       })
 
+      .addCase(fetchLatestGroupNotice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchLatestGroupNotice.fulfilled,
+        (state, action: PayloadAction<Notice>) => {
+          state.loading = false;
+          state.latestNotice = action.payload;
+        },
+      )
+      .addCase(fetchLatestGroupNotice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
       .addCase(createGroupNotice.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -404,6 +469,18 @@ const groupSlice = createSlice({
         state.loading = false;
       })
       .addCase(createGroupNotice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(deleteGroupNotice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteGroupNotice.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(deleteGroupNotice.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
