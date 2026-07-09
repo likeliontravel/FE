@@ -124,8 +124,9 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
   const displayWeek = Math.ceil((viewDay.date() + startOfMonthDay) / 7);
 
   const dayEvents = useMemo(() => {
+    const currentViewDay = dayjs(mainViewDate);
     const filtered = events.filter((event) =>
-      dayjs(event.start).isSame(viewDay, "day"),
+      event.start ? dayjs(event.start).isSame(currentViewDay, "day") : false,
     );
 
     const sorted = filtered.sort(
@@ -316,9 +317,19 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
     );
   }
 
-  const regionName = groupDetail?.description?.includes("여행")
-    ? groupDetail.groupName
-    : "미정";
+  const regionName = useMemo(() => {
+    if (!events || events.length === 0) return "미정";
+
+    const firstPlaceWithAddress = events.find((place) => place.address);
+
+    if (firstPlaceWithAddress) {
+      const parts = firstPlaceWithAddress.address.trim().split(" ");
+      return parts.length >= 2 ? parts[1] : parts[0];
+    }
+
+    return "미정";
+  }, [events]);
+
   const creatorName = groupDetail?.createdName || "방장";
   const extraMembersCount = groupDetail?.members
     ? groupDetail.members.length - 1
@@ -424,9 +435,9 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
           </p>
           <div className={styles.schedule}>
             {mergedSchedules.length > 0 ? (
-              mergedSchedules.map((block) => (
+              mergedSchedules.map((block, idx) => (
                 <div
-                  key={block.ids.join("-")}
+                  key={`${block.ids.join("-")}-${idx}`}
                   className={styles.activeTime}
                   style={{ backgroundColor: getRegionColor(block.region) }}
                 >
@@ -452,8 +463,8 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
             {dayEvents.filter((e) => e.category === "RESTAURANT").length > 0 ? (
               dayEvents
                 .filter((e) => e.category === "RESTAURANT")
-                .map((item) => (
-                  <div key={item.id} className={styles.card}>
+                .map((item, idx) => (
+                  <div key={`${item.id}-${idx}`} className={styles.card}>
                     <img
                       src={item.img || "/imgs/character.png"}
                       alt={item.title}
@@ -482,8 +493,8 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
             0 ? (
               dayEvents
                 .filter((e) => e.category === "ACCOMMODATION")
-                .map((item) => (
-                  <div key={item.id} className={styles.card}>
+                .map((item, idx) => (
+                  <div key={`${item.id}-${idx}`} className={styles.card}>
                     <img
                       src={item.img || "/imgs/character.png"}
                       alt={item.title}
@@ -514,8 +525,8 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
             0 ? (
               dayEvents
                 .filter((e) => e.category === "TOURISTSPOT")
-                .map((item) => (
-                  <div key={item.id} className={styles.card}>
+                .map((item, idx) => (
+                  <div key={`${item.id}-${idx}`} className={styles.card}>
                     <img
                       src={item.img || "/imgs/character.png"}
                       alt={item.title}
