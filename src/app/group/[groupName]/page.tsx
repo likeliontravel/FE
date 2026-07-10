@@ -18,6 +18,7 @@ import Footer from "@/app/_component/Footer";
 import GroupNoticeModal from "./GroupNoticeModal";
 import GroupInviteModal from "./GroupInviteModal";
 import { AppDispatch, RootState } from "../../../../store/store";
+import { fetchScheduleDetails } from "../../../../util/schedule/scheduleSlice";
 
 export default function groupDetail() {
   const dispatch = useDispatch<AppDispatch>();
@@ -65,6 +66,7 @@ export default function groupDetail() {
     if (groupName) {
       dispatch(fetchGroupDetail(groupName));
       dispatch(fetchLatestGroupNotice(groupName));
+      dispatch(fetchScheduleDetails(groupName));
     }
     return () => {
       dispatch(clearGroupDetail());
