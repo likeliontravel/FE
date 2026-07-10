@@ -13,6 +13,9 @@ import styles from "./ScheduleCheck.module.scss";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 
+import DatePicker from "react-datepicker";
+import { ko } from "date-fns/locale/ko";
+
 const REGION_COLORS = [
   "#FFD1DC",
   "#FFB3BA",
@@ -171,7 +174,6 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
         "이 그룹의 전체 일정을 삭제하시겠습니까?\n내부 세부 일정을 포함한 모든 데이터가 삭제되며 되돌릴 수 없습니다.",
       )
     ) {
-      // 전체 삭제 /schedule/{scheduleId} 호출!
       const actionResult = await dispatch(deleteSchedule(currentScheduleId));
 
       if (deleteSchedule.fulfilled.match(actionResult)) {
@@ -184,28 +186,20 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
   };
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [modalData, setModalData] = useState({
-    groupName: groupName,
-    startSchedule: "",
-    endSchedule: "",
-  });
+
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   const handleCreateScheduleSubmit = async () => {
-    if (
-      !modalData.groupName ||
-      !modalData.startSchedule ||
-      !modalData.endSchedule
-    ) {
-      alert("그룹, 시작일, 종료일을 모두 선택해주세요.");
+    if (!startDate || !endDate) {
+      alert("시작일과 종료일을 모두 선택해주세요.");
       return;
     }
 
     const payload = {
-      groupName: modalData.groupName,
-      startSchedule: dayjs(modalData.startSchedule).format(
-        "YYYY-MM-DDTHH:mm:ss",
-      ),
-      endSchedule: dayjs(modalData.endSchedule).format("YYYY-MM-DDTHH:mm:ss"),
+      groupName: groupName as string,
+      startSchedule: dayjs(startDate).format("YYYY-MM-DDTHH:mm:ss"),
+      endSchedule: dayjs(endDate).format("YYYY-MM-DDTHH:mm:ss"),
     };
 
     dispatch(createSchedule(payload)).then((action) => {
@@ -243,60 +237,61 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
         {showCreateModal && (
           <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
-              <h2>일정 생성</h2>
+              <h2>새로운 일정 만들기 🗓️</h2>
+              <p className={styles.modalSubTitle}>
+                <b>{groupName}</b> 그룹의 여행 기간을 설정해주세요.
+              </p>
 
-              <div style={{ marginBottom: "15px" }}>
-                <label>그룹 선택</label>
-                <select
-                  value={modalData.groupName}
-                  onChange={(e) =>
-                    setModalData({ ...modalData, groupName: e.target.value })
-                  }
-                  className={styles.input}
-                >
-                  <option value="">그룹을 선택하세요</option>
-                  {groups.map((g) => (
-                    <option key={g.id} value={g.groupName}>
-                      {g.groupName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={{ marginBottom: "15px" }}>
-                <label>시작 날짜/시간</label>
+              <div className={styles.formGroup}>
+                <label>선택된 그룹</label>
                 <input
-                  type="datetime-local"
-                  value={modalData.startSchedule}
-                  onChange={(e) =>
-                    setModalData({
-                      ...modalData,
-                      startSchedule: e.target.value,
-                    })
-                  }
-                  className={styles.input}
+                  type="text"
+                  value={groupName}
+                  disabled
+                  className={`${styles.input} ${styles.disabledInput}`}
                 />
               </div>
 
-              <div style={{ marginBottom: "20px" }}>
-                <label>종료 날짜/시간</label>
-                <input
-                  type="datetime-local"
-                  value={modalData.endSchedule}
-                  onChange={(e) =>
-                    setModalData({ ...modalData, endSchedule: e.target.value })
-                  }
-                  className={styles.input}
-                />
+              <div className={styles.formGroup}>
+                <label>여행 시작일</label>
+                <div className={styles.datePickerWrapper}>
+                  <DatePicker
+                    selected={startDate}
+                    onChange={(date: any) => setStartDate(date)}
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={30}
+                    timeCaption="시간"
+                    dateFormat="yyyy년 MM월 dd일 HH:mm"
+                    locale={ko}
+                    placeholderText="시작 일시를 선택하세요"
+                    className={styles.dateInput}
+                    autoComplete="off"
+                  />
+                </div>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: "10px",
-                }}
-              >
+              <div className={styles.formGroup}>
+                <label>여행 종료일</label>
+                <div className={styles.datePickerWrapper}>
+                  <DatePicker
+                    selected={endDate}
+                    onChange={(date: any) => setEndDate(date)}
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={30}
+                    timeCaption="시간"
+                    dateFormat="yyyy년 MM월 dd일 HH:mm"
+                    locale={ko}
+                    minDate={startDate || undefined}
+                    placeholderText="종료 일시를 선택하세요"
+                    className={styles.dateInput}
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+
+              <div className={styles.buttonGroup}>
                 <button
                   onClick={() => setShowCreateModal(false)}
                   className={styles.cancelBtn}
