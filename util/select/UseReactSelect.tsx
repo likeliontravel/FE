@@ -13,6 +13,7 @@ import {
   setSelectedCalendarSchedule,
   setSelectedListSchedule,
   ScheduleOption,
+  TypeOption,
 } from "../../util/schedule/scheduleSlice";
 import style from "./Select.module.scss";
 
@@ -30,60 +31,13 @@ const UseReactSelect = ({ type, calendarOptions }: UseReactSelectProps) => {
     (s: RootState) => s.schedule.selectedListSchedule,
   );
 
-  const listOptions = useMemo<ScheduleOption[]>(
+  const listOptions = useMemo<TypeOption[]>(
     () => [
       { value: "restaurants", label: "맛집" },
       { value: "accommodations", label: "숙소" },
       { value: "touristspots", label: "관광지" },
     ],
     [],
-  );
-
-  const { options, customComponents, currentValue, onChangeAction } =
-    useMemo(() => {
-      if (type === "calendar") {
-        return {
-          options: calendarOptions,
-          customComponents: {
-            Option: CalendarOption,
-            SingleValue: CalendarSingleValue,
-          },
-          currentValue: selectedCalendarSchedule,
-          onChangeAction: setSelectedCalendarSchedule,
-        };
-      } else {
-        return {
-          options: listOptions,
-          customComponents: {
-            Option: ListOption,
-            SingleValue: ListSingleValue,
-          },
-          currentValue: selectedListSchedule,
-          onChangeAction: setSelectedListSchedule,
-        };
-      }
-    }, [
-      type,
-      selectedCalendarSchedule,
-      selectedListSchedule,
-      calendarOptions,
-      listOptions,
-    ]);
-
-  const handleChange = useCallback(
-    (
-      newValue: SingleValue<ScheduleOption>,
-      _meta: ActionMeta<ScheduleOption>,
-    ) => {
-      if (newValue) dispatch(onChangeAction(newValue));
-    },
-    [dispatch, onChangeAction],
-  );
-
-  const filterOptions = useCallback(
-    (opt: any) =>
-      opt.data.value !== currentValue.value && opt.data.value !== "default",
-    [currentValue],
   );
 
   const getBackgroundColor = (value: string) => {
@@ -99,55 +53,81 @@ const UseReactSelect = ({ type, calendarOptions }: UseReactSelectProps) => {
     }
   };
 
-  return (
-    <Select<ScheduleOption, false>
-      instanceId={type === "calendar" ? "calendar-select" : "list-select"}
-      classNamePrefix={
-        type === "calendar" ? "custom-select-calendar" : "custom-select-list"
-      }
-      className={style.selectWrapper}
-      options={options}
-      value={currentValue}
-      onChange={handleChange}
-      components={customComponents}
-      isSearchable={false}
-      filterOption={filterOptions}
-      styles={{
-        control: (baseStyles, state) => ({
-          ...baseStyles,
-          backgroundColor:
-            type === "list"
-              ? getBackgroundColor(currentValue.value)
-              : baseStyles.backgroundColor,
-        }),
-        option: (baseStyles, state) => {
-          if (type !== "list") return baseStyles;
+  if (type === "calendar") {
+    return (
+      <Select<ScheduleOption, false>
+        instanceId="calendar-select"
+        classNamePrefix="custom-select-calendar"
+        className={style.selectWrapper}
+        options={calendarOptions || []}
+        value={selectedCalendarSchedule}
+        onChange={(newValue) => {
+          if (newValue) dispatch(setSelectedCalendarSchedule(newValue));
+        }}
+        components={{
+          Option: CalendarOption,
+          SingleValue: CalendarSingleValue,
+        }}
+        isSearchable={false}
+        filterOption={(opt) =>
+          opt.data.value !== selectedCalendarSchedule.value &&
+          opt.data.value !== "default"
+        }
+      />
+    );
+  }
 
-          const value = state.data.value;
-          let hoverBg = "#ff9ebf";
-          let hoverText = "#fff";
-
-          if (value === "restaurants") {
-            hoverBg = "#FF5F92";
-          } else if (value === "accommodations") {
-            hoverBg = "#C6EE6A";
-            hoverText = "#5e0e0e";
-          } else if (value === "touristspots") {
-            hoverBg = "#6FC6F4";
-          }
-
-          return {
+  if (type === "list") {
+    return (
+      <Select<TypeOption, false>
+        instanceId="list-select"
+        classNamePrefix="custom-select-list"
+        className={style.selectWrapper}
+        options={listOptions}
+        value={selectedListSchedule}
+        onChange={(newValue) => {
+          if (newValue) dispatch(setSelectedListSchedule(newValue));
+        }}
+        components={{
+          Option: ListOption,
+          SingleValue: ListSingleValue,
+        }}
+        isSearchable={false}
+        filterOption={(opt) => opt.data.value !== selectedListSchedule.value}
+        styles={{
+          control: (baseStyles) => ({
             ...baseStyles,
-            backgroundColor: state.isFocused ? hoverBg : "transparent",
-            color: state.isFocused ? hoverText : "#333",
-            cursor: "pointer",
-            borderRadius: "4px",
-            transition: "background-color 0.2s ease",
-          };
-        },
-      }}
-    />
-  );
+            backgroundColor: getBackgroundColor(selectedListSchedule.value),
+          }),
+          option: (baseStyles, state) => {
+            const value = state.data.value;
+            let hoverBg = "#ff9ebf";
+            let hoverText = "#fff";
+
+            if (value === "restaurants") {
+              hoverBg = "#FF5F92";
+            } else if (value === "accommodations") {
+              hoverBg = "#C6EE6A";
+              hoverText = "#5e0e0e";
+            } else if (value === "touristspots") {
+              hoverBg = "#6FC6F4";
+            }
+
+            return {
+              ...baseStyles,
+              backgroundColor: state.isFocused ? hoverBg : "transparent",
+              color: state.isFocused ? hoverText : "#333",
+              cursor: "pointer",
+              borderRadius: "4px",
+              transition: "background-color 0.2s ease",
+            };
+          },
+        }}
+      />
+    );
+  }
+
+  return null;
 };
 
 export default UseReactSelect;

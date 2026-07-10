@@ -1,15 +1,22 @@
-import { components, SingleValueProps } from 'react-select';
-import style from './Select.module.scss';
+import { components, SingleValueProps } from "react-select";
+import style from "./Select.module.scss";
+import { ScheduleOption } from "../../util/schedule/scheduleSlice";
 
-const CalendarSingleValue = (props: SingleValueProps<any>) => {
-  const { prefix, suffix, label } = props.data;
+const CalendarSingleValue = (
+  props: SingleValueProps<ScheduleOption, false>,
+) => {
+  const { value, label, dDay } = props.data;
 
   return (
     <components.SingleValue {...props}>
       <div className={style.show_custom_div}>
-        <span className={style.show_prefix}>{prefix}</span>
+        {value !== "default" && (
+          <span className={style.show_prefix}>[{value}]</span>
+        )}
         <span className={style.show_label}>{label}</span>
-        <span className={style.show_suffix}>{suffix}</span>
+        {value !== "default" && (
+          <span className={style.show_suffix}>{dDay}</span>
+        )}
       </div>
     </components.SingleValue>
   );

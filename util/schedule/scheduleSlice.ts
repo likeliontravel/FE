@@ -14,13 +14,19 @@ export interface CalendarEvent {
   address?: string;
 }
 
+export interface TypeOption {
+  value: "restaurants" | "accommodations" | "touristspots" | "default";
+  label: string;
+}
+
 export interface ScheduleOption {
   value: string;
   label: string;
-  prefix?: string;
-  suffix?: string;
-  startSchedule?: string;
-  endSchedule?: string;
+  region: string;
+  theme: string;
+  dDay: string;
+  startSchedule: string;
+  endSchedule: string;
 }
 
 export interface ScheduleItem {
@@ -37,7 +43,7 @@ interface ScheduleState {
   mainViewDate: string;
   selectedSlots: string[];
   selectedCalendarSchedule: ScheduleOption;
-  selectedListSchedule: ScheduleOption;
+  selectedListSchedule: TypeOption;
   currentScheduleId: number | null;
   scheduleItems: ScheduleItem[];
   scheduleList: ScheduleOption[];
@@ -107,17 +113,18 @@ const initialState: ScheduleState = {
   mainViewDate: new Date().toISOString(),
   selectedSlots: [],
   selectedCalendarSchedule: {
-    value: "default",
-    label: "-",
-    prefix: "내일정",
-    suffix: "D-",
+    value: "그룹명",
+    label: "일정 선택",
+    region: "",
+    theme: "",
+    dDay: "D-Day",
+    startSchedule: "",
+    endSchedule: "",
   },
   selectedListSchedule: { value: "restaurants", label: "맛집" },
   currentScheduleId: null,
   scheduleItems: [],
-  scheduleList: [
-    { value: "default", label: "-", prefix: "내일정", suffix: "D-" },
-  ],
+  scheduleList: [],
   startSchedule: null,
   endSchedule: null,
   loading: false,
@@ -171,13 +178,15 @@ export const fetchScheduleList = createAsyncThunk<ScheduleOption[], void>(
               ? `D-${diffDays}`
               : `D+${Math.abs(diffDays)}`;
 
+        const regionName = item.scheduleFirstRegion || "미정";
+        const themeName = item.theme || "";
+
         return {
           value: item.groupName,
-          label: item.scheduleFirstRegion
-            ? `${item.scheduleFirstRegion} 여행`
-            : "일정 없음",
-          prefix: item.groupName,
-          suffix: dDayString,
+          label: regionName !== "미정" ? `${regionName} 여행` : "일정 없음",
+          region: regionName,
+          theme: themeName,
+          dDay: dDayString,
           startSchedule: item.startSchedule,
           endSchedule: item.endSchedule,
         };
@@ -351,7 +360,7 @@ const scheduleSlice = createSlice({
     setSelectedCalendarSchedule(state, action: PayloadAction<ScheduleOption>) {
       state.selectedCalendarSchedule = action.payload;
     },
-    setSelectedListSchedule(state, action: PayloadAction<ScheduleOption>) {
+    setSelectedListSchedule(state, action: PayloadAction<TypeOption>) {
       state.selectedListSchedule = action.payload;
     },
     clearScheduleItems: (state) => {
@@ -395,10 +404,7 @@ const scheduleSlice = createSlice({
 
       // fetchScheduleList
       .addCase(fetchScheduleList.fulfilled, (state, action) => {
-        state.scheduleList = [
-          { value: "default", label: "-", prefix: "내일정", suffix: "D-" },
-          ...action.payload,
-        ];
+        state.scheduleList = action.payload;
       })
       .addCase(fetchScheduleList.rejected, (state, action) => {
         state.error = action.payload as string;
