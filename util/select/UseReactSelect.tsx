@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import Select, { SingleValue, ActionMeta } from "react-select";
+import { useMemo } from "react";
+import Select from "react-select";
 import CalendarOption from "./CalendarOption";
 import ListOption from "./ListOption";
 import CalendarSingleValue from "./CalendarSingleValue";

@@ -80,7 +80,7 @@
 /* 캘린더 옵션 내부 (CalendarOption, CalendarSingleValue) */
 .custom_div {
   @extend %flex-space-between;
-  @include width-height(186px, 28px);
+  @include width-height(100%, 28px);
 }
 
 .show_custom_div {
@@ -115,7 +115,7 @@
 }
 
 .label {
-  @include width-height(108px, 28px);
+  @include width-height(120px, 28px);
   @include font_size-font_weight-line_height(16px, 700, 28px);
 }
 
@@ -132,6 +132,7 @@
 
 .suffix {
   @extend %suffix-common;
+  white-space: nowrap;
 }
 
 .show_suffix {
