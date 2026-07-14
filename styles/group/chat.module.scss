@@ -19,14 +19,15 @@
   }
   .chatmessages {
     position: relative;
+    width: 100%;
     height: 80vh;
     display: flex;
     flex-direction: column;
-    align-items: center;
     .date {
       width: 100%;
       display: flex;
       justify-content: center;
+      margin: 15px 0;
       p {
         width: 30%;
         padding: 0.2rem 0rem;
@@ -40,23 +41,29 @@
       }
     }
     .messages_box {
-      position: relative;
-      overflow-y: scroll;
-      width: 100%;
+      overflow-y: auto;
+      width: 90%;
       height: 80%;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      padding: 0 5%;
+
+      > div {
+        width: 100%;
+      }
     }
     .inputContainer {
       position: absolute;
       bottom: 0;
+      left: 50%;
       width: 90%;
       height: 5vh;
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 5%;
+      transform: translateX(-50%);
+
       .inputContent {
         width: 88%;
         height: 100%;
@@ -65,51 +72,78 @@
         border: none;
         border-radius: 12px;
         outline: none;
-        padding: 0% 2%;
-        margin-right: 3%;
+        padding: 0 4%;
       }
       img {
         cursor: pointer;
+        margin-left: 2%;
       }
     }
     .chatmessage {
-      position: relative;
       width: 100%;
-      min-height: 100px;
       display: flex;
-      flex-direction: column;
+      margin-bottom: 20px;
+
       .mymessage {
-        position: absolute;
-        right: 0;
-        border-radius: 12px;
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
       }
+
       .non_my_message {
-        position: absolute;
-        left: 20px;
-        border-radius: 12px;
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
       }
+
       .text_box {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
+        max-width: 70%;
+
         .my_text {
-          border-radius: 2rem;
-          margin-right: 15px;
+          background-color: #27abf1;
+          color: white;
+          padding: 10px 16px;
+          border-radius: 20px;
+          border-top-right-radius: 0;
+          word-break: break-word;
+          margin-right: 0;
         }
         p {
-          padding: 15px;
-          border-radius: 2rem;
-          border-top-left-radius: 0;
           background-color: #ffffff;
-          margin-left: 15px;
+          color: #333;
+          padding: 10px 16px;
+          border-radius: 20px;
+          border-top-left-radius: 0;
+          margin-left: 10px;
+          word-break: break-word;
         }
         .img {
           border-radius: 0.6rem;
+          max-width: 200px;
+          margin-left: 10px;
         }
       }
       .img_box {
         display: flex;
         flex-direction: column;
         align-items: center;
+        flex-shrink: 0;
+        img {
+          width: 45px;
+          height: 45px;
+          border-radius: 50%;
+          object-fit: cover;
+          background-color: #d1d1d1;
+        }
+        h4 {
+          font-size: 12px;
+          margin-top: 6px;
+          margin-bottom: 0;
+          color: #555;
+          white-space: nowrap;
+        }
       }
     }
   }

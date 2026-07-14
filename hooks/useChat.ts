@@ -23,13 +23,28 @@ export const useChat = (groupName: string) => {
 
     const fetchChatHistory = async () => {
       try {
-        const res = await api.get(`/chat/history/${groupName}`);
+        const res = await api.get(`/chat/${groupName}/messages`);
 
-        if (res.data.success) {
-          const historyMessages = res.data.data.map((msg: any) => ({
-            ...msg,
-            isMine: msg.name === myName,
-          }));
+        if (res.status === 204) {
+          dispatch(setMessages([]));
+          return;
+        }
+
+        if (res.data && res.data.success) {
+          const { senderProfiles, messages: rawMessages } = res.data.data;
+
+          const historyMessages = rawMessages.map((msg: any) => {
+            const profile = senderProfiles[String(msg.senderId)];
+            const senderName = profile?.name || "알 수 없는 사용자";
+            const profileImageUrl = profile?.profileImageUrl || "";
+
+            return {
+              ...msg,
+              name: senderName,
+              profileImageUrl: profileImageUrl,
+              isMine: senderName === myName,
+            };
+          });
           dispatch(setMessages(historyMessages));
         }
       } catch (err) {
@@ -56,9 +71,15 @@ export const useChat = (groupName: string) => {
           try {
             const msg = JSON.parse(frame.body);
 
+            const isMine = Number(msg.senderId) === Number(user?.id);
+
             const newMsg: ChatMessage = {
               ...msg,
-              isMine: msg.name === myName,
+              isMine: isMine,
+              name: isMine ? user?.name : msg.name || "상대방",
+              profileImageUrl: isMine
+                ? user?.profileImageUrl
+                : msg.profileImageUrl || "",
             };
 
             dispatch(addMessage(newMsg));
