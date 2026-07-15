@@ -41,9 +41,9 @@
       }
     }
     .messages_box {
+      flex: 1;
       overflow-y: auto;
       width: 90%;
-      height: 80%;
       display: flex;
       flex-direction: column;
       padding: 0 5%;
@@ -53,16 +53,13 @@
       }
     }
     .inputContainer {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
       width: 90%;
       height: 5vh;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-left: 5%;
       margin-bottom: 5%;
-      transform: translateX(-50%);
 
       .inputContent {
         width: 88%;
@@ -98,8 +95,15 @@
 
       .text_box {
         display: flex;
-        align-items: flex-start;
+        align-items: flex-end;
         max-width: 70%;
+
+        .time_text {
+          font-size: 11px;
+          color: #999;
+          margin: 0 6px;
+          white-space: nowrap;
+        }
 
         .my_text {
           background-color: #27abf1;
@@ -130,6 +134,7 @@
         flex-direction: column;
         align-items: center;
         flex-shrink: 0;
+        align-self: flex-start;
         img {
           width: 45px;
           height: 45px;

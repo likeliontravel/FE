@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import SockJS from "sockjs-client";
 import { Client, IMessage } from "@stomp/stompjs";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,7 +16,11 @@ export const useChat = (groupName: string) => {
   const dispatch = useDispatch();
   const clientRef = useRef<Client | null>(null);
   const { user } = useSelector((state: RootState) => state.auth);
+  const { messages } = useSelector((state: RootState) => state.chat);
   const myName = user?.name || "";
+
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     if (!groupName || !user) return;
@@ -27,11 +31,14 @@ export const useChat = (groupName: string) => {
 
         if (res.status === 204) {
           dispatch(setMessages([]));
+          setHasMore(false);
           return;
         }
 
         if (res.data && res.data.success) {
           const { senderProfiles, messages: rawMessages } = res.data.data;
+
+          if (rawMessages.length < 20) setHasMore(false);
 
           const historyMessages = rawMessages.map((msg: any) => {
             const profile = senderProfiles[String(msg.senderId)];
@@ -70,7 +77,6 @@ export const useChat = (groupName: string) => {
         client.subscribe(`/sub/chat/${groupName}`, (frame: IMessage) => {
           try {
             const msg = JSON.parse(frame.body);
-
             const isMine = Number(msg.senderId) === Number(user?.id);
 
             const newMsg: ChatMessage = {
@@ -125,5 +131,51 @@ export const useChat = (groupName: string) => {
     return false;
   };
 
-  return { sendMessage };
+  const loadMoreMessages = async () => {
+    if (isLoadingMore || !hasMore || messages.length === 0) return;
+
+    setIsLoadingMore(true);
+    const oldestMessageId = messages[0].id;
+
+    try {
+      const res = await api.get(
+        `/chat/${groupName}/messages/prev?lastMessageId=${oldestMessageId}`,
+      );
+
+      if (res.status === 204) {
+        setHasMore(false);
+        return;
+      }
+
+      if (res.data && res.data.success) {
+        const { senderProfiles, messages: rawMessages } = res.data.data;
+
+        if (rawMessages.length === 0) {
+          setHasMore(false);
+          return;
+        }
+
+        const olderMessages = rawMessages.map((msg: any) => {
+          const identifier = msg.senderIdentifier || msg.senderId;
+          const profile = senderProfiles[String(identifier)];
+          const senderName = profile?.name || "알 수 없는 사용자";
+
+          return {
+            ...msg,
+            name: senderName,
+            profileImageUrl: profile?.profileImageUrl || "",
+            isMine: senderName === myName,
+          };
+        });
+
+        dispatch(setMessages([...olderMessages, ...messages]));
+      }
+    } catch (err) {
+      console.error("이전 메시지 불러오기 실패:", err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  return { sendMessage, loadMoreMessages };
 };

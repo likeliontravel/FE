@@ -3,14 +3,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export type MessageType = "TEXT" | "IMAGE";
 
 export interface ChatMessage {
-  id: string;
+  id: number;
   type: MessageType;
   content?: string;
-  latestMessage?: string;
   name: string;
-  profileImageUrl: string;
+  profileImageUrl: string | null;
   sendAt: string;
-  isMine?: boolean;
+  isMine: boolean;
 }
 
 interface ChatState {

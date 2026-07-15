@@ -176,12 +176,7 @@ export default function groupDetail() {
                 <p>멤버 초대</p>
                 <img src="/imgs/mail.png" alt="mail" />
               </div>
-              <Link
-                href={{
-                  pathname: `/group/${groupName}/chat`,
-                  query: { groupDescription: groupDetail.description },
-                }}
-              >
+              <Link href={`/group/${groupName}/chat`}>
                 <p>그룹 채팅</p>
                 <img src="/imgs/chat.png" alt="chat" />
               </Link>

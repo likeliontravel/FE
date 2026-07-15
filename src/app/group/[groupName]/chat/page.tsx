@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import style from "../../../../../styles/group/chat.module.scss";
 import Image from "next/image";
@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../../../store/store";
 import { useChat } from "../../../../../hooks/useChat";
 
-const formatDate = (dateString: string) => {
+const formatOnlyDate = (dateString: string) => {
   const days = [
     "일요일",
     "월요일",
@@ -19,13 +19,20 @@ const formatDate = (dateString: string) => {
     "토요일",
   ];
   const date = new Date(dateString);
-
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
-  const dayName = days[date.getDay()];
+  return `${y}.${m}.${d} ${days[date.getDay()]}`;
+};
 
-  return `${y}.${m}.${d} ${dayName}`;
+const formatOnlyTime = (dateString: string) => {
+  const date = new Date(dateString);
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "오후" : "오전";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${ampm} ${hours}:${minutes}`;
 };
 
 export default function WebSocketChatClient() {
@@ -36,14 +43,41 @@ export default function WebSocketChatClient() {
   const groupDescription = searchParams.get("groupDescription") ?? "";
 
   const { messages } = useSelector((state: RootState) => state.chat);
-  const { sendMessage } = useChat(groupName);
+  const { sendMessage, loadMoreMessages } = useChat(groupName);
   const [inputMessage, setInputMessage] = useState("");
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const prevScrollHeight = useRef<number | null>(null);
+  const isInitialMount = useRef(true);
 
-  useEffect(() => {
+  const handleScroll = () => {
+    if (scrollRef.current && scrollRef.current.scrollTop === 0) {
+      prevScrollHeight.current = scrollRef.current.scrollHeight;
+      loadMoreMessages();
+    }
+  };
+
+  useLayoutEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      const { scrollHeight } = scrollRef.current;
+
+      if (prevScrollHeight.current !== null) {
+        scrollRef.current.scrollTop = scrollHeight - prevScrollHeight.current;
+        prevScrollHeight.current = null;
+      } else {
+        if (isInitialMount.current && messages.length > 0) {
+          scrollRef.current.scrollTo({
+            top: scrollHeight,
+            behavior: "auto",
+          });
+          isInitialMount.current = false;
+        } else if (!isInitialMount.current) {
+          scrollRef.current.scrollTo({
+            top: scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      }
     }
   }, [messages]);
 
@@ -54,6 +88,14 @@ export default function WebSocketChatClient() {
 
     if (success) {
       setInputMessage("");
+      prevScrollHeight.current = null;
+
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     } else {
       alert("연결 상태를 확인해주세요.");
     }
@@ -74,37 +116,46 @@ export default function WebSocketChatClient() {
           <p>{decodeURIComponent(groupDescription)}</p>
         </div>
         <div className={style.chatmessages}>
-          <div className={style.messages_box}>
+          <div
+            className={style.messages_box}
+            ref={scrollRef}
+            onScroll={handleScroll}
+          >
             {messages.map((msg: any, idx: number) => {
-              const currentDate = msg.sendAt?.split(" ")[0];
+              const currentDate =
+                msg.sendAt?.split("T")[0] || msg.sendAt?.split(" ")[0];
               const prevDate =
-                idx > 0 ? messages[idx - 1].sendAt?.split(" ")[0] : null;
+                idx > 0
+                  ? messages[idx - 1].sendAt?.split("T")[0] ||
+                    messages[idx - 1].sendAt?.split(" ")[0]
+                  : null;
+
               const showDateLine = currentDate !== prevDate;
+              const timeString = msg.sendAt ? formatOnlyTime(msg.sendAt) : "";
 
               return (
                 <div key={msg.id || idx}>
                   {showDateLine && (
                     <div className={style.date}>
-                      <p>{formatDate(msg.sendAt)}</p>
+                      <p>{formatOnlyDate(msg.sendAt)}</p>
                     </div>
                   )}
 
                   <div className={style.chatmessage}>
                     {msg.isMine ? (
                       <div className={style.mymessage}>
-                        {msg.type === "TEXT" ? (
-                          <div className={style.text_box}>
+                        <div className={style.text_box}>
+                          <span className={style.time_text}>{timeString}</span>
+                          {msg.type === "TEXT" ? (
                             <p className={style.my_text}>{msg.content}</p>
-                          </div>
-                        ) : (
-                          <div>
+                          ) : (
                             <img
                               className={style.img}
-                              src={msg.latestMessage}
+                              src={msg.content}
                               alt="image"
                             />
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <div className={style.non_my_message}>
@@ -121,10 +172,11 @@ export default function WebSocketChatClient() {
                           ) : (
                             <img
                               className={style.img}
-                              src={msg.latestMessage}
+                              src={msg.content}
                               alt="image"
                             />
                           )}
+                          <span className={style.time_text}>{timeString}</span>
                         </div>
                       </div>
                     )}
