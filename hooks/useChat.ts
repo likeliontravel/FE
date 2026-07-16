@@ -8,6 +8,7 @@ import {
   ChatMessage,
   clearChat,
   setConnected,
+  updateLatestMessage,
 } from "../util/group/chat/chatSlice";
 import { api } from "../util/api";
 import { RootState } from "../store/store";
@@ -89,6 +90,15 @@ export const useChat = (groupName: string) => {
             };
 
             dispatch(addMessage(newMsg));
+
+            dispatch(
+              updateLatestMessage({
+                groupName: groupName,
+                latestMessage: msg.content,
+                sendAt: msg.sendAt,
+                type: msg.type,
+              }),
+            );
           } catch (e) {
             console.error("메시지 파싱 에러:", e);
           }
