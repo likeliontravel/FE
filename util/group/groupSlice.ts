@@ -9,6 +9,12 @@ export interface Group {
   createdByMemberId: string;
 }
 
+export interface NearestSchedule {
+  groupName: string;
+  startSchedule: string;
+  dDay: number;
+}
+
 export interface CreateGroupPayload {
   groupName: string;
   description?: string;
@@ -62,6 +68,7 @@ interface GroupState {
   inviteLink: string | null;
   loading: boolean;
   error: string | null;
+  nearestSchedule: NearestSchedule | null;
 }
 
 const initialState: GroupState = {
@@ -73,6 +80,7 @@ const initialState: GroupState = {
   inviteLink: null,
   loading: false,
   error: null,
+  nearestSchedule: null,
 };
 
 export const fetchUserGroups = createAsyncThunk<Group[]>(
@@ -106,6 +114,24 @@ export const createGroup = createAsyncThunk<Group, CreateGroupPayload>(
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message || "그룹 생성 오류 발생",
+      );
+    }
+  },
+);
+
+export const fetchNearestSchedule = createAsyncThunk<NearestSchedule | null>(
+  "group/fetchNearestSchedule",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get("/schedule/nearest");
+
+      if (res.data && res.data.success) {
+        return res.data.data || null;
+      }
+      return rejectWithValue(res.data.message || "가장 가까운 일정 조회 실패");
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || "가장 가까운 일정 조회 중 오류 발생",
       );
     }
   },
@@ -257,7 +283,7 @@ export const createGroupNotice = createAsyncThunk<Notice, CreateNoticePayload>(
   },
 );
 
-// 💡 그룹 공지 삭제 API (DELETE /group/announcement/delete)
+// 그룹 공지 삭제 API (DELETE /group/announcement/delete)
 export const deleteGroupNotice = createAsyncThunk<void, DeleteNoticePayload>(
   "group/deleteGroupNotice",
   async (payload, { rejectWithValue }) => {
@@ -329,6 +355,7 @@ const groupSlice = createSlice({
       state.groupDetail = null;
       state.schedule = null;
       state.latestNotice = null;
+      state.nearestSchedule = null;
     },
     clearError: (state) => {
       state.error = null;
@@ -349,6 +376,19 @@ const groupSlice = createSlice({
       )
       .addCase(fetchUserGroups.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(fetchNearestSchedule.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(
+        fetchNearestSchedule.fulfilled,
+        (state, action: PayloadAction<NearestSchedule | null>) => {
+          state.nearestSchedule = action.payload;
+        },
+      )
+      .addCase(fetchNearestSchedule.rejected, (state, action) => {
         state.error = action.payload as string;
       })
 
