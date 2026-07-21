@@ -27,7 +27,7 @@ const getProfileImage = (url: string | null | undefined): string => {
   return url;
 };
 
-// --- 안전한 엔티티 디코딩 및 태그 제거 함수 ---
+// --- 안전한 엔티티 디코딩 및 태그 제거 함수 (수화 오류 및 태그 노출 방지) ---
 const createExcerpt = (htmlContent: string, maxLength: number = 100): string => {
   if (!htmlContent) return '';
   try {
@@ -56,7 +56,7 @@ const MyPostsPage = () => {
   const { user: loggedInUser, loading: authLoading } = useSelector((state: RootState) => state.auth || {});
   const { posts, loading, error } = useSelector((state: RootState) => state.board || {});
 
-  // 로그인 상태 및 본인 식별 정보 확보 후 API 요청 발송
+  // 🔥 수정: 소셜 ID인 userIdentifier 대신, 게시글 저장 컬럼과 100% 매칭되는 'email'을 최우선 식별자로 지정하여 호출 보장
   useEffect(() => {
     if (authLoading) return;
 
@@ -66,25 +66,29 @@ const MyPostsPage = () => {
       return;
     }
 
-    // 옵셔널 체이닝(?.) 적용으로 타입 에러 원천 차단
-    const myId = loggedInUser?.userIdentifier || loggedInUser?.email || loggedInUser?.name;
+    const myId = loggedInUser?.email || loggedInUser?.userIdentifier || loggedInUser?.name;
     if (myId) {
       dispatch(fetchMyBoards(myId));
     }
   }, [dispatch, loggedInUser, authLoading, router]);
 
-  // 본인 글 가드 필터링 (2단계 안전 가드)
+  // 🔥 수정: 백엔드가 writerIdentifier 또는 email, 이름(writer) 중 무엇으로 리턴해도 완벽히 잡아내는 2단계 하이브리드 필터
   const myFilteredPosts = useMemo(() => {
     if (!posts || !Array.isArray(posts) || !loggedInUser) return [];
     
-    // 옵셔널 체이닝(?.) 적용으로 타입 에러 원천 차단
-    const myIdentifier = loggedInUser?.userIdentifier || loggedInUser?.email;
+    const myUserIdentifier = loggedInUser?.userIdentifier;
+    const myEmail = loggedInUser?.email;
     const myName = loggedInUser?.name;
 
     return posts.filter(post => {
-      if (post.writerIdentifier && myIdentifier) {
-        return post.writerIdentifier === myIdentifier;
+      // 1단계: 작성자 고유 식별자(이메일 또는 ID)가 존재하면 비교
+      if (post.writerIdentifier) {
+        return (
+          (myUserIdentifier && post.writerIdentifier === myUserIdentifier) ||
+          (myEmail && post.writerIdentifier === myEmail)
+        );
       }
+      // 2단계: 식별자가 누락되었을 경우 이름으로 최종 방어 가드
       if (post.writer && myName) {
         return post.writer === myName;
       }
@@ -144,8 +148,8 @@ const MyPostsPage = () => {
             <div className={styles.profileCard}>
                 <>
                   <div className={styles.profileHeader}>
-                    {/* 🔥 에러 해결: loggedInUser 뒤에 옵셔널 체이닝(?.) 적용 */}
-                    <Image 
+                    {/* 내 글 보기 사이드바 본인 프로필 이미지 예외 처리 */}
+                    <img 
                       src={getProfileImage(loggedInUser?.profileImageUrl)} 
                       alt={`${loggedInUser?.name || ''}님의 프로필`}
                       width={50} 

@@ -13,7 +13,7 @@ import {
   updateComment, 
   Comment,
   clearBoardLoading
-} from '../../../../util/board/boardSilce';
+} from '../../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
 import styles from '../../../../styles/postDetail/postDetail.module.scss';
 import SearchBar from '../../SearchBar/SearchBar';
 import Image from 'next/image';
@@ -98,21 +98,7 @@ const CommentItem = ({
   onDeleteComment: (id: number) => void;
 }) => {
   const isEditing = editingCommentId === comment.id;
-  
-  const isAuthor = useMemo(() => {
-    if (!comment || !loggedInUser) return false;
-    const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
-    const myName = loggedInUser.name;
-
-    if (comment.commentWriterIdentifier && myIdentifier) {
-      return comment.commentWriterIdentifier === myIdentifier;
-    }
-    const writerName = comment.commentWriter || comment.writer;
-    if (writerName && myName) {
-      return writerName === myName;
-    }
-    return false;
-  }, [comment, loggedInUser]);
+  const isAuthor = loggedInUser && loggedInUser.userIdentifier === comment.commentWriterIdentifier;
 
   return (
     <div className={isReply ? styles.replyItem : styles.commentItem}>
@@ -343,11 +329,11 @@ const PostDetail = () => {
     }
   }, [dispatch, boardId, router, isPostAuthor]);
 
+  // 🔥 타입 에러 수정: comment.content를 제거하고, 오직 존재하는 comment.commentContent만 안전하게 대입합니다.
   const handleStartEditComment = useCallback((comment: Comment) => { 
     if (!requireLogin()) return; 
     setEditingCommentId(comment.id); 
-    // 🔥 comment.content도 가질 수 있도록 타입 검사 오류 해결
-    setEditingContent(comment.commentContent || comment.content || ''); 
+    setEditingContent(comment.commentContent || ''); 
   }, [requireLogin]);
 
   const handleCancelEditComment = useCallback(() => { 
@@ -528,7 +514,8 @@ const PostDetail = () => {
               {loggedInUser ? (
                 <>
                   <div className={styles.profileHeader}>
-                    <Image 
+                    {/* 일반 <img> 태그 사용으로 소셜 CDN 도메인 차단 우회 */}
+                    <img 
                       src={getProfileImage(loggedInUser.profileImageUrl)} 
                       alt="프사" 
                       width={50} 

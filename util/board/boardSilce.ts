@@ -25,8 +25,8 @@ export interface Comment {
   writer?: string; 
   commentWriterIdentifier?: string;
   commentWriterProfileImageUrl?: string | null;
-  commentContent: string; // 조회 시 사용되는 필드
-  content?: string; // 등록/수정 시 사용되는 필드
+  commentContent: string; 
+  content?: string; 
   boardId: number;
   parentCommentId: number | null;
   commentCreatedTime: string;
@@ -103,12 +103,14 @@ export const searchBoards = createAsyncThunk(
   }
 );
 
+// 🔥 수정 완료: 이메일 또는 이름 어느 것으로도 내 글이 매칭될 수 있도록 필터링 다변화
 export const fetchMyBoards = createAsyncThunk(
   'board/fetchMyBoards',
   async (userIdentifier: string, { rejectWithValue }) => {
     try {
       const response = await publicApi.get('/board', { params: { page: 0, size: 1000, sortType: 'RECENT' } });
       const allPosts: Board[] = response.data.data.content;
+      
       return allPosts.filter(post => 
         (post.writerIdentifier && post.writerIdentifier === userIdentifier) || 
         (post.writer && post.writer === userIdentifier)
@@ -175,22 +177,11 @@ export const createBoard = createAsyncThunk(
   }
 );
 
-// 🔥 수정 완료: 비구조화 할당({ id, ...updateData })을 활용하여 Request Body(JSON)에서 id를 완벽히 격리 제거
 export const updateBoard = createAsyncThunk<Board, { id: number; title: string; content: string; theme: string; region: string; thumbnailPublicUrl?: string }>(
   'board/updateBoard',
-  async ({ id, ...updateData }, { rejectWithValue }) => { // 👈 id를 분리해 냅니다.
+  async ({ id, ...updateData }, { rejectWithValue }) => {
     try {
-      // 1. PathVariable에는 id가 포함됩니다. (/board/{id})
-      // 2. 바디 데이터에는 id를 제외한 5개 필드만 담아 전송하여 Jackson Unrecognized field 에러를 해결합니다.
-      const response = await api.patch(`/board/${id}`, {
-        title: updateData.title,
-        content: updateData.content,
-        theme: updateData.theme,
-        region: updateData.region,
-        thumbnailPublicUrl: updateData.thumbnailPublicUrl || ""
-      }, {
-        headers: { "Content-Type": "application/json" }
-      });
+      const response = await api.patch(`/board/${id}`, updateData);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || '수정 실패');

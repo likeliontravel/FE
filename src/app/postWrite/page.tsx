@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
-import { createBoard, uploadImage, clearBoardLoading } from '../../../util/board/boardSilce';
+import { createBoard, uploadImage, clearBoardLoading } from '../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
 
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -40,6 +40,7 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
   if (!editor) { return null; }
   const dispatch = useDispatch<AppDispatch>();
 
+  // 🔥 수정: .unwrap()을 추가하여 업로드 실패 시 에러 팝업이 확실하게 노출되도록 개선
   const addImage = useCallback(() => {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
@@ -49,13 +50,10 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
       const file = input.files?.[0];
       if (!file) return;
       try {
-        const resultAction = await dispatch(uploadImage(file));
-        if (uploadImage.fulfilled.match(resultAction)) {
-           const imageUrl = resultAction.payload;
-           editor.chain().focus().setImage({ src: imageUrl }).run();
-        }
-      } catch (error) {
-        alert(`이미지 업로드 실패: ${error}`);
+        const imageUrl = await dispatch(uploadImage(file)).unwrap(); // unwrap으로 결과값 추출 및 예외 던지기
+        editor.chain().focus().setImage({ src: imageUrl }).run();
+      } catch (error: any) {
+        alert(`이미지 업로드 실패: ${error || '서버 에러가 발생했습니다.'}`);
       }
     };
   }, [editor, dispatch]);
@@ -133,7 +131,6 @@ const WritePage: React.FC = () => {
     editorProps: { 
       attributes: { 
         class: 'tiptap-editor',
-        // 🔥 인라인 스타일로 에디터 높이를 크게 확장
         style: 'min-height: 500px; padding: 20px; outline: none; cursor: text;'
       } 
     },
@@ -225,7 +222,7 @@ const WritePage: React.FC = () => {
               onChange={handleTitleChange}
             />
             <div className={styles.contentDivider}></div>
-            {/* 🔥 에디터 컨테이너 스타일 보강 */}
+            {/* 에디터 컨테이너 스타일 보강 */}
             <div className={styles.tiptapEditorContainer} style={{ minHeight: '600px', cursor: 'text' }} onClick={() => editor?.commands.focus()}>
               <EditorContent editor={editor} />
             </div>
