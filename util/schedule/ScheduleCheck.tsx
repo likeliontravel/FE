@@ -73,9 +73,7 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
   const { mainViewDate, currentScheduleId } = useSelector(
     (state: RootState) => state.schedule,
   );
-  const { groupDetail, groups } = useSelector(
-    (state: RootState) => state.group,
-  );
+  const { groupDetail } = useSelector((state: RootState) => state.group);
 
   const handleDateClick = (dateStr: string) => {
     dispatch(setMainViewDate(dateStr));
@@ -213,6 +211,68 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
     });
   };
 
+  const regionName = useMemo(() => {
+    if (!events || events.length === 0) return "미정";
+
+    const firstPlaceWithAddress = events.find((place) => place.address);
+
+    if (firstPlaceWithAddress) {
+      const parts = firstPlaceWithAddress.address.trim().split(" ");
+      return parts.length >= 2 ? parts[1] : parts[0];
+    }
+
+    return "미정";
+  }, [events]);
+
+  const creatorName = groupDetail?.createdName || "방장";
+  const extraMembersCount = groupDetail?.members
+    ? groupDetail.members.length - 1
+    : 0;
+
+  const mergedSchedules = useMemo(() => {
+    if (dayEvents.length === 0) return [];
+
+    const getRegion = (addr?: string) => {
+      if (!addr) return regionName;
+      const parts = addr.trim().split(" ");
+      return parts.length >= 2 ? parts[1] : parts[0];
+    };
+
+    const result = [];
+
+    let currentBlock = {
+      region: getRegion(dayEvents[0].address),
+      start: dayjs(dayEvents[0].start),
+      end: dayjs(dayEvents[0].end || dayjs(dayEvents[0].start).add(1, "hour")),
+      ids: [dayEvents[0].id],
+    };
+
+    for (let i = 1; i < dayEvents.length; i++) {
+      const ev = dayEvents[i];
+      const evRegion = getRegion(ev.address);
+      const evStart = dayjs(ev.start);
+      const evEnd = dayjs(ev.end || dayjs(ev.start).add(1, "hour"));
+
+      if (currentBlock.region === evRegion) {
+        if (evEnd.isAfter(currentBlock.end)) {
+          currentBlock.end = evEnd;
+        }
+        currentBlock.ids.push(ev.id);
+      } else {
+        result.push(currentBlock);
+        currentBlock = {
+          region: evRegion,
+          start: evStart,
+          end: evEnd,
+          ids: [ev.id],
+        };
+      }
+    }
+    result.push(currentBlock);
+
+    return result;
+  }, [dayEvents, regionName]);
+
   const isScheduleEmpty = !currentSchedule;
 
   if (isScheduleEmpty) {
@@ -311,68 +371,6 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
       </>
     );
   }
-
-  const regionName = useMemo(() => {
-    if (!events || events.length === 0) return "미정";
-
-    const firstPlaceWithAddress = events.find((place) => place.address);
-
-    if (firstPlaceWithAddress) {
-      const parts = firstPlaceWithAddress.address.trim().split(" ");
-      return parts.length >= 2 ? parts[1] : parts[0];
-    }
-
-    return "미정";
-  }, [events]);
-
-  const creatorName = groupDetail?.createdName || "방장";
-  const extraMembersCount = groupDetail?.members
-    ? groupDetail.members.length - 1
-    : 0;
-
-  const mergedSchedules = useMemo(() => {
-    if (dayEvents.length === 0) return [];
-
-    const getRegion = (addr?: string) => {
-      if (!addr) return regionName;
-      const parts = addr.trim().split(" ");
-      return parts.length >= 2 ? parts[1] : parts[0];
-    };
-
-    const result = [];
-
-    let currentBlock = {
-      region: getRegion(dayEvents[0].address),
-      start: dayjs(dayEvents[0].start),
-      end: dayjs(dayEvents[0].end || dayjs(dayEvents[0].start).add(1, "hour")),
-      ids: [dayEvents[0].id],
-    };
-
-    for (let i = 1; i < dayEvents.length; i++) {
-      const ev = dayEvents[i];
-      const evRegion = getRegion(ev.address);
-      const evStart = dayjs(ev.start);
-      const evEnd = dayjs(ev.end || dayjs(ev.start).add(1, "hour"));
-
-      if (currentBlock.region === evRegion) {
-        if (evEnd.isAfter(currentBlock.end)) {
-          currentBlock.end = evEnd;
-        }
-        currentBlock.ids.push(ev.id);
-      } else {
-        result.push(currentBlock);
-        currentBlock = {
-          region: evRegion,
-          start: evStart,
-          end: evEnd,
-          ids: [ev.id],
-        };
-      }
-    }
-    result.push(currentBlock);
-
-    return result;
-  }, [dayEvents, regionName]);
 
   return (
     <div className={styles.container}>

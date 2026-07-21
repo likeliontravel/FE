@@ -32,6 +32,7 @@
 
 .user {
   @include width-height(100px, auto);
+  margin-left: 10px;
 }
 
 .name {
