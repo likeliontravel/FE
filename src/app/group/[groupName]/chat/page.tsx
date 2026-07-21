@@ -96,6 +96,15 @@ export default function WebSocketChatClient() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const prevScrollHeight = useRef<number | null>(null);
   const isInitialMount = useRef(true);
+  const isInitialLoadPhase = useRef(true);
+
+  useEffect(() => {
+    isInitialLoadPhase.current = true;
+    const timer = setTimeout(() => {
+      isInitialLoadPhase.current = false;
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [groupName]);
 
   const handleScroll = () => {
     if (scrollRef.current && scrollRef.current.scrollTop === 0) {
@@ -213,12 +222,22 @@ export default function WebSocketChatClient() {
     }
   };
 
-  const handleImageLoad = () => {
+  const handleImageLoad = (
+    e: React.SyntheticEvent<HTMLImageElement, Event>,
+  ) => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+      const imgHeight = e.currentTarget.height;
+
+      const isNearBottom =
+        scrollHeight - scrollTop - clientHeight <= imgHeight + 150;
+
+      if (isNearBottom || isInitialLoadPhase.current) {
+        scrollRef.current.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: isInitialLoadPhase.current ? "auto" : "smooth",
+        });
+      }
     }
   };
 
