@@ -98,7 +98,21 @@ const CommentItem = ({
   onDeleteComment: (id: number) => void;
 }) => {
   const isEditing = editingCommentId === comment.id;
-  const isAuthor = loggedInUser && loggedInUser.userIdentifier === comment.commentWriterIdentifier;
+  
+  const isAuthor = useMemo(() => {
+    if (!comment || !loggedInUser) return false;
+    const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
+    const myName = loggedInUser.name;
+
+    if (comment.commentWriterIdentifier && myIdentifier) {
+      return comment.commentWriterIdentifier === myIdentifier;
+    }
+    const writerName = comment.commentWriter || comment.writer;
+    if (writerName && myName) {
+      return writerName === myName;
+    }
+    return false;
+  }, [comment, loggedInUser]);
 
   return (
     <div className={isReply ? styles.replyItem : styles.commentItem}>
@@ -329,7 +343,6 @@ const PostDetail = () => {
     }
   }, [dispatch, boardId, router, isPostAuthor]);
 
-  // 🔥 타입 에러 수정: comment.content를 제거하고, 오직 존재하는 comment.commentContent만 안전하게 대입합니다.
   const handleStartEditComment = useCallback((comment: Comment) => { 
     if (!requireLogin()) return; 
     setEditingCommentId(comment.id); 
@@ -444,10 +457,13 @@ const PostDetail = () => {
             </div>
             
             <div className={styles.authorInfo}>
-              <div 
+              {/* 🔥 수정: 본문 작성자 프사 영역을 일반 <img> 태그 및 인라인 원형 스타일로 교체하여 소셜 로그인 도메인 차단 우회 */}
+              <img 
+                src={getProfileImage(post.writerProfileImageUrl)} 
+                alt="작성자 프사" 
                 className={styles.authorAvatar} 
-                style={{ backgroundImage: `url(${getProfileImage(post.writerProfileImageUrl)})` }}
-              ></div>
+                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', display: 'inline-block', marginRight: '8px' }}
+              />
               <span className={styles.authorName}>{post.writer}</span>
               <span className={styles.postDate}>{formatDate(post.createdTime)}</span>
             </div>

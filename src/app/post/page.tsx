@@ -39,7 +39,6 @@ const getProfileImage = (url: string | null | undefined): string => {
 const createExcerpt = (htmlContent: string, maxLength: number = 100): string => {
   if (!htmlContent) return '';
   try {
-    // 1. 인코딩된 HTML 엔티티 디코딩 (&lt; -> <, &gt; -> >)
     const decodedHtml = htmlContent
       .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")
@@ -48,7 +47,6 @@ const createExcerpt = (htmlContent: string, maxLength: number = 100): string => 
       .replace(/&#039;/g, "'")
       .replace(/&#39;/g, "'");
 
-    // 2. 디코딩된 진짜 HTML 태그 제거 정규식 적용
     const plainText = decodedHtml.replace(/<[^>]*>/g, '');
 
     if (plainText.length > maxLength) {
@@ -164,7 +162,7 @@ const PostList = () => {
                 <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
-                      {/* 🔥 수정: 제목 영역에 '지역'과 '테마' 배지를 인라인 스타일로 깔끔하게 나열 */}
+                      {/* 제목 영역에 '지역'과 '테마' 배지 나열 */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
                         <h3 className={styles.postTitle} style={{ margin: 0, lineHeight: '1.2' }}>{post.title}</h3>
                         <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', backgroundColor: '#eef2f3', color: '#555', whiteSpace: 'nowrap' }}>
@@ -199,13 +197,12 @@ const PostList = () => {
           </main>
 
           <aside className={styles.sidebar}>
-            {/* 🔥 프로필 카드 영역 */}
             <div className={styles.profileCard}>
               {loggedInUser && loggedInUser.name ? (
                 <>
                   <div className={styles.profileHeader}>
-                    {/* 2. 로그인한 유저 본인 프로필 이미지 예외 처리 */}
-                    <Image 
+                    {/* 🔥 에러 수정: Next.js <Image> 대신 일반 <img> 태그를 사용하여 소셜 프사 도메인 차단 우회 */}
+                    <img 
                       src={getProfileImage(loggedInUser.profileImageUrl)} 
                       alt={`${loggedInUser.name}님의 프로필`}
                       width={50} 
@@ -231,7 +228,7 @@ const PostList = () => {
               )}
             </div>
 
-            {/* 🔥 카테고리 필터 영역 */}
+            {/* 카테고리 필터 영역 */}
             <div className={styles.categoryContainer}>
               <div className={styles.categoryTabs}>
                 <button 
