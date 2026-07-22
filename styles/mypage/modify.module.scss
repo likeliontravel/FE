@@ -32,8 +32,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 245;
-  margin-top: 30;
+  width: 245px;
+  margin-top: 30px;
 }
 
 .img {
@@ -41,23 +41,69 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  width: 116;
-  height: 176;
-  img {
+  justify-content: flex-start;
+  width: 116px;
+  height: 220px;
+  gap: 10px;
+
+  .img_wrapper {
     position: relative;
-    width: 110;
-    height: 110;
-    border-radius: 50%;
+    width: 110px;
+    height: 110px;
+
+    .profile_img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: solid 3px #eaedf1;
+      object-fit: cover;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading_text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
   }
+
   .modify {
     position: absolute;
-    width: 38;
-    height: 38;
-    bottom: 60px;
+    width: 38px;
+    height: 38px;
+    top: 75px;
     right: -5px;
     cursor: pointer;
+    transition: opacity 0.2s;
   }
+
+  .delete_img_btn {
+    background: none;
+    border: none;
+    color: #9fa2a6;
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    margin-top: -5px;
+
+    &:hover {
+      color: #ff5f92;
+    }
+    &:disabled {
+      cursor: wait;
+      opacity: 0.5;
+    }
+  }
+
   .name {
     font-family: Inter;
     font-weight: 600;
@@ -77,6 +123,7 @@
   width: 205;
   height: 150;
   margin-top: 42;
+
   div {
     display: flex;
     align-items: center;
@@ -134,10 +181,12 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    width: 924;
-    height: 172;
+    width: 924px;
+    height: 190px;
     border-radius: 10px;
     background: #ffffff;
+    padding-bottom: 10px;
+
     .user_modify {
       display: flex;
       align-items: center;
@@ -147,6 +196,7 @@
       border-radius: 20px;
       margin-top: 20;
       margin-left: 22;
+
       p {
         width: 160;
         height: 38;
@@ -156,6 +206,7 @@
         line-height: 40px;
         letter-spacing: -3%;
       }
+
       button {
         width: 110;
         height: 38;
@@ -175,9 +226,21 @@
         color: #5d6064;
         cursor: pointer;
       }
+
       button:hover {
         background-color: #27abf1;
         color: white;
+      }
+
+      .save_btn {
+        background: #27abf1;
+        color: #ffffff;
+      }
+
+      .loading_btn {
+        background: #eaedf1;
+        color: #9fa2a6;
+        cursor: wait !important;
       }
     }
     .user_box {
@@ -186,6 +249,7 @@
       justify-content: space-between;
       margin-left: 22;
     }
+
     .user_box_left {
       display: flex;
       flex-direction: column;
@@ -221,6 +285,7 @@
         }
       }
     }
+
     // .user_box_right {
     //   display: flex;
     //   flex-direction: column;
@@ -585,5 +650,86 @@
     border-radius: 10px;
     background-color: #eff2f6;
     padding: 0 10;
+  }
+}
+
+.input_wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 30px;
+}
+
+.edit_input {
+  width: 220px;
+  height: 38px;
+  border-radius: 6px;
+  border: 1px solid #d1d4d7;
+  background-color: #f4f5fb;
+  padding: 0 12px;
+  font-family: Inter;
+  font-size: 16px;
+  color: #2c2d2e;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #27abf1;
+  }
+  &:disabled {
+    background-color: #eaedf1;
+    color: #9fa2a6;
+    cursor: not-allowed;
+  }
+}
+
+.edit_input_disabled {
+  @extend .edit_input;
+  background-color: #eaedf1;
+  border-color: #eaedf1;
+  color: #9fa2a6;
+  cursor: not-allowed;
+}
+
+.email_verified_text {
+  font-family: Inter;
+  font-size: 14px;
+  font-weight: 600;
+  color: #27abf1;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: "✔";
+    display: inline-block;
+    background-color: #27abf1;
+    color: white;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 16px;
+    font-size: 10px;
+    margin-right: 6px;
+  }
+}
+
+.withdraw_section {
+  width: 924px;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -5px;
+
+  .withdraw_btn {
+    font-family: Inter;
+    font-size: 14px;
+    color: #c1c4c7;
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #ff5f92;
+    }
   }
 }

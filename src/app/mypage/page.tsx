@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import style from "../../../styles/mypage/mypage.module.scss";
 import MiniCalendar from "../../../util/schedule/scheduleCalendar/MiniCalendar";
 import UseReactSelect from "../../../util/select/UseReactSelect";
-import KakaoMap from "../../../util/KakaoMap";
-import ScheduleCheck from "../../../util/schedule/ScheduleCheck";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store/store";
 import { fetchMyPageInfo } from "../../../util/mypage/mypageSlice";
@@ -17,6 +16,23 @@ import {
 } from "../../../util/schedule/scheduleSlice";
 import { fetchGroupDetail } from "../../../util/group/groupSlice";
 
+const KakaoMap = dynamic(() => import("../../../util/KakaoMap"), {
+  ssr: false,
+  loading: () => <div>지도를 불러오는 중입니다...</div>,
+});
+
+const ScheduleCheck = dynamic(
+  () => import("../../../util/schedule/ScheduleCheck"),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ minHeight: "500px", padding: "20px" }}>
+        일정을 불러오는 중입니다...
+      </div>
+    ),
+  },
+);
+
 export default function MyPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { userInfo } = useSelector((state: RootState) => state.mypage);
@@ -25,10 +41,47 @@ export default function MyPage() {
     (state: RootState) => state.schedule,
   );
 
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
     dispatch(fetchMyPageInfo());
-    dispatch(fetchScheduleList());
+
+    dispatch(fetchScheduleList())
+      .unwrap()
+      .then((fetchedList) => {
+        if (
+          fetchedList.length > 0 &&
+          selectedCalendarSchedule.value === "default"
+        ) {
+          const sortedSchedules = [...fetchedList].sort((a, b) => {
+            return (
+              new Date(a.startSchedule).getTime() -
+              new Date(b.startSchedule).getTime()
+            );
+          });
+
+          const targetGroup = sortedSchedules[0];
+
+          dispatch(setSelectedCalendarSchedule(targetGroup));
+          dispatch(fetchGroupDetail(targetGroup.value));
+          dispatch(fetchScheduleDetails(targetGroup.value));
+        }
+      })
+      .catch((error) => console.error("일정 리스트 로딩 실패:", error));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const currentGroupName = selectedCalendarSchedule.value;
+    if (currentGroupName && currentGroupName !== "default") {
+      dispatch(fetchGroupDetail(currentGroupName));
+      dispatch(fetchScheduleDetails(currentGroupName));
+    }
+  }, [selectedCalendarSchedule.value, dispatch]);
 
   useEffect(() => {
     if (
