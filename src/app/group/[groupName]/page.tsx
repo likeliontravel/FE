@@ -34,11 +34,13 @@ export default function groupDetail() {
     null,
   );
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const isCreator =
     user && groupDetail ? user.name === groupDetail.createdName : false;
 
   const handleEditDescriptionClick = async () => {
-    if (!groupDetail) return;
+    if (isSubmitting || !groupDetail) return;
 
     const newDescription = prompt(
       "변경할 그룹 설명을 입력해주세요:",
@@ -51,14 +53,24 @@ export default function groupDetail() {
       return;
     }
 
-    const actionResult = await dispatch(
-      updateGroupDescription({ groupName, description: newDescription.trim() }),
-    );
+    setIsSubmitting(true);
+    try {
+      const actionResult = await dispatch(
+        updateGroupDescription({
+          groupName,
+          description: newDescription.trim(),
+        }),
+      );
 
-    if (updateGroupDescription.fulfilled.match(actionResult)) {
-      alert("그룹 설명이 성공적으로 변경되었습니다.");
-    } else {
-      alert(`설명 변경 실패: ${actionResult.payload}`);
+      if (updateGroupDescription.fulfilled.match(actionResult)) {
+        alert("그룹 설명이 성공적으로 변경되었습니다.");
+      } else {
+        alert(`설명 변경 실패: ${actionResult.payload}`);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -76,6 +88,8 @@ export default function groupDetail() {
   const notice = latestNotice;
 
   const handleDeleteGroupClick = async () => {
+    if (isSubmitting) return;
+
     if (
       !confirm(
         `정말로 '${groupName}' 그룹을 삭제하시겠습니까?\n이 그룹의 모든 일정과 데이터가 영구 삭제되며 복구할 수 없습니다.`,
@@ -84,17 +98,27 @@ export default function groupDetail() {
       return;
     }
 
-    const actionResult = await dispatch(deleteGroup(groupName));
+    setIsSubmitting(true);
 
-    if (deleteGroup.fulfilled.match(actionResult)) {
-      alert("그룹이 정상적으로 삭제되었습니다.");
-      route.push("/");
-    } else {
-      alert(`그룹 삭제 실패: ${actionResult.payload}`);
+    try {
+      const actionResult = await dispatch(deleteGroup(groupName));
+
+      if (deleteGroup.fulfilled.match(actionResult)) {
+        alert("그룹이 정상적으로 삭제되었습니다.");
+        route.push("/");
+      } else {
+        alert(`그룹 삭제 실패: ${actionResult.payload}`);
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error(error);
+      setIsSubmitting(false);
     }
   };
 
   const handleLeaveGroupClick = async () => {
+    if (isSubmitting) return;
+
     if (
       !confirm(
         `'${groupName}' 그룹에서 나가시겠습니까?\n나간 이후에는 그룹원들이 다시 초대해 주기 전까지 진입할 수 없습니다.`,
@@ -103,13 +127,21 @@ export default function groupDetail() {
       return;
     }
 
-    const actionResult = await dispatch(leaveGroup(groupName));
+    setIsSubmitting(true);
 
-    if (leaveGroup.fulfilled.match(actionResult)) {
-      alert("그룹에서 탈출 완료! 안전하게 리다이렉트합니다.");
-      route.push("/");
-    } else {
-      alert(`그룹 나가기 실패: ${actionResult.payload}`);
+    try {
+      const actionResult = await dispatch(leaveGroup(groupName));
+
+      if (leaveGroup.fulfilled.match(actionResult)) {
+        alert("그룹이 삭제되었습니다.");
+        route.push("/");
+      } else {
+        alert(`그룹 나가기 실패: ${actionResult.payload}`);
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error(error);
+      setIsSubmitting(false);
     }
   };
 
@@ -135,15 +167,17 @@ export default function groupDetail() {
                   <button
                     className={style.delete_group_btn}
                     onClick={handleDeleteGroupClick}
+                    disabled={isSubmitting}
                   >
-                    그룹 삭제
+                    {isSubmitting ? "삭제 중..." : "그룹 삭제"}
                   </button>
                 ) : (
                   <button
                     className={style.leave_group_btn}
                     onClick={handleLeaveGroupClick}
+                    disabled={isSubmitting}
                   >
-                    그룹 나가기
+                    {isSubmitting ? "처리 중..." : "그룹 나가기"}
                   </button>
                 )}
               </div>

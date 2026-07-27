@@ -50,6 +50,7 @@ interface ScheduleState {
   startSchedule: string | null;
   endSchedule: string | null;
   loading: boolean;
+  placesLoading: boolean;
   error: string | null;
 }
 
@@ -128,6 +129,7 @@ const initialState: ScheduleState = {
   startSchedule: null,
   endSchedule: null,
   loading: false,
+  placesLoading: false,
   error: null,
 };
 
@@ -412,11 +414,11 @@ const scheduleSlice = createSlice({
 
       // fetchScheduleItems
       .addCase(fetchScheduleItems.pending, (state) => {
-        state.loading = true;
+        state.placesLoading = true;
         state.error = null;
       })
       .addCase(fetchScheduleItems.fulfilled, (state, action) => {
-        state.loading = false;
+        state.placesLoading = false;
         if (action.payload.page === 1) {
           state.scheduleItems = action.payload.items;
         } else {
@@ -427,7 +429,7 @@ const scheduleSlice = createSlice({
         }
       })
       .addCase(fetchScheduleItems.rejected, (state, action) => {
-        state.loading = false;
+        state.placesLoading = false;
         state.error = action.payload as string;
       })
 

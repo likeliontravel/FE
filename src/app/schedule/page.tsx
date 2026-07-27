@@ -23,6 +23,10 @@ const SchedulePage = () => {
     (state: RootState) => state.schedule.scheduleList,
   );
 
+  const isPlacesLoading = useSelector(
+    (state: RootState) => state.schedule.placesLoading,
+  );
+
   useEffect(() => {
     dispatch(fetchUserGroups());
 
@@ -53,6 +57,7 @@ const SchedulePage = () => {
         setSelectedTheme={setSelectedTheme}
         groups={groups}
         calendarOptions={calendarOptions}
+        isPlacesLoading={isPlacesLoading}
       />
       <ScheduleList
         selectedLocation={selectedLocation}

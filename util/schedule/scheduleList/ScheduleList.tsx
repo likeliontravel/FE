@@ -91,7 +91,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
     (s: RootState) => s.schedule.selectedListSchedule,
   );
 
-  const { scheduleItems, loading, error } = useSelector(
+  const { scheduleItems, placesLoading, error } = useSelector(
     (state: RootState) => state.schedule,
   );
   const [keyword, setKeyword] = useState("");
@@ -111,12 +111,29 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
     }
   }, [error]);
 
-  const handleFetchTouristSpots = async () => {
-    if (loading) return;
+  useEffect(() => {
+    setKeyword("");
+    setCurrentPage(0);
+    setApiPage(1);
+    setHasMore(true);
 
     dispatch(
       fetchScheduleItems({
-        category: selectedListSchedule.value, // "restaurants", "accommodations", "touristspots"
+        category: selectedListSchedule.value,
+        location: selectedLocation,
+        theme: selectedTheme,
+        keyword: "",
+        page: 1,
+      }),
+    );
+  }, [selectedLocation, selectedTheme, selectedListSchedule.value, dispatch]);
+
+  const handleFetchTouristSpots = async () => {
+    if (placesLoading) return;
+
+    dispatch(
+      fetchScheduleItems({
+        category: selectedListSchedule.value,
         location: selectedLocation,
         theme: selectedTheme,
         keyword: keyword,
@@ -124,7 +141,6 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
       }),
     ).then((action) => {
       if (fetchScheduleItems.fulfilled.match(action)) {
-        alert("데이터 조회가 성공적으로 되었습니다!");
         setCurrentPage(0);
         if (action.payload.items.length < 30) {
           setHasMore(false);
@@ -140,7 +156,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   };
 
   const handleNext = () => {
-    if (loading) return;
+    if (placesLoading) return;
 
     const maxPage = Math.ceil(scheduleItems.length / ITEMS_PER_PAGE) - 1;
 
@@ -203,7 +219,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
         </div>
       </div>
       <div className={styles.main_list}>
-        {!loading && scheduleItems.length === 0 && (
+        {!placesLoading && scheduleItems.length === 0 && (
           <div className={styles.empty}>검색 결과가 없습니다.</div>
         )}
         {currentItems.map((item: ScheduleItem) => (

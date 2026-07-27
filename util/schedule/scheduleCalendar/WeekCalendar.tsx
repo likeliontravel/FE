@@ -68,6 +68,7 @@ interface WeekCalendarProps {
   setSelectedTheme: (theme: string) => void;
   groups: any[];
   calendarOptions: ScheduleOption[];
+  isPlacesLoading?: boolean;
 }
 
 const WeekCalendar: React.FC<WeekCalendarProps> = ({
@@ -76,10 +77,45 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   selectedTheme,
   setSelectedTheme,
   calendarOptions,
+  isPlacesLoading = false,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [dbSavedEvents, setDbSavedEvents] = useState<any[]>([]);
+  const [isScheduleLoading, setIsScheduleLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const loadScheduleDetails = useCallback(
+    async (scheduleValue: string, startDate?: string) => {
+      setIsScheduleLoading(true);
+      try {
+        const action = await dispatch(fetchScheduleDetails(scheduleValue));
+        if (fetchScheduleDetails.fulfilled.match(action) && action.payload) {
+          const fetchedPlaces = action.payload.schedulePlaces;
+          const backupEvents = fetchedPlaces.map((place: any) => ({
+            id: String(place.id),
+            start: place.visitStart,
+          }));
+
+          setDbSavedEvents(backupEvents);
+
+          if (!startDate && fetchedPlaces.length > 0) {
+            const sorted = [...fetchedPlaces].sort(
+              (a, b) =>
+                new Date(a.visitStart).getTime() -
+                new Date(b.visitStart).getTime(),
+            );
+            if (sorted[0].visitStart) {
+              dispatch(setMainViewDate(sorted[0].visitStart));
+            }
+          }
+        }
+      } finally {
+        setIsScheduleLoading(false);
+      }
+    },
+    [dispatch],
+  );
 
   const { events, mainViewDate, currentScheduleId } = useSelector(
     (state: RootState) => state.schedule,
@@ -93,42 +129,18 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       const targetSchedule = calendarOptions.find(
         (opt) => String(opt.value) === String(selectedSchedule.value),
       );
-
       const scheduleStartDate = targetSchedule?.startSchedule;
 
       if (scheduleStartDate) {
         dispatch(setMainViewDate(scheduleStartDate));
       }
 
-      dispatch(fetchScheduleDetails(selectedSchedule.value)).then((action) => {
-        if (fetchScheduleDetails.fulfilled.match(action) && action.payload) {
-          const fetchedPlaces = action.payload.schedulePlaces;
-          const backupEvents = fetchedPlaces.map((place) => ({
-            id: String(place.id),
-            start: place.visitStart,
-          }));
-          setDbSavedEvents(backupEvents);
-
-          if (!scheduleStartDate && fetchedPlaces.length > 0) {
-            const sorted = [...fetchedPlaces].sort(
-              (a, b) =>
-                new Date(a.visitStart).getTime() -
-                new Date(b.visitStart).getTime(),
-            );
-
-            const firstEventDate = sorted[0].visitStart;
-
-            if (firstEventDate) {
-              dispatch(setMainViewDate(firstEventDate));
-            }
-          }
-        }
-      });
+      loadScheduleDetails(selectedSchedule.value, scheduleStartDate);
     } else {
       dispatch(setEvents([]));
       setDbSavedEvents([]);
     }
-  }, [selectedSchedule.value, dispatch, calendarOptions]);
+  }, [selectedSchedule.value, dispatch, calendarOptions, loadScheduleDetails]);
 
   const filteredEvents = useMemo(() => {
     return events
@@ -314,6 +326,8 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
   const handleThemeClick = createClickHandler(setSelectedTheme);
 
   const handleSaveDetails = async () => {
+    if (isSaving) return;
+
     if (selectedSchedule.value === "default") {
       alert("먼저 드롭다운에서 저장할 일정을 선택해주세요.");
       return;
@@ -328,6 +342,9 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       alert("일정 ID를 찾을 수 없습니다. 일정을 다시 불러와주세요.");
       return;
     }
+
+    setIsSaving(true);
+
     const scheduleId = currentScheduleId;
 
     const sortedEvents = [...filteredEvents].sort(
@@ -396,13 +413,15 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
             ? "일정이 성공적으로 수정되었습니다!"
             : "모든 세부 일정이 성공적으로 저장되었습니다!",
         );
-        dispatch(fetchScheduleDetails(selectedSchedule.value));
+        await loadScheduleDetails(selectedSchedule.value);
       } else {
         alert(`저장/수정 실패: ${actionResult.payload || "알 수 없는 오류"}`);
       }
     } catch (error) {
       console.error("세부 일정 저장 에러:", error);
       alert("세부 일정을 저장하는 중 시스템 오류가 발생했습니다.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -410,6 +429,11 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
     <div className={styles.container}>
       {/* ──────────────── 메인 스케줄(요일별) ──────────────── */}
       <div className={styles.mainScheduleDays}>
+        {isScheduleLoading && (
+          <div className={`${styles.loadingOverlay} ${styles.schedule}`}>
+            달력 일정을 불러오는 중입니다... 🗓️
+          </div>
+        )}
         <div className={styles.daySelect}>
           <p>{getMonthWeekString(new Date(mainViewDate))}</p>
           <UseReactSelect type="calendar" calendarOptions={calendarOptions} />
@@ -469,7 +493,12 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
         </div>
       </div>
 
-      <div className={styles.content}>
+      <div className={styles.content} style={{ position: "relative" }}>
+        {isPlacesLoading && (
+          <div className={`${styles.loadingOverlay} ${styles.places}`}>
+            장소를 열심히 찾고 있어요... 🔍
+          </div>
+        )}
         {/* ───────────────── 미니 달력 ───────────────── */}
         <MiniCalendar />
         <div className={styles.switch}>
@@ -522,11 +551,20 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
             ))}
           </div>
         )}
-        <div className={styles.create_schedule}>
-          <p onClick={handleSaveDetails}>
-            {selectedSchedule.value !== "default" && dbSavedEvents.length > 0
-              ? "일정 수정하기"
-              : "일정 저장하기"}
+        <div
+          className={styles.create_schedule}
+          style={{
+            opacity: isSaving ? 0.6 : 1,
+            cursor: isSaving ? "not-allowed" : "pointer",
+          }}
+          onClick={isSaving ? undefined : handleSaveDetails}
+        >
+          <p>
+            {isSaving
+              ? "처리 중..."
+              : selectedSchedule.value !== "default" && dbSavedEvents.length > 0
+                ? "일정 수정하기"
+                : "일정 저장하기"}
           </p>
         </div>
 
