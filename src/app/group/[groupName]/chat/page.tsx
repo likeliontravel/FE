@@ -12,6 +12,7 @@ import {
   searchMessages,
   clearSearch,
   uploadImageMessage,
+  jumpToMessage,
 } from "../../../../../util/group/chat/chatSlice";
 
 const formatOnlyDate = (dateString: string) => {
@@ -97,6 +98,8 @@ export default function WebSocketChatClient() {
   const prevScrollHeight = useRef<number | null>(null);
   const isInitialMount = useRef(true);
   const isInitialLoadPhase = useRef(true);
+  const searchScrollRef = useRef<HTMLDivElement>(null);
+  const isJumpingRef = useRef<number | null>(null);
 
   useEffect(() => {
     isInitialLoadPhase.current = true;
@@ -116,6 +119,22 @@ export default function WebSocketChatClient() {
   useLayoutEffect(() => {
     if (scrollRef.current) {
       const { scrollHeight } = scrollRef.current;
+
+      if (isJumpingRef.current !== null) {
+        const targetId = isJumpingRef.current;
+        const targetEl = document.getElementById(`msg-${targetId}`);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          targetEl.style.backgroundColor = "rgba(39, 171, 241, 0.2)";
+          targetEl.style.transition = "background-color 0.5s ease";
+
+          setTimeout(() => {
+            targetEl.style.backgroundColor = "transparent";
+          }, 2000);
+        }
+        isJumpingRef.current = null;
+        return;
+      }
 
       if (prevScrollHeight.current !== null) {
         scrollRef.current.scrollTop = scrollHeight - prevScrollHeight.current;
@@ -145,6 +164,27 @@ export default function WebSocketChatClient() {
     dispatch(searchMessages({ groupName, keyword: searchKeyword }));
   };
 
+  const handleSearchScroll = () => {
+    if (searchScrollRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = searchScrollRef.current;
+
+      if (scrollHeight - scrollTop <= clientHeight + 10) {
+        if (searchResults.length > 0) {
+          const lastMsg = searchResults[searchResults.length - 1];
+
+          dispatch(
+            searchMessages({
+              groupName,
+              keyword: searchKeyword,
+              lastMessageId: lastMsg.id,
+              direction: "BEFORE",
+            }),
+          );
+        }
+      }
+    }
+  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(e.target.value);
     if (e.target.value === "") {
@@ -158,6 +198,18 @@ export default function WebSocketChatClient() {
     }
   };
 
+  const handleJumpToMessage = async (messageId: number) => {
+    try {
+      isJumpingRef.current = messageId;
+
+      await dispatch(
+        jumpToMessage({ groupName, lastMessageId: messageId }),
+      ).unwrap();
+    } catch (error) {
+      isJumpingRef.current = null;
+      alert("해당 메시지로 이동할 수 없습니다.");
+    }
+  };
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -243,7 +295,14 @@ export default function WebSocketChatClient() {
 
   useEffect(() => {
     dispatch(fetchChatList());
-  }, [dispatch]);
+
+    setSearchKeyword("");
+    dispatch(clearSearch());
+
+    return () => {
+      dispatch(clearSearch());
+    };
+  }, [dispatch, groupName]);
 
   const handleRoomClick = (targetGroupName: string) => {
     if (targetGroupName !== groupName) {
@@ -277,13 +336,12 @@ export default function WebSocketChatClient() {
               const timeString = msg.sendAt ? formatOnlyTime(msg.sendAt) : "";
 
               return (
-                <div key={msg.id || idx}>
+                <div key={msg.id || idx} id={`msg-${msg.id}`}>
                   {showDateLine && (
                     <div className={style.date}>
                       <p>{formatOnlyDate(msg.sendAt)}</p>
                     </div>
                   )}
-
                   <div className={style.chatmessage}>
                     {msg.isMine ? (
                       <div className={style.mymessage}>
@@ -396,7 +454,11 @@ export default function WebSocketChatClient() {
                   <span>검색 결과 {searchResults.length}건</span>
                 </div>
                 {searchResults.map((msg) => (
-                  <div key={msg.id} className={style.search_item}>
+                  <div
+                    key={msg.id}
+                    className={style.search_item}
+                    onClick={() => handleJumpToMessage(msg.id)}
+                  >
                     <img
                       className={style.search_profile}
                       src={msg.profileImageUrl || "/imgs/default_profile.png"}

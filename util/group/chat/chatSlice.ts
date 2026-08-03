@@ -53,6 +53,25 @@ const sortChatListByTime = (list: ChatRoom[]) => {
   });
 };
 
+const mapMessages = (
+  rawMessages: any[],
+  senderProfiles: any,
+  myName: string,
+) => {
+  return rawMessages.map((msg: any) => {
+    const identifier = msg.senderIdentifier || msg.senderId;
+    const profile = senderProfiles[String(identifier)];
+    const senderName = profile?.name || "알 수 없는 사용자";
+
+    return {
+      ...msg,
+      name: senderName,
+      profileImageUrl: profile?.profileImageUrl || "",
+      isMine: senderName === myName,
+    };
+  });
+};
+
 export const fetchChatList = createAsyncThunk(
   "chat/fetchChatList",
   async (_, { rejectWithValue }) => {
@@ -73,41 +92,72 @@ export const fetchChatList = createAsyncThunk(
 export const searchMessages = createAsyncThunk(
   "chat/searchMessages",
   async (
-    { groupName, keyword }: { groupName: string; keyword: string },
+    {
+      groupName,
+      keyword,
+      lastMessageId,
+      direction = "BEFORE",
+    }: {
+      groupName: string;
+      keyword: string;
+      lastMessageId?: number;
+      direction?: string;
+    },
     { rejectWithValue, getState },
   ) => {
     try {
       const encodedGroup = encodeURIComponent(groupName);
       const encodedKeyword = encodeURIComponent(keyword.trim());
-      const res = await api.get(
-        `/chat/${encodedGroup}/messages/search?keyword=${encodedKeyword}`,
-      );
+
+      let url = `/chat/${encodedGroup}/messages/search?keyword=${encodedKeyword}`;
+      if (lastMessageId) url += `&lastMessageId=${lastMessageId}`;
+      if (direction) url += `&direction=${direction}`;
+
+      const res = await api.get(url);
 
       if (res.status === 204) return [];
 
       if (res.data && res.data.success) {
         const { senderProfiles, messages: rawMessages } = res.data.data;
-
         const state = getState() as RootState;
         const myName = state.auth.user?.name || "";
 
-        return rawMessages.map((msg: any) => {
-          const identifier = msg.senderIdentifier || msg.senderId;
-          const profile = senderProfiles[String(identifier)];
-          const senderName = profile?.name || "알 수 없는 사용자";
-
-          return {
-            ...msg,
-            name: senderName,
-            profileImageUrl: profile?.profileImageUrl || "",
-            isMine: senderName === myName,
-          };
-        });
+        return mapMessages(rawMessages, senderProfiles, myName);
       }
       return rejectWithValue("검색 데이터가 올바르지 않습니다.");
     } catch (err: any) {
       return rejectWithValue(
         err.response?.data?.message || "검색 중 오류 발생",
+      );
+    }
+  },
+);
+
+export const jumpToMessage = createAsyncThunk(
+  "chat/jumpToMessage",
+  async (
+    { groupName, lastMessageId }: { groupName: string; lastMessageId: number },
+    { rejectWithValue, getState },
+  ) => {
+    try {
+      const encodedGroup = encodeURIComponent(groupName);
+      const url = `/chat/${encodedGroup}/messages/search?lastMessageId=${lastMessageId}&direction=BOTH`;
+
+      const res = await api.get(url);
+
+      if (res.status === 204) return [];
+
+      if (res.data && res.data.success) {
+        const { senderProfiles, messages: rawMessages } = res.data.data;
+        const state = getState() as RootState;
+        const myName = state.auth.user?.name || "";
+
+        return mapMessages(rawMessages, senderProfiles, myName);
+      }
+      return rejectWithValue("점프 데이터가 올바르지 않습니다.");
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || "메시지 이동 중 오류 발생",
       );
     }
   },
@@ -196,11 +246,20 @@ const chatSlice = createSlice({
       })
       .addCase(searchMessages.fulfilled, (state, action) => {
         state.isSearchLoading = false;
-        state.searchResults = action.payload;
+        const { lastMessageId, direction } = action.meta.arg;
+
+        if (lastMessageId && direction === "BEFORE") {
+          state.searchResults = [...state.searchResults, ...action.payload];
+        } else {
+          state.searchResults = action.payload;
+        }
       })
       .addCase(searchMessages.rejected, (state, action) => {
         state.isSearchLoading = false;
         state.error = action.payload as string;
+      })
+      .addCase(jumpToMessage.fulfilled, (state, action) => {
+        state.messages = action.payload;
       })
       .addCase(uploadImageMessage.pending, (state) => {
         state.isImageUploading = true;
