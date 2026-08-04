@@ -1,20 +1,22 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   setSignUpData,
   signUpUser,
   resetSignUpData,
-} from '../../../util/login/authSlice';
-import { RootState, AppDispatch } from '../../../store/store';
-import styles from '../../../styles/join3/join3.module.scss';
+} from '../../../../util/login/authSlice';
+import { RootState, AppDispatch } from '../../../../store/store';
+import styles from '../../../../styles/join3/join3.module.scss';
 import Image from 'next/image';
 
-const Subscription: React.FC = () => {
+interface Step3Props {
+  onNext: () => void;
+}
+
+export default function Step3Plan({ onNext }: Step3Props) {
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
   const { signUpData, loading } = useSelector(
     (state: RootState) => state.auth
   );
@@ -32,36 +34,28 @@ const Subscription: React.FC = () => {
       return;
     }
 
+    // 백엔드 명세에 맞춰 policy와 subscribe 필드 추가
     const finalUserData = {
       email: signUpData.email,
       password: signUpData.password,
       name: signUpData.name,
+      policy: signUpData.termsAccepted.every(Boolean),
+      subscribe: signUpData.selectedPlan === 'subscribe'
     };
 
     try {
       await dispatch(signUpUser(finalUserData)).unwrap();
-      alert('회원가입이 완료되었습니다! 환영 페이지로 이동합니다.');
       dispatch(resetSignUpData());
-      router.push('/join4');
-    } catch (err) {
+      onNext(); // 가입 성공 시 Step 4(환영 화면)로 이동
+    } catch (err: any) {
       alert(`회원가입 실패: ${err}`);
     }
-  }, [dispatch, signUpData, router]);
-
-  const handleSelectSubscribe = useCallback(
-    () => handleSelectPlan('subscribe'),
-    [handleSelectPlan]
-  );
-
-  const handleSelectNoSubscribe = useCallback(
-    () => handleSelectPlan('noSubscribe'),
-    [handleSelectPlan]
-  );
+  }, [dispatch, signUpData, onNext]);
 
   return (
     <div className={styles.subscriptionContainer}>
       <div className={styles.progressContainer}>
-        <div className={styles.progressBar}></div>
+        <div className={styles.progressBar} style={{ width: '75%' }}></div>
       </div>
 
       <div className={styles.content}>
@@ -76,7 +70,7 @@ const Subscription: React.FC = () => {
         <div className={styles.rightSection}>
           <div className={styles.subscriptionOptions}>
             <div
-              onClick={handleSelectSubscribe}
+              onClick={() => handleSelectPlan('subscribe')}
               className={`${styles.option} ${
                 signUpData.selectedPlan === 'subscribe' ? styles.selected : ''
               }`}
@@ -90,7 +84,7 @@ const Subscription: React.FC = () => {
             </div>
 
             <div
-              onClick={handleSelectNoSubscribe}
+              onClick={() => handleSelectPlan('noSubscribe')}
               className={`${styles.option} ${
                 signUpData.selectedPlan === 'noSubscribe' ? styles.gray : ''
               }`}
@@ -121,6 +115,4 @@ const Subscription: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default Subscription;
+}
