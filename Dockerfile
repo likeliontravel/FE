@@ -11,6 +11,12 @@ RUN npm install --legacy-peer-deps
 # 소스 코드 복사
 COPY . .
 
+# 외부에서 전달받을 빌드 변수 선언
+ARG NEXT_PUBLIC_KAKAO_APP_KEY
+
+# 컨테이너 내부의 환경 변수로 설정 (Next.js 빌드 시 사용됨)
+ENV NEXT_PUBLIC_KAKAO_APP_KEY=$NEXT_PUBLIC_KAKAO_APP_KEY
+
 # Next.js 프로젝트 빌드
 RUN npm run build
 
