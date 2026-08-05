@@ -16,7 +16,7 @@ import {
 } from "../../../util/schedule/scheduleSlice";
 import { fetchGroupDetail } from "../../../util/group/groupSlice";
 
-const KakaoMap = dynamic(() => import("../../../util/KakaoMap"), {
+const KakaoMap = dynamic(() => import("../../../util/mypage/KakaoMap"), {
   ssr: false,
   loading: () => <div>지도를 불러오는 중입니다...</div>,
 });
