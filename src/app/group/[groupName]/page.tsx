@@ -224,7 +224,7 @@ export default function groupDetail() {
               <UseReactSelect type="calendar" />
               <MiniCalendar />
             </div> */}
-            <ScheduleCheck groupName={groupName} />
+            <ScheduleCheck groupName={groupName} isReadOnly={false} />
           </div>
         </div>
       )}

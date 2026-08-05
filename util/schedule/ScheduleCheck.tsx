@@ -65,9 +65,10 @@ const getRegionColor = (region: string) => {
 
 interface ScheduleCheckProps {
   groupName?: string;
+  isReadOnly?: boolean;
 }
 
-const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
+const ScheduleCheck = ({ groupName, isReadOnly }: ScheduleCheckProps) => {
   const route = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { mainViewDate, currentScheduleId } = useSelector(
@@ -281,20 +282,24 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
         <div className={styles.blurContainer}>
           <div className={styles.blurTextWrapper}>
             <p className={styles.blurText}>아직 그룹일정이 존재하지 않아요!</p>
-            <p className={styles.blurText_2}>
-              일정을 만들면 이곳에 일정이 표시돼요!
-            </p>
-            <h4
-              className={styles.blurText_3}
-              onClick={() => setShowCreateModal(true)}
-            >
-              새로운 일정 만들기
-            </h4>
+            {!isReadOnly && (
+              <>
+                <p className={styles.blurText_2}>
+                  일정을 만들면 이곳에 일정이 표시돼요!
+                </p>
+                <h4
+                  className={styles.blurText_3}
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  새로운 일정 만들기
+                </h4>
+              </>
+            )}
           </div>
           <img src="/imgs/blur_schedule.png" alt="blur" />
         </div>
 
-        {showCreateModal && (
+        {!isReadOnly && showCreateModal && (
           <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
               <h2>새로운 일정 만들기 🗓️</h2>
@@ -402,17 +407,19 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
             )}
           </div>
         </div>
-        <div className={styles.controls}>
-          <button className={styles.btn} onClick={() => setIsModalOpen(true)}>
-            🛠 일정 수정
-          </button>
-          <button
-            className={`${styles.btn} ${styles.deleteBtn}`}
-            onClick={handleDeleteScheduleClick}
-          >
-            🗑️ 일정 삭제
-          </button>
-        </div>
+        {!isReadOnly && (
+          <div className={styles.controls}>
+            <button className={styles.btn} onClick={() => setIsModalOpen(true)}>
+              🛠 일정 수정
+            </button>
+            <button
+              className={`${styles.btn} ${styles.deleteBtn}`}
+              onClick={handleDeleteScheduleClick}
+            >
+              🗑️ 일정 삭제
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles.summarySection}>
@@ -544,7 +551,9 @@ const ScheduleCheck = ({ groupName }: ScheduleCheckProps) => {
           </div>
         </div>
       </div>
-      {isModalOpen && <ScheduleModal onClose={() => setIsModalOpen(false)} />}
+      {!isReadOnly && isModalOpen && (
+        <ScheduleModal onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 };

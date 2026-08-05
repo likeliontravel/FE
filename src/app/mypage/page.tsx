@@ -141,7 +141,10 @@ export default function MyPage() {
           </div>
         </div>
 
-        <ScheduleCheck groupName={selectedCalendarSchedule.value} />
+        <ScheduleCheck
+          groupName={selectedCalendarSchedule.value}
+          isReadOnly={true}
+        />
       </div>
 
       <KakaoMap />
