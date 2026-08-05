@@ -174,6 +174,9 @@ export const uploadImageMessage = createAsyncThunk(
       }
       return rejectWithValue("이미지 업로드 실패: 올바르지 않은 데이터");
     } catch (err: any) {
+      if (err.response?.status === 413) {
+        return rejectWithValue("사진 용량이 너무 커서 전송할 수 없습니다.");
+      }
       return rejectWithValue(
         err.response?.data?.message || "이미지 업로드 중 오류가 발생했습니다.",
       );

@@ -93,6 +93,7 @@ export default function WebSocketChatClient() {
   const activeChats = chatList.filter((chat) => chat.sendAt);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const prevScrollHeight = useRef<number | null>(null);
@@ -214,6 +215,13 @@ export default function WebSocketChatClient() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_SIZE) {
+      alert("사진 용량은 10MB를 초과할 수 없습니다.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     setSelectedImage(file);
     setPreviewUrl(URL.createObjectURL(file));
 
@@ -229,7 +237,10 @@ export default function WebSocketChatClient() {
   };
 
   const handleSendMessage = async () => {
+    if (isSending) return;
     if (!inputMessage.trim() && !selectedImage) return;
+
+    setIsSending(true);
 
     if (selectedImage) {
       try {
@@ -243,9 +254,10 @@ export default function WebSocketChatClient() {
 
         handleCancelImage();
       } catch (error) {
-        console.error("이미지 업로드 에러:", error);
-        alert("이미지 전송에 실패했습니다.");
-        return;
+        console.error("전송 에러:", error);
+        alert(typeof error === "string" ? error : "전송에 실패했습니다.");
+      } finally {
+        setIsSending(false);
       }
     }
 
@@ -430,6 +442,11 @@ export default function WebSocketChatClient() {
               width={50}
               height={50}
               onClick={handleSendMessage}
+              style={{
+                opacity: isSending ? 0.5 : 1,
+                cursor: isSending ? "not-allowed" : "pointer",
+                pointerEvents: isSending ? "none" : "auto",
+              }}
             />
           </div>
         </div>
