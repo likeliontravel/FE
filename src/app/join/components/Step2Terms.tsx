@@ -1,21 +1,23 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSignUpData } from '../../../util/login/authSlice';
-import { RootState } from '../../../store/store';
-import styles from '../../../styles/join2/join2.module.scss';
+import { setSignUpData } from '../../../../util/login/authSlice';
+import { RootState } from '../../../../store/store';
+import styles from '../../../../styles/join2/join2.module.scss';
 import Image from 'next/image';
 
-const Terms = () => {
+interface Step2Props {
+  onNext: () => void;
+}
+
+export default function Step2Terms({ onNext }: Step2Props) {
   const dispatch = useDispatch();
-  const router = useRouter();
   const signUpData = useSelector((state: RootState) => state.auth.signUpData);
 
-  const termsAccepted = signUpData.termsAccepted || [];
+  const termsAccepted = signUpData.termsAccepted || [false, false, false];
   const [allChecked, setAllChecked] = useState(termsAccepted.every(Boolean));
-  const [openDropdown, setOpenDropdown] = useState(
+  const [openDropdown, setOpenDropdown] = useState<boolean[]>(
     Array(termsAccepted.length).fill(false)
   );
 
@@ -58,13 +60,13 @@ const Terms = () => {
       alert('모든 필수 약관에 동의해야 합니다.');
       return;
     }
-    router.push('/join3');
-  }, [router, termsAccepted]);
+    onNext();
+  }, [termsAccepted, onNext]);
 
   return (
     <div className={styles.termsContainer}>
       <div className={styles.progressContainer}>
-        <div className={styles.progressBar}></div>
+        <div className={styles.progressBar} style={{ width: '50%' }}></div>
       </div>
 
       <div className={styles.termsContent}>
@@ -99,6 +101,7 @@ const Terms = () => {
                 <span className={styles.required}>[필수]</span> 이용약관
               </label>
               <button
+                type="button"
                 className={styles.dropdown}
                 onClick={toggleDropdown(index)}
               >
@@ -121,6 +124,4 @@ const Terms = () => {
       </div>
     </div>
   );
-};
-
-export default Terms;
+}
