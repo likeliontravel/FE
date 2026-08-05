@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import style from "../../../styles/main/mainpage.module.scss";
 import useBetweenScroll from "../../../util/useBetweenScroll";
 
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store/store";
-import Link from "next/link";
+
+import PasswordChangeModal from "../../../util/mypage/passwordChangeModal";
 
 export default function MainPage() {
   const topScrollContainerRef = useRef<HTMLDivElement>(null);
@@ -16,9 +17,20 @@ export default function MainPage() {
   useBetweenScroll(bottomScrollContainerRef);
 
   const { user } = useSelector((state: RootState) => state.auth);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  useEffect(() => {
+    if (user?.shouldChangePassword) {
+      setShowPasswordModal(true);
+    }
+  }, [user]);
 
   return (
     <div className={style.body}>
+      {showPasswordModal && (
+        <PasswordChangeModal onClose={() => setShowPasswordModal(false)} />
+      )}
+
       {/* 상단 메뉴 */}
       <div className={style.top}>
         {/* 이미지 */}
