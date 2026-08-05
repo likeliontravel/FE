@@ -154,6 +154,25 @@
   transition: all 0.3s ease;
 }
 
+.failedNotice {
+  margin-bottom: 12px;
+  padding: 8px 14px;
+  background-color: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  color: #e11d48;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  strong {
+    color: #be123c;
+    font-weight: 700;
+  }
+}
+
 /* 우측 장소 정보 패널 */
 .infoPanel {
   width: 320px;

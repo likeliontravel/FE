@@ -49,6 +49,28 @@ const getCategoryStyle = (category?: string) => {
   }
 };
 
+// 주소 정제 (도로명/지번 건물번호 뒤의 층, 호, 콤마 등 무조건 잘라냄)
+const cleanAddress = (addr: string) => {
+  if (!addr) return "";
+  // 괄호 제거: (역삼동) -> 삭제
+  const noParentheses = addr.replace(/\([^)]*\)/g, " ").trim();
+
+  // 도로명/지번 건물번호까지만 자르기 (예: ~로 123, ~길 45-6)
+  const match = noParentheses.match(
+    /^(.*?(?:대로|로|길|동|리)\s*\d+(?:-\d+)?)/,
+  );
+  if (match) {
+    return match[1].trim();
+  }
+  return noParentheses;
+};
+
+// 장소 제목 정제 (괄호 안의 영문명 제거: "강남스테이힐(Gangnam Stay Hill)" -> "강남스테이힐")
+const cleanTitle = (title: string) => {
+  if (!title) return "";
+  return title.replace(/\([^)]*\)/g, "").trim();
+};
+
 export default function KakaoMap() {
   const { events, selectedCalendarSchedule } = useSelector(
     (state: RootState) => state.schedule,
@@ -67,6 +89,9 @@ export default function KakaoMap() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null,
   );
+
+  // 위치 검색 실패로 경로에서 제외된 장소 목록
+  const [failedEvents, setFailedEvents] = useState<CalendarEvent[]>([]);
 
   // 현재 선택된 일정 내에서도 '여행 시작일 ~ 종료일' 범위 안에 있는 이벤트만 1차 추출
   const currentScheduleEvents = useMemo(() => {
@@ -165,6 +190,116 @@ export default function KakaoMap() {
     });
   }, [currentScheduleEvents, selectedDate, selectedRegion]);
 
+  // 릴레이 검색(Waterfall) 스마트 로직
+  const searchLocation = useCallback(
+    (geocoder: any, places: any, event: CalendarEvent) => {
+      return new Promise<{ coords: any; event: CalendarEvent } | null>(
+        async (resolve) => {
+          if (!event) return resolve(null);
+
+          const region = event.address ? event.address.split(" ")[1] || "" : "";
+          const cleanedAddr = cleanAddress(event.address || "");
+          const cleanedTitle = cleanTitle(event.title || "");
+
+          // 정제된 주소 검색
+          if (cleanedAddr) {
+            const res1 = await new Promise<any>((r) =>
+              geocoder.addressSearch(cleanedAddr, (res: any, status: any) =>
+                status === window.kakao.maps.services.Status.OK
+                  ? r(res)
+                  : r(null),
+              ),
+            );
+            if (res1 && res1[0]) {
+              return resolve({
+                coords: new window.kakao.maps.LatLng(res1[0].y, res1[0].x),
+                event,
+              });
+            }
+          }
+
+          // 주소로 키워드 검색
+          if (cleanedAddr && places) {
+            const res2 = await new Promise<any>((r) =>
+              places.keywordSearch(cleanedAddr, (res: any, status: any) =>
+                status === window.kakao.maps.services.Status.OK
+                  ? r(res)
+                  : r(null),
+              ),
+            );
+            if (res2 && res2[0]) {
+              return resolve({
+                coords: new window.kakao.maps.LatLng(res2[0].y, res2[0].x),
+                event,
+              });
+            }
+          }
+
+          // 장소명(Title) 키워드 검색
+          if (cleanedTitle && places) {
+            const res3 = await new Promise<any>((r) =>
+              places.keywordSearch(cleanedTitle, (res: any, status: any) =>
+                status === window.kakao.maps.services.Status.OK
+                  ? r(res)
+                  : r(null),
+              ),
+            );
+            if (res3 && res3[0]) {
+              return resolve({
+                coords: new window.kakao.maps.LatLng(res3[0].y, res3[0].x),
+                event,
+              });
+            }
+          }
+
+          // "지역명 + 장소명" 검색 (예: "강남구 강남스테이힐")
+          if (region && cleanedTitle && places) {
+            const res4 = await new Promise<any>((r) =>
+              places.keywordSearch(
+                `${region} ${cleanedTitle}`,
+                (res: any, status: any) =>
+                  status === window.kakao.maps.services.Status.OK
+                    ? r(res)
+                    : r(null),
+              ),
+            );
+            if (res4 && res4[0]) {
+              return resolve({
+                coords: new window.kakao.maps.LatLng(res4[0].y, res4[0].x),
+                event,
+              });
+            }
+          }
+
+          // 키워드 띄어쓰기 자동 변환 (예: "강남스테이힐" -> "강남 스테이힐")
+          const spacedTitle = cleanedTitle.replace(
+            /(강남|역삼|서초|홍대|신촌|성수)(.+)/,
+            "$1 $2",
+          );
+          if (spacedTitle !== cleanedTitle && places) {
+            const res5 = await new Promise<any>((r) =>
+              places.keywordSearch(spacedTitle, (res: any, status: any) =>
+                status === window.kakao.maps.services.Status.OK
+                  ? r(res)
+                  : r(null),
+              ),
+            );
+            if (res5 && res5[0]) {
+              return resolve({
+                coords: new window.kakao.maps.LatLng(res5[0].y, res5[0].x),
+                event,
+              });
+            }
+          }
+
+          console.warn(`[카카오맵] 최종 검색 실패: "${event.title}"`);
+          resolve(null);
+        },
+      );
+    },
+    [],
+  );
+
   // 마커 및 경로선(Polyline) 업데이트
   const updateMarkers = useCallback(() => {
     const map = kakaoMapRef.current;
@@ -182,40 +317,26 @@ export default function KakaoMap() {
     if (!filteredEvents || filteredEvents.length === 0) return;
 
     const geocoder = new window.kakao.maps.services.Geocoder();
+    const places = new window.kakao.maps.services.Places();
 
-    // filteredEvents 기준으로 순회
-    const searchPromises = filteredEvents
-      .filter((event) => event.address)
-      .map((event, index) => {
-        return new Promise<{
-          coords: any;
-          event: CalendarEvent;
-          index: number;
-        } | null>((resolve) => {
-          geocoder.addressSearch(event.address, (result: any, status: any) => {
-            if (status === window.kakao.maps.services.Status.OK) {
-              const coords = new window.kakao.maps.LatLng(
-                result[0].y,
-                result[0].x,
-              );
-              resolve({ coords, event, index });
-            } else {
-              resolve(null);
-            }
-          });
-        });
-      });
+    const searchPromises = filteredEvents.map((event) =>
+      searchLocation(geocoder, places, event),
+    );
 
     Promise.all(searchPromises).then((results) => {
       if (currentRequestId !== requestIdRef.current) return;
 
       const validResults = results.filter((r) => r !== null);
+      const failed = filteredEvents.filter((_, idx) => results[idx] === null);
+
+      setFailedEvents(failed);
+
       const linePath: any[] = [];
 
-      validResults.forEach((item) => {
+      validResults.forEach((item, realIndex) => {
         if (!item) return;
-        const { coords, event, index } = item;
-        linePath.push(coords); // 선 그리기용 좌표 추가
+        const { coords, event } = item;
+        linePath.push(coords);
 
         const style = getCategoryStyle(event.category);
 
@@ -223,10 +344,9 @@ export default function KakaoMap() {
         pinContainer.className = "custom-pin-wrapper";
         pinContainer.style.setProperty("--pin-color", style.bg);
 
-        // 핑 배지에 [방문 순서 번호] 표기 추가 (예: 1. 가나돈까스의집)
         pinContainer.innerHTML = `
           <div class="custom-pin-badge">
-            <span style="font-weight: 800; color: ${style.bg};">${index + 1}.</span>
+            <span style="font-weight: 800; color: ${style.bg};">${realIndex + 1}.</span>
             <span>${event.title}</span>
           </div>
           <div class="custom-pin-circle">
@@ -251,27 +371,27 @@ export default function KakaoMap() {
         overlaysRef.current.push(customOverlay);
       });
 
-      // 장소가 2개 이상일 때 장소들을 이어주는 이동 동선(Polyline) 그리기
+      // 성공한 좌표들로만 동선 연결선(Polyline) 그리기
       if (linePath.length > 1) {
         const polyline = new window.kakao.maps.Polyline({
           path: linePath,
           strokeWeight: 4,
           strokeColor: "#3B82F6",
           strokeOpacity: 0.7,
-          strokeStyle: "dashed", // 점선 경로
+          strokeStyle: "dashed",
         });
         polyline.setMap(map);
         polylinesRef.current.push(polyline);
       }
 
-      // 지도 카메라 영역 재설정
+      // 지도 시야 범위 자동 맞춤
       if (linePath.length > 0) {
         const bounds = new window.kakao.maps.LatLngBounds();
         linePath.forEach((coords) => bounds.extend(coords));
         map.setBounds(bounds);
       }
     });
-  }, [filteredEvents]);
+  }, [filteredEvents, searchLocation]);
 
   // 전체 보기 버튼 클릭 이벤트
   const handleResetBounds = () => {
@@ -418,6 +538,17 @@ export default function KakaoMap() {
             </div>
           )}
         </div>
+
+        {/* 검색 실패로 경로에서 제외된 장소 알림 바 */}
+        {failedEvents.length > 0 && (
+          <div className={styles.failedNotice}>
+            <span>⚠️</span>
+            <span>
+              위치를 찾을 수 없어 지도 경로에서 제외됨:{" "}
+              <strong>{failedEvents.map((e) => e.title).join(", ")}</strong>
+            </span>
+          </div>
+        )}
 
         {/* 지도 및 정보 패널 영역 */}
         <div className={styles.mapContentWrapper}>
