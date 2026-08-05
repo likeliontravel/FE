@@ -13,6 +13,8 @@ import {
   withdrawUser,
 } from "../../../../util/mypage/mypageSlice";
 
+import { fetchUserName } from "../../../../util/login/authSlice";
+
 export default function ModifyPage() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
@@ -45,6 +47,7 @@ export default function ModifyPage() {
     setIsNameUpdating(true);
     try {
       await dispatch(updateUserName(editName)).unwrap();
+      dispatch(fetchUserName(editName));
       setIsEditing(false);
       alert("닉네임이 성공적으로 변경되었습니다.");
     } catch (error) {
