@@ -103,18 +103,39 @@ export const searchBoards = createAsyncThunk(
   }
 );
 
-// 🔥 수정 완료: 이메일 또는 이름 어느 것으로도 내 글이 매칭될 수 있도록 필터링 다변화
+// boardSlice.ts 내 fetchMyBoards 방어 코드 적용
+
 export const fetchMyBoards = createAsyncThunk(
   'board/fetchMyBoards',
-  async (userIdentifier: string, { rejectWithValue }) => {
+  async (
+    userInfo: { userIdentifier?: string; email?: string; name?: string; id?: number | string | null }, 
+    { rejectWithValue }
+  ) => {
     try {
       const response = await publicApi.get('/board', { params: { page: 0, size: 1000, sortType: 'RECENT' } });
-      const allPosts: Board[] = response.data.data.content;
+      const rawData = response?.data?.data;
       
-      return allPosts.filter(post => 
-        (post.writerIdentifier && post.writerIdentifier === userIdentifier) || 
-        (post.writer && post.writer === userIdentifier)
-      );
+      let allPosts: Board[] = [];
+      if (Array.isArray(rawData)) {
+        allPosts = rawData;
+      } else if (rawData && Array.isArray(rawData.content)) {
+        allPosts = rawData.content;
+      }
+      
+      return allPosts.filter(post => {
+        if (!post) return false;
+
+        const matchIdentifier =
+          (userInfo?.userIdentifier && post.writerIdentifier === userInfo.userIdentifier) ||
+          (userInfo?.email && post.writerIdentifier === userInfo.email) ||
+          (userInfo?.id && String(post.writerIdentifier) === String(userInfo.id));
+
+        const matchWriter =
+          (userInfo?.name && post.writer === userInfo.name) ||
+          (userInfo?.email && post.writer === userInfo.email);
+
+        return Boolean(matchIdentifier || matchWriter);
+      });
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || '내 게시글 조회 실패');
     }

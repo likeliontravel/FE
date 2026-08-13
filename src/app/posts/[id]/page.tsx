@@ -13,7 +13,7 @@ import {
   updateComment, 
   Comment,
   clearBoardLoading
-} from '../../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
+} from '../../../../util/board/boardSilce';
 import styles from '../../../../styles/postDetail/postDetail.module.scss';
 import SearchBar from '../../SearchBar/SearchBar';
 import Image from 'next/image';
@@ -49,7 +49,7 @@ const unescapeHtml = (html: string) => {
 };
 
 const getProfileImage = (url: string | null | undefined): string => {
-  if (!url || url === 'null' || url.trim() === '') {
+  if (!url || url === 'null' || typeof url !== 'string' || url.trim() === '') {
     return '/imgs/default-profile.png';
   }
   if (url.includes('default-profile') || url.includes('default_profile')) {
@@ -114,6 +114,8 @@ const CommentItem = ({
     return false;
   }, [comment, loggedInUser]);
 
+  const displayChildren = comment.children || comment.childComments || [];
+
   return (
     <div className={isReply ? styles.replyItem : styles.commentItem}>
       {isReply && (
@@ -147,7 +149,7 @@ const CommentItem = ({
             </div>
           </div>
         ) : (
-          <p className={styles.commentText}>{comment.commentContent}</p> 
+          <p className={styles.commentText}>{comment.commentContent || comment.content}</p> 
         )}
 
         <div className={styles.commentMeta}>
@@ -190,9 +192,9 @@ const CommentItem = ({
           </div>
         )}
 
-        {comment.children.length > 0 && (
+        {displayChildren.length > 0 && (
           <div className={styles.repliesContainer}>
-            {comment.children.map(child => (
+            {displayChildren.map((child: any) => (
               <CommentItem 
                 key={child.id} 
                 comment={child} 
@@ -273,20 +275,39 @@ const PostDetail = () => {
 
   const nestedComments = useMemo((): NestedComment[] => {
     if (!comments || !Array.isArray(comments)) return [];
+
+    const formatNode = (c: Comment): NestedComment => {
+      const rawChildren = c.childComments || (c as any).children || [];
+      return {
+        ...c,
+        children: rawChildren.map(formatNode)
+      };
+    };
+
+    const isPreNested = comments.some(c => (c.childComments && c.childComments.length > 0) || ((c as any).children && (c as any).children.length > 0));
+    if (isPreNested) {
+      return comments
+        .filter(c => !c.parentCommentId)
+        .map(formatNode);
+    }
+
     const map: { [key: number]: NestedComment } = {};
     const roots: NestedComment[] = [];
     
     comments.forEach(c => { 
-      map[c.id] = { ...c, children: [] }; 
+      const rawChildren = c.childComments || (c as any).children || [];
+      map[c.id] = { ...c, children: rawChildren.map(formatNode) }; 
     });
     
     comments.forEach(c => { 
-      if (c.parentCommentId && map[c.parentCommentId]) { 
-        map[c.parentCommentId].children.push(map[c.id]); 
-      } else { 
+      const pId = c.parentCommentId ? Number(c.parentCommentId) : null;
+      if (pId && map[pId]) { 
+        map[pId].children.push(map[c.id]); 
+      } else if (!pId) { 
         roots.push(map[c.id]); 
       } 
     });
+
     return roots;
   }, [comments]);
 
@@ -346,7 +367,7 @@ const PostDetail = () => {
   const handleStartEditComment = useCallback((comment: Comment) => { 
     if (!requireLogin()) return; 
     setEditingCommentId(comment.id); 
-    setEditingContent(comment.commentContent || ''); 
+    setEditingContent(comment.commentContent || comment.content || ''); 
   }, [requireLogin]);
 
   const handleCancelEditComment = useCallback(() => { 
@@ -422,20 +443,14 @@ const PostDetail = () => {
     return { __html: decoded };
   }, [post?.content]);
 
-  const handleTabClick = useCallback((tab: '지역' | '테마') => () => {
-    setActiveTab(tab);
-  }, []);
-
   const handleReplyClick = useCallback((id: number) => {
     if (!requireLogin()) return;
     setReplyingTo(prev => (prev === id ? null : id));
   }, [requireLogin]);
 
-  const currentKeywords = activeTab === '지역' ? regionKeywords : themeKeywords;
-
   if (loading && !post) return <div style={{ padding: '50px', textAlign: 'center' }}>로딩 중...</div>;
   if (error) return <div style={{ padding: '50px', textAlign: 'center' }}>에러: {error}</div>;
-  if (!post) return <div style={{ padding: '50px', textAlign: 'center' }}>게시글을 찾을 수 없습니다.</div>;
+  if (!post) return <div style={{ padding: '50px', textAlign: 'center' }}>로딩 중...</div>;
 
   return (
     <div className={styles.pageContainer}>
@@ -457,7 +472,6 @@ const PostDetail = () => {
             </div>
             
             <div className={styles.authorInfo}>
-              {/* 🔥 수정: 본문 작성자 프사 영역을 일반 <img> 태그 및 인라인 원형 스타일로 교체하여 소셜 로그인 도메인 차단 우회 */}
               <img 
                 src={getProfileImage(post.writerProfileImageUrl)} 
                 alt="작성자 프사" 
@@ -530,7 +544,6 @@ const PostDetail = () => {
               {loggedInUser ? (
                 <>
                   <div className={styles.profileHeader}>
-                    {/* 일반 <img> 태그 사용으로 소셜 CDN 도메인 차단 우회 */}
                     <img 
                       src={getProfileImage(loggedInUser.profileImageUrl)} 
                       alt="프사" 
@@ -544,7 +557,7 @@ const PostDetail = () => {
                   <div className={styles.profileActions}>
                     <button><Image src="/imgs/Popular.png" alt="인기" width={36} height={36} /><span>인기글</span></button>
                     <button onClick={() => router.push('/postWrite')}><Image src="/imgs/writing.png" alt="작성" width={36} height={36} /><span>글쓰기</span></button>
-                    <button onClick={() => router.push('/posts/mypost')}><Image src="/imgs/myposts.png" alt="내글" width={36} height={36} /><span>내 글</span></button>
+                    <button onClick={() => router.push('/posts/mypost')}><Image src="/imgs/myposts.png" alt="내글" width={36} height={36} /><span>내 글보기</span></button>
                   </div>
                 </>
               ) : (

@@ -91,9 +91,9 @@ const LoginForm = () => {
               <input type="checkbox" id="rememberMe" checked={rememberMe} onChange={handleCheckboxChange} />
               <label htmlFor="rememberMe">아이디 저장</label>
             </div>
-            <div className={styles.links}>
+            {/* <div className={styles.links}>
               <Link href="/forgot-password">비밀번호 찾기</Link>
-            </div>
+            </div> */}
           </div>
           
           {error && <p className={styles.errorMessage}>{error}</p>}

@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
-import { createBoard, uploadImage, clearBoardLoading } from '../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
+import { createBoard, uploadImage, clearBoardLoading } from '../../../util/board/boardSilce';
 
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -14,7 +14,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
-import { Image as ImageExtension } from '@tiptap/extension-image'
+import { Image as ImageExtension } from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder'; 
 import Heading from '@tiptap/extension-heading';
 
@@ -40,7 +40,6 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
   if (!editor) { return null; }
   const dispatch = useDispatch<AppDispatch>();
 
-  // 🔥 수정: .unwrap()을 추가하여 업로드 실패 시 에러 팝업이 확실하게 노출되도록 개선
   const addImage = useCallback(() => {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
@@ -50,7 +49,7 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
       const file = input.files?.[0];
       if (!file) return;
       try {
-        const imageUrl = await dispatch(uploadImage(file)).unwrap(); // unwrap으로 결과값 추출 및 예외 던지기
+        const imageUrl = await dispatch(uploadImage(file)).unwrap();
         editor.chain().focus().setImage({ src: imageUrl }).run();
       } catch (error: any) {
         alert(`이미지 업로드 실패: ${error || '서버 에러가 발생했습니다.'}`);
@@ -145,18 +144,19 @@ const WritePage: React.FC = () => {
   
   const handleSelectPlace = useCallback((place: { name: string; address: string; lat: number; lng: number }) => {
     if (editor) {
-        const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
-        const staticMapUrl = `https://dapi.kakao.com/v2/staticmap?center=${place.lat},${place.lng}&level=4&marker=${place.lng},${place.lat}&w=600&h=200&appkey=${KAKAO_APP_KEY}`;
-        
-        const placeHtml = `
-            <div data-place-name="${place.name}" style="border:1px solid #ddd; padding:10px; border-radius:8px; margin:10px 0; overflow:hidden;">
-                <img src="${staticMapUrl}" alt="${place.name} 지도" style="width:100%; height:150px; object-fit:cover; border-bottom:1px solid #eee; margin-bottom:10px;" />
-                <div style="font-weight:bold; font-size:16px;">${place.name}</div>
-                <div style="font-size: 14px; color: #888;">${place.address}</div>
-            </div>
-            <p></p>
-        `;
-        editor.chain().focus().insertContent(placeHtml).run();
+      const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY || '705ecc4de821b5770092b4aeff178932';
+
+      const staticMapUrl = `https://dapi.kakao.com/v2/maps/staticmap?appkey=${KAKAO_APP_KEY}&center=${place.lng},${place.lat}&level=3&marker=pos:${place.lng},${place.lat}&w=600&h=200`;
+
+      const placeHtml = `
+        <p></p>
+        <img src="${staticMapUrl}" alt="${place.name} 지도" style="width: 100%; max-width: 600px; height: 200px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb;" />
+        <p style="margin-top: 6px; font-size: 16px; font-weight: bold;">📍 ${place.name}</p>
+        <p style="font-size: 14px; color: #6b7280; margin-top: 2px;">${place.address}</p>
+        <p></p>
+      `;
+
+      editor.chain().focus().insertContent(placeHtml).run();
     }
   }, [editor]);
   
@@ -222,7 +222,6 @@ const WritePage: React.FC = () => {
               onChange={handleTitleChange}
             />
             <div className={styles.contentDivider}></div>
-            {/* 에디터 컨테이너 스타일 보강 */}
             <div className={styles.tiptapEditorContainer} style={{ minHeight: '600px', cursor: 'text' }} onClick={() => editor?.commands.focus()}>
               <EditorContent editor={editor} />
             </div>

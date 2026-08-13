@@ -42,13 +42,11 @@ export default function Step1Info({ onNext }: Step1Props) {
     
     try {
       const payload = { email: signUpData.email };
-      // 백엔드 성공 메시지("이메일 코드 받기 성공 : ...") 받기
       const res = await dispatch(requestEmailCode(payload)).unwrap();
       alert(res.message || '인증 코드가 이메일로 발송되었습니다.');
       setIsCodeSent(true);
       setIsCodeInputVisible(true);
     } catch (err: any) {
-      // 백엔드 실패 메시지("Mail 서버 연결 실패" 등) 팝업 출력
       alert(err || '코드 발송에 실패했습니다.');
     }
   }, [dispatch, signUpData.email]);
@@ -62,11 +60,9 @@ export default function Step1Info({ onNext }: Step1Props) {
     
     try {
       const payload = { email: signUpData.email, code: code };
-      // 백엔드 성공 메시지("이메일 인증 성공") 받기
       const res = await dispatch(verifyEmailCode(payload)).unwrap();
       alert(res.message || '이메일 인증에 성공했습니다!');
     } catch (err: any) {
-      // 백엔드 에러 메시지("인증 코드가 만료 되었습니다.", "인증코드가 다릅니다." 등) 출력
       alert(err || '인증에 실패했습니다.');
     }
   }, [dispatch, signUpData.email, code]);
