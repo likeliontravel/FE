@@ -13,7 +13,7 @@ import {
   updateComment, 
   Comment,
   clearBoardLoading
-} from '../../../../util/board/boardSilce';
+} from '../../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
 import styles from '../../../../styles/postDetail/postDetail.module.scss';
 import SearchBar from '../../SearchBar/SearchBar';
 import Image from 'next/image';
@@ -61,6 +61,18 @@ const getProfileImage = (url: string | null | undefined): string => {
   return url;
 };
 
+// 💡 깊은 계층(대댓글)까지 찾아주는 재귀 탐색 헬퍼 함수
+const findCommentRecursive = (list: any[], targetId: number): any | null => {
+  if (!list || !Array.isArray(list)) return null;
+  for (const item of list) {
+    if (Number(item.id) === Number(targetId)) return item;
+    const children = item.childComments || item.children || [];
+    const found = findCommentRecursive(children, targetId);
+    if (found) return found;
+  }
+  return null;
+};
+
 // --- 개별 댓글 아이템 컴포넌트 ---
 const CommentItem = ({ 
   comment, 
@@ -99,15 +111,18 @@ const CommentItem = ({
 }) => {
   const isEditing = editingCommentId === comment.id;
   
+  // 💡 대댓글 본인 확인 식별 로직 강화
   const isAuthor = useMemo(() => {
     if (!comment || !loggedInUser) return false;
     const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
     const myName = loggedInUser.name;
 
-    if (comment.commentWriterIdentifier && myIdentifier) {
-      return comment.commentWriterIdentifier === myIdentifier;
-    }
+    const writerId = comment.commentWriterIdentifier || (comment as any).writerIdentifier;
     const writerName = comment.commentWriter || comment.writer;
+
+    if (writerId && myIdentifier) {
+      return String(writerId) === String(myIdentifier);
+    }
     if (writerName && myName) {
       return writerName === myName;
     }
@@ -237,7 +252,6 @@ const PostDetail = () => {
   
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState('');
-  const [activeTab, setActiveTab] = useState<'지역' | '테마'>('지역');
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
@@ -317,7 +331,7 @@ const PostDetail = () => {
     try {
       await dispatch(createComment({ boardId, commentContent: newComment })).unwrap();
       setNewComment('');
-      dispatch(fetchComments(boardId));
+      await dispatch(fetchComments(boardId)).unwrap(); // 💡 최신 댓글 동기화
     } catch (err) { 
       alert(`댓글 작성 실패: ${err}`); 
     }
@@ -334,7 +348,7 @@ const PostDetail = () => {
       })).unwrap();
       setReplyContent(''); 
       setReplyingTo(null); 
-      dispatch(fetchComments(boardId));
+      await dispatch(fetchComments(boardId)).unwrap(); // 💡 최신 댓글 동기화
     } catch (err) { 
       alert(`답글 작성 실패: ${err}`); 
     }
@@ -375,20 +389,24 @@ const PostDetail = () => {
     setEditingContent(''); 
   }, []);
 
+  // 💡 대댓글까지 재귀 탐색하여 수정 처리
   const handleUpdateComment = useCallback(async () => {
     if (!editingContent.trim() || editingCommentId === null) return;
 
-    const commentToUpdate = comments.find(c => c.id === editingCommentId);
+    const commentToUpdate = findCommentRecursive(comments, editingCommentId);
     if (!commentToUpdate) return;
 
     const myId = loggedInUser?.userIdentifier || loggedInUser?.email;
     const myName = loggedInUser?.name;
     let isCommentAuthor = false;
 
-    if (commentToUpdate.commentWriterIdentifier && myId) {
-      isCommentAuthor = commentToUpdate.commentWriterIdentifier === myId;
-    } else if ((commentToUpdate.commentWriter || commentToUpdate.writer) && myName) {
-      isCommentAuthor = (commentToUpdate.commentWriter || commentToUpdate.writer) === myName;
+    const writerId = commentToUpdate.commentWriterIdentifier || commentToUpdate.writerIdentifier;
+    const writerName = commentToUpdate.commentWriter || commentToUpdate.writer;
+
+    if (writerId && myId) {
+      isCommentAuthor = String(writerId) === String(myId);
+    } else if (writerName && myName) {
+      isCommentAuthor = writerName === myName;
     }
 
     if (!isCommentAuthor) {
@@ -402,24 +420,28 @@ const PostDetail = () => {
         commentContent: editingContent 
       })).unwrap();
       setEditingCommentId(null); 
-      dispatch(fetchComments(boardId));
+      await dispatch(fetchComments(boardId)).unwrap(); // 💡 최신화 즉시 동기화
     } catch (err) { 
       alert(`수정 실패: ${err}`); 
     }
   }, [dispatch, boardId, editingCommentId, editingContent, comments, loggedInUser]);
 
+  // 💡 대댓글까지 재귀 탐색하여 즉시 삭제 처리
   const handleDeleteComment = useCallback(async (id: number) => {
-    const commentToDelete = comments.find(c => c.id === id);
+    const commentToDelete = findCommentRecursive(comments, id);
     if (!commentToDelete) return;
 
     const myId = loggedInUser?.userIdentifier || loggedInUser?.email;
     const myName = loggedInUser?.name;
     let isCommentAuthor = false;
 
-    if (commentToDelete.commentWriterIdentifier && myId) {
-      isCommentAuthor = commentToDelete.commentWriterIdentifier === myId;
-    } else if ((commentToDelete.commentWriter || commentToDelete.writer) && myName) {
-      isCommentAuthor = (commentToDelete.commentWriter || commentToDelete.writer) === myName;
+    const writerId = commentToDelete.commentWriterIdentifier || commentToDelete.writerIdentifier;
+    const writerName = commentToDelete.commentWriter || commentToDelete.writer;
+
+    if (writerId && myId) {
+      isCommentAuthor = String(writerId) === String(myId);
+    } else if (writerName && myName) {
+      isCommentAuthor = writerName === myName;
     }
 
     if (!isCommentAuthor) {
@@ -430,7 +452,7 @@ const PostDetail = () => {
     if (confirm('댓글을 삭제하시겠습니까?')) {
       try { 
         await dispatch(deleteComment(id)).unwrap(); 
-        dispatch(fetchComments(boardId)); 
+        await dispatch(fetchComments(boardId)).unwrap(); // 💡 즉시 재조회로 지연 없는 화면 삭제 반영
       } catch (err) { 
         alert(`삭제 실패: ${err}`); 
       }

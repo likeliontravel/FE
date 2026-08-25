@@ -5,6 +5,8 @@ import boardReducer from "../util/board/boardSilce";
 import scheduleReducer from "../util/schedule/scheduleSlice";
 import chatReducer from "../util/group/chat/chatSlice";
 import mypageReducer from "../util/mypage/mypageSlice";
+import notificationReducer from "../util/notification/notificationSlice";
+
 
 export const makeStore = () => {
   return configureStore({
@@ -15,6 +17,7 @@ export const makeStore = () => {
       chat: chatReducer,
       board: boardReducer,
       schedule: scheduleReducer,
+      notification: notificationReducer,
     },
   });
 };

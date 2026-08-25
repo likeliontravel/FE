@@ -7,7 +7,7 @@ import { AppDispatch, RootState } from '../../../../store/store';
 import { 
   createBoard, 
   updateBoard, 
-  uploadImage, 
+  uploadImages,
   clearBoardLoading,
   fetchBoardDetail 
 } from '../../../../util/board/boardSilce';
@@ -19,8 +19,8 @@ import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
 import FontFamily from '@tiptap/extension-font-family';
 import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color'; // 올바른 Tiptap Color 임포트 유지
-import { Image as ImageExtension } from '@tiptap/extension-image'
+import Color from '@tiptap/extension-color';
+import { Image as ImageExtension } from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder'; 
 import Heading from '@tiptap/extension-heading';
 
@@ -31,7 +31,6 @@ import MapModal from '../MapModal';
 const regionKeywords = ['서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'];
 const themeKeywords = ['자연 속에서 힐링', '미식 여행 및 먹방 중심', '체험 및 액티비티', '문화예술 및 역사탐방', '기타'];
 
-// --- HTML 디코딩 함수 ---
 const decodeHtml = (html: string) => {
   if (typeof window === 'undefined') return html;
   const txt = document.createElement('textarea');
@@ -59,18 +58,28 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
     input.setAttribute('accept', 'image/*');
+    input.setAttribute('multiple', 'true');
     input.click();
+
     input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
+      const files = input.files;
+      if (!files || files.length === 0) return;
+
+      const fileArray = Array.from(files);
+
+      if (fileArray.length > 5) {
+        alert('게시글 이미지는 최대 5장까지 업로드할 수 있습니다.');
+        return;
+      }
+
       try {
-        const resultAction = await dispatch(uploadImage(file));
-        if (uploadImage.fulfilled.match(resultAction)) {
-           const imageUrl = resultAction.payload;
-           editor.chain().focus().setImage({ src: imageUrl }).run();
-        }
-      } catch (error) {
-        alert(`이미지 업로드 실패: ${error}`);
+        const imageUrls = await dispatch(uploadImages(fileArray)).unwrap();
+        
+        imageUrls.forEach((url: string) => {
+          editor.chain().focus().setImage({ src: url }).run();
+        });
+      } catch (error: any) {
+        alert(`이미지 업로드 실패: ${error || '서버 에러가 발생했습니다.'}`);
       }
     };
   }, [editor, dispatch]);
@@ -85,8 +94,14 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
   return (
     <div className={styles.toolbar}>
       <div className={styles.toolGroupLeft}>
-        <button type="button" className={styles.mediaButton} onClick={addImage}><img src="/imgs/post_img.png" alt="사진" /><span>사진</span></button>
-        <button type="button" className={styles.mediaButton} onClick={onMapClick}><img src="/imgs/post_place.png" alt="지도" /><span>지도</span></button>
+        <button type="button" className={styles.mediaButton} onClick={addImage}>
+          <img src="/imgs/post_img.png" alt="사진" />
+          <span>사진</span>
+        </button>
+        <button type="button" className={styles.mediaButton} onClick={onMapClick}>
+          <img src="/imgs/post_place.png" alt="지도" />
+          <span>지도</span>
+        </button>
         <div className={styles.divider}></div>
         <div className={styles.textStyleGroup}>
           <select className={styles.fontSelect} onChange={handleFontFamilyChange}>
@@ -151,7 +166,7 @@ const DynamicWritePage: React.FC = () => {
     },
   });
 
-  // 1. 비로그인 자 차단 및 로그인 페이지 우회 리다이렉트
+  // 비로그인 차단
   useEffect(() => {
     if (!authLoading && !loggedInUser) {
       alert('로그인이 필요한 서비스입니다.');
@@ -159,7 +174,7 @@ const DynamicWritePage: React.FC = () => {
     }
   }, [loggedInUser, authLoading, router]);
 
-  // 2. 초기 로딩 (수정 모드일 때 기존 게시글 데이터 불러오기)
+  // 수정 모드 시 데이터 조회
   useEffect(() => {
     dispatch(clearBoardLoading());
     if (isEditMode && id) {
@@ -167,29 +182,25 @@ const DynamicWritePage: React.FC = () => {
     }
   }, [dispatch, id, isEditMode]);
 
-  // 🔥 3. 본인 글 검증용 2단계 안심 계산식
   const isAuthor = useMemo(() => {
     if (!post || !loggedInUser) return false;
     const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
     const myName = loggedInUser.name;
 
-    // 1단계: 고유 식별자가 존재할 경우 비교
     if (post.writerIdentifier && myIdentifier) {
       return post.writerIdentifier === myIdentifier;
     }
-    // 2단계: 목록 조회 시 식별자가 유실되었을 경우 이름으로 최종 방어 가드
     if (post.writer && myName) {
       return post.writer === myName;
     }
     return false;
   }, [post, loggedInUser]);
 
-  // 🔥 4. 본인 글 검증 가드 로직 (비정상 진입 시 홈으로 강제 퇴출)
   useEffect(() => {
     if (isEditMode && post && loggedInUser) {
       if (!isAuthor) {
         alert('본인이 작성한 게시글만 수정할 수 있습니다.');
-        router.replace('/post'); // 게시판 홈으로 추방
+        router.replace('/post');
       }
     }
   }, [isEditMode, post, loggedInUser, isAuthor, router]);
@@ -213,8 +224,15 @@ const DynamicWritePage: React.FC = () => {
   
   const handleSelectPlace = useCallback((place: { name: string; address: string; lat: number; lng: number }) => {
     if (editor) {
-        const staticMapUrl = `https://dapi.kakao.com/v2/staticmap?center=${place.lat},${place.lng}&level=4&marker=${place.lng},${place.lat}&w=600&h=200&appkey=${process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY}`;
-        const placeHtml = `<div style="border:1px solid #ddd; padding:10px; border-radius:8px; margin:10px 0;"><img src="${staticMapUrl}" style="width:100%; height:150px; object-fit:cover;" /><div style="font-weight:bold;">${place.name}</div><div>${place.address}</div></div><p></p>`;
+        const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY || '705ecc4de821b5770092b4aeff178932';
+        const staticMapUrl = `https://dapi.kakao.com/v2/maps/staticmap?appkey=${KAKAO_KEY}&center=${place.lng},${place.lat}&level=3&marker=pos:${place.lng},${place.lat}&w=600&h=200`;
+        const placeHtml = `
+          <p></p>
+          <img src="${staticMapUrl}" alt="${place.name} 지도" style="width: 100%; max-width: 600px; height: 200px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb;" />
+          <p style="margin-top: 6px; font-size: 16px; font-weight: bold;">📍 ${place.name}</p>
+          <p style="font-size: 14px; color: #6b7280; margin-top: 2px;">${place.address}</p>
+          <p></p>
+        `;
         editor.chain().focus().insertContent(placeHtml).run();
     }
   }, [editor]);
@@ -231,6 +249,7 @@ const DynamicWritePage: React.FC = () => {
       return;
     }
 
+    // 본문의 첫 번째 이미지를 썸네일로 자동 추출
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
     const firstImage = tempDiv.querySelector('img');
@@ -240,7 +259,6 @@ const DynamicWritePage: React.FC = () => {
 
     try {
       if (isEditMode && id) {
-        // 🔥 전송 직전 2단계 최후방 본인 검증 가드
         if (!isAuthor) {
           alert('본인 글만 수정할 수 있습니다.');
           return;
@@ -262,7 +280,17 @@ const DynamicWritePage: React.FC = () => {
       <div className={styles.centeredContainer}>
         <section className={styles.searchSection}><SearchBar onSearch={() => {}} /></section>
         <div className={styles.editorBackground}>
-          <MenuBar editor={editor} selectedRegion={selectedRegion} onRegionChange={handleRegionChange} selectedTheme={selectedTheme} onThemeChange={handleThemeChange} onSubmit={handleSubmit} onMapClick={openMapModal} loading={loading || false} isEditMode={isEditMode} />
+          <MenuBar 
+            editor={editor} 
+            selectedRegion={selectedRegion} 
+            onRegionChange={handleRegionChange} 
+            selectedTheme={selectedTheme} 
+            onThemeChange={handleThemeChange} 
+            onSubmit={handleSubmit} 
+            onMapClick={openMapModal} 
+            loading={loading || false} 
+            isEditMode={isEditMode} 
+          />
           <main className={styles.editorWrapper}>
             <input type="text" className={styles.titleInput} placeholder="제목을 입력해주세요" value={title} onChange={handleTitleChange} />
             <div className={styles.contentDivider}></div>

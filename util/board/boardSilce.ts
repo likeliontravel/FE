@@ -1,7 +1,6 @@
 'use client';
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
 import { api, publicApi } from '../api';
 
 export interface Board {
@@ -103,8 +102,6 @@ export const searchBoards = createAsyncThunk(
   }
 );
 
-// boardSlice.ts 내 fetchMyBoards 방어 코드 적용
-
 export const fetchMyBoards = createAsyncThunk(
   'board/fetchMyBoards',
   async (
@@ -170,21 +167,40 @@ export const fetchComments = createAsyncThunk<Comment[], number>(
   }
 );
 
-export const uploadImage = createAsyncThunk<string, File>(
-  'board/uploadImage',
-  async (imageFile, { rejectWithValue }) => {
+export const uploadImages = createAsyncThunk<string[], File[] | FileList | File>(
+  'board/uploadImages',
+  async (imageFiles, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-      formData.append('file', imageFile);
-      const response = await api.post('/board/upload-image', formData, {
+      const filesArray = imageFiles instanceof File ? [imageFiles] : Array.from(imageFiles);
+
+      // 최대 5장 검증
+      if (filesArray.length === 0) {
+        return rejectWithValue('업로드할 이미지 파일을 선택해주세요.');
+      }
+      if (filesArray.length > 5) {
+        return rejectWithValue('게시글 이미지는 최대 5장까지 업로드할 수 있습니다.');
+      }
+
+      for (const file of filesArray) {
+        if (file.size > 10 * 1024 * 1024) {
+          return rejectWithValue(`'${file.name}' 파일 크기가 10MB를 초과합니다.`);
+        }
+        formData.append('files', file);
+      }
+
+      const response = await api.post('/board/images', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || '이미지 업로드 실패');
     }
   }
 );
+
+export const uploadImage = uploadImages;
 
 export const createBoard = createAsyncThunk(
   'board/createBoard',
@@ -224,9 +240,17 @@ export const deleteBoard = createAsyncThunk<number, number>(
 
 export const createComment = createAsyncThunk<any, { boardId: number; commentContent: string; parentCommentId?: number | null }>(
   'board/createComment',
-  async ({ boardId, commentContent, parentCommentId }, { rejectWithValue }) => {
+  async ({ boardId, commentContent, parentCommentId }, { dispatch, rejectWithValue }) => {
     try {
-      const response = await api.post(`/comment/${boardId}`, { content: commentContent, parentCommentId });
+      const payload = {
+        content: commentContent,
+        commentContent: commentContent,
+        parentCommentId: parentCommentId ?? null,
+        parentId: parentCommentId ?? null,
+      };
+
+      const response = await api.post(`/comment/${boardId}`, payload);
+      dispatch(fetchComments(boardId));
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || '댓글 작성 실패');

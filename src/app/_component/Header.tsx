@@ -1,17 +1,37 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import style from "../../../styles/component/header.module.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store/store";
 import { logoutUser } from "../../../util/login/authSlice";
+import { fetchUnreadCount } from "../../../util/notification/notificationSlice";
+import { useNotificationSSE } from "../../../util/notification/useNotificationSSE";
+import NotificationModal from "./NotificationModal";
 
 export default function Header() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
   const { user } = useSelector((state: RootState) => state.auth || {});
+  
+  // Redux에서 안 읽은 알림 개수 실시간 가져오기
+  const { unreadCount } = useSelector((state: RootState) => state.notification || { unreadCount: 0 });
+
+  // 알림창 열림/닫힘 상태
+  const [isNotiOpen, setIsNotiOpen] = useState(false);
+
+  // 1. 실시간 SSE 연결 훅 실행 (로그인 시 자동 연결)
+  useNotificationSSE();
+
+  // 2. 로그인 시 초기 안 읽은 알림 개수 조회
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchUnreadCount());
+    }
+  }, [user, dispatch]);
 
   const handleLogout = async () => {
     if (confirm("정말 로그아웃 하시겠습니까?")) {
@@ -32,6 +52,15 @@ export default function Header() {
       alert("로그인이 필요한 서비스입니다.");
       router.push("/login");
     }
+  };
+
+  const handleAlarmClick = () => {
+    if (!user) {
+      alert("로그인이 필요한 서비스입니다.");
+      router.push("/login");
+      return;
+    }
+    setIsNotiOpen((prev) => !prev);
   };
 
   return (
@@ -64,7 +93,48 @@ export default function Header() {
           </div>
 
           <div className={style.userGroup}>
-            <div className={style.alram}></div>
+            <div style={{ position: "relative" }}>
+              <div 
+                className={style.alram} 
+                onClick={handleAlarmClick}
+                style={{ cursor: "pointer", position: "relative" }}
+              >
+                {user && unreadCount > 0 && (
+                  <span 
+                    style={{
+                      position: "absolute",
+                      top: "-6px",
+                      right: "-8px",
+                      minWidth: "18px",
+                      height: "18px",
+                      padding: "0 4px",
+                      backgroundColor: "#27ABF1",
+                      color: "#ffffff",
+                      fontSize: "11px",
+                      fontWeight: "800",
+                      borderRadius: "10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "2px solid #ffffff",
+                      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.15)",
+                      lineHeight: "1",
+                      pointerEvents: "none",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </div>
+
+              {/* 알림 드롭다운 모달창 */}
+              <NotificationModal 
+                isOpen={isNotiOpen} 
+                onClose={() => setIsNotiOpen(false)} 
+              />
+            </div>
+
             <div className={style.user}>
               <div
                 className={style.userImage}

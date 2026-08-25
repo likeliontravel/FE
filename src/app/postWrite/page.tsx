@@ -4,7 +4,11 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
-import { createBoard, uploadImage, clearBoardLoading } from '../../../util/board/boardSilce';
+import { 
+  createBoard, 
+  uploadImages, 
+  clearBoardLoading 
+} from '../../../util/board/boardSilce';
 
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -44,13 +48,26 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
     input.setAttribute('accept', 'image/*');
+    input.setAttribute('multiple', 'true');
     input.click();
+
     input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
+      const files = input.files;
+      if (!files || files.length === 0) return;
+
+      const fileArray = Array.from(files);
+
+      if (fileArray.length > 5) {
+        alert('게시글 이미지는 최대 5장까지 업로드할 수 있습니다.');
+        return;
+      }
+
       try {
-        const imageUrl = await dispatch(uploadImage(file)).unwrap();
-        editor.chain().focus().setImage({ src: imageUrl }).run();
+        const imageUrls = await dispatch(uploadImages(fileArray)).unwrap();
+        
+        imageUrls.forEach((url: string) => {
+          editor.chain().focus().setImage({ src: url }).run();
+        });
       } catch (error: any) {
         alert(`이미지 업로드 실패: ${error || '서버 에러가 발생했습니다.'}`);
       }
@@ -67,8 +84,14 @@ const MenuBar = ({ editor, selectedRegion, onRegionChange, selectedTheme, onThem
   return (
     <div className={styles.toolbar}>
       <div className={styles.toolGroupLeft}>
-        <button type="button" className={styles.mediaButton} onClick={addImage}><img src="/imgs/post_img.png" alt="사진" /><span>사진</span></button>
-        <button type="button" className={styles.mediaButton} onClick={onMapClick}><img src="/imgs/post_place.png" alt="지도" /><span>지도</span></button>
+        <button type="button" className={styles.mediaButton} onClick={addImage}>
+          <img src="/imgs/post_img.png" alt="사진" />
+          <span>사진</span>
+        </button>
+        <button type="button" className={styles.mediaButton} onClick={onMapClick}>
+          <img src="/imgs/post_place.png" alt="지도" />
+          <span>지도</span>
+        </button>
         <div className={styles.divider}></div>
         <div className={styles.textStyleGroup}>
           <select className={styles.fontSelect} onChange={handleFontFamilyChange}>
@@ -144,19 +167,16 @@ const WritePage: React.FC = () => {
   
   const handleSelectPlace = useCallback((place: { name: string; address: string; lat: number; lng: number }) => {
     if (editor) {
-      const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY || '705ecc4de821b5770092b4aeff178932';
-
-      const staticMapUrl = `https://dapi.kakao.com/v2/maps/staticmap?appkey=${KAKAO_APP_KEY}&center=${place.lng},${place.lat}&level=3&marker=pos:${place.lng},${place.lat}&w=600&h=200`;
-
-      const placeHtml = `
-        <p></p>
-        <img src="${staticMapUrl}" alt="${place.name} 지도" style="width: 100%; max-width: 600px; height: 200px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb;" />
-        <p style="margin-top: 6px; font-size: 16px; font-weight: bold;">📍 ${place.name}</p>
-        <p style="font-size: 14px; color: #6b7280; margin-top: 2px;">${place.address}</p>
-        <p></p>
-      `;
-
-      editor.chain().focus().insertContent(placeHtml).run();
+        const KAKAO_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY || '705ecc4de821b5770092b4aeff178932';
+        const staticMapUrl = `https://dapi.kakao.com/v2/maps/staticmap?appkey=${KAKAO_KEY}&center=${place.lng},${place.lat}&level=3&marker=pos:${place.lng},${place.lat}&w=600&h=200`;
+        const placeHtml = `
+          <p></p>
+          <img src="${staticMapUrl}" alt="${place.name} 지도" style="width: 100%; max-width: 600px; height: 200px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb;" />
+          <p style="margin-top: 6px; font-size: 16px; font-weight: bold;">📍 ${place.name}</p>
+          <p style="font-size: 14px; color: #6b7280; margin-top: 2px;">${place.address}</p>
+          <p></p>
+        `;
+        editor.chain().focus().insertContent(placeHtml).run();
     }
   }, [editor]);
   
@@ -200,7 +220,7 @@ const WritePage: React.FC = () => {
     <div className={styles.pageContainer}>
       <div className={styles.centeredContainer}>
         <section className={styles.searchSection}>
-          <SearchBar onSearch={(term) => console.log('검색:', term)} />
+          <SearchBar onSearch={() => {}} />
         </section>
         <div className={styles.editorBackground}>
           <MenuBar

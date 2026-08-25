@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import RandomLoading from './RandomLoading';
 import RandomResult from './RandomResult';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, Transition } from 'framer-motion';
 import styles from '../../../styles/Random/Random.module.scss';
 
 const travelDestinations = [
@@ -15,15 +15,19 @@ const travelDestinations = [
   { name: '경주', image: '/imgs/gyeongjuResult.png' },
 ];
 
-const ballInitial = { y: -50, opacity: 0 };
-const ballAnimate = { y: 200, opacity: 1 };
-const ballTransition = { duration: 1.2 };
+const ballInitial = { y: -40, opacity: 0, scale: 0.7 };
+const ballAnimate = { y: 150, opacity: 1, scale: 1 };
+
+const ballTransition: Transition = {
+  type: 'spring',
+  stiffness: 450,
+  damping: 24,
+};
+
 const ballStyle = { cursor: 'pointer' };
 
 export default function RandomTravelPicker() {
-  const [travel, setTravel] = useState<{ name: string; image: string } | null>(
-    null
-  );
+  const [travel, setTravel] = useState<{ name: string; image: string } | null>(null);
   const [rolling, setRolling] = useState(false);
   const [resultReady, setResultReady] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -39,7 +43,7 @@ export default function RandomTravelPicker() {
       setTravel(travelDestinations[randomIndex]);
       setRolling(false);
       setResultReady(true);
-    }, 2000);
+    }, 1800);
   }, []);
 
   useEffect(() => {
@@ -50,8 +54,10 @@ export default function RandomTravelPicker() {
     pickRandomTravel();
   }, [pickRandomTravel]);
 
-  const handleBallClick = useCallback(() => {
-    setShowResult(true);
+  const handleDropComplete = useCallback(() => {
+    setTimeout(() => {
+      setShowResult(true);
+    }, 80);
   }, []);
 
   const SelectedBallDrop = () => (
@@ -61,7 +67,8 @@ export default function RandomTravelPicker() {
         initial={ballInitial}
         animate={ballAnimate}
         transition={ballTransition}
-        onClick={handleBallClick}
+        onAnimationComplete={handleDropComplete} // 착지 즉시 자동 개봉
+        onClick={() => setShowResult(true)}      // 클릭 시에도 즉시 개봉
         style={ballStyle}
       >
         <Image
