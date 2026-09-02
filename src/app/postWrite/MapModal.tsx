@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface MapModalProps {
   onClose: () => void;
@@ -23,46 +23,60 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
 
   const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY || '705ecc4de821b5770092b4aeff178932';
 
-  // 카카오 지도 스크립트 안전 로딩 및 타임아웃 처리
-  useEffect(() => {
-    let checkInterval: NodeJS.Timeout;
-    let timeoutTimer: NodeJS.Timeout;
+  const initKakaoSDK = useCallback(() => {
+    if (!window.kakao || !window.kakao.maps) return;
 
-    // 카카오 스크립트가 없으면 헤더에 주입
-    if (!document.getElementById('kakao-map-script')) {
-      const script = document.createElement('script');
+    window.kakao.maps.load(() => {
+      setIsLoaded(true);
+      setLoadError(null);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (window.kakao && window.kakao.maps) {
+      initKakaoSDK();
+      return;
+    }
+
+    let script = document.getElementById('kakao-map-script') as HTMLScriptElement;
+    if (!script) {
+      script = document.createElement('script');
       script.id = 'kakao-map-script';
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_APP_KEY}&libraries=services&autoload=false`;
       script.async = true;
       document.head.appendChild(script);
     }
 
-    // 0.1초마다 kakao 객체 완성 상태 폴링 감지
-    checkInterval = setInterval(() => {
-      if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
-        window.kakao.maps.load(() => {
-          setIsLoaded(true);
-          clearInterval(checkInterval);
-          clearTimeout(timeoutTimer);
-        });
+    // 3. 스크립트 로드 완료 이벤트 리스너 등록
+    const handleScriptLoad = () => {
+      initKakaoSDK();
+    };
+    script.addEventListener('load', handleScriptLoad);
+
+    // 4. 안전장치: 0.1초마다 kakao.maps 존재 여부 감지 (services 대기 조건 제거!)
+    const interval = setInterval(() => {
+      if (window.kakao && window.kakao.maps) {
+        initKakaoSDK();
+        clearInterval(interval);
       }
     }, 100);
 
-    // 3.5초 동안 응답이 없으면 401 차단으로 판단하여 에러 출력
-    timeoutTimer = setTimeout(() => {
-      clearInterval(checkInterval);
-      if (!isLoaded) {
+    // 5. 5초 타임아웃
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      if (!window.kakao || !window.kakao.maps) {
         setLoadError('카카오 지도 로딩 실패!\n(카카오 개발자 센터 도메인 등록 상태를 확인해주세요.)');
       }
-    }, 3500);
+    }, 5000);
 
     return () => {
-      clearInterval(checkInterval);
-      clearTimeout(timeoutTimer);
+      script.removeEventListener('load', handleScriptLoad);
+      clearInterval(interval);
+      clearTimeout(timeout);
     };
-  }, [KAKAO_APP_KEY, isLoaded]);
+  }, [KAKAO_APP_KEY, initKakaoSDK]);
 
-  // 지도 인스턴스 생성
+  // 지도 생성 (isLoaded 가 true 가 되었을 때)
   useEffect(() => {
     if (isLoaded && mapContainer.current && !map) {
       try {
@@ -76,7 +90,7 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
         setTimeout(() => {
           newMap.relayout();
           newMap.setCenter(options.center);
-        }, 200);
+        }, 150);
       } catch (e) {
         console.error('지도 생성 중 에러:', e);
         setLoadError('지도 인스턴스 생성에 실패했습니다.');
@@ -91,8 +105,8 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
       return;
     }
 
-    if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
-      alert('지도 서비스가 아직 준비되지 않았습니다.');
+    if (!isLoaded || !window.kakao?.maps?.services) {
+      alert('지도 서비스가 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.');
       return;
     }
 

@@ -80,7 +80,7 @@
 }
 
 .sidebar {
-  width: 300px;
+  width: 320px; 
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -89,15 +89,13 @@
   top: 20px;
 }
 
-.profileCard,
-.categoryContainer {
+.profileCard {
   background: #fff;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   border: 1px solid #eaeaea;
-}
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 
-.profileCard {
   .profileHeader {
     display: flex;
     align-items: center;
@@ -108,10 +106,12 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
+    object-fit: cover;
   }
   .username {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
+    color: #1e293b;
   }
   .profileDivider {
     width: 100%;
@@ -119,67 +119,62 @@
     background-color: #f0f0f0;
     margin-bottom: 16px;
   }
+
   .profileActions {
-    display: flex;
-    justify-content: space-around;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
     width: 100%;
 
     button {
-      background: none;
-      border: none;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 8px;
       cursor: pointer;
       display: flex;
-      flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       font-size: 14px;
-      font-weight: 500;
-      color: #555;
+      font-weight: 600;
+      transition: all 0.2s ease-in-out;
 
       img {
-        width: 36px;
-        height: 36px;
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
       }
-    }
-  }
-}
 
-.categoryContainer {
-  .categoryTabs {
-    display: flex;
-    justify-content: flex-start;
-    gap: 12px;
-    margin-bottom: 24px;
-    button {
-      padding: 8px 16px;
-      font-size: 15px;
-      font-weight: 700;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      background-color: transparent;
-      color: #999;
-      border: none;
-      &.active {
-        background-color: #27abf1;
-        color: #fff;
-      }
-    }
-  }
-  .categoryItems {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px 8px;
-    .categoryItem {
-      font-size: 15px;
-      cursor: pointer;
-      text-align: center;
-      color: #555;
-      padding-bottom: 4px;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s ease;
       &:hover {
-        color: #27abf1;
+        transform: translateY(-2px);
+      }
+
+      /* 1. 글쓰기 버튼 (하이라이트 스타일) */
+      &.writeButton {
+        background-color: #e0f2fe;
+        border-color: #bae6fd;
+        color: #0284c7;
+
+        &:hover {
+          background-color: #27abf1;
+          border-color: #27abf1;
+          color: #ffffff;
+          box-shadow: 0 4px 10px rgba(39, 171, 241, 0.25);
+        }
+      }
+
+      /* 2. 내 글 보기 버튼 (깔끔한 소프트 화이트 스타일) */
+      &.myPostsButton {
+        background-color: #f8fafc;
+        border-color: #e2e8f0;
+        color: #475569;
+
+        &:hover {
+          background-color: #f1f5f9;
+          border-color: #cbd5e1;
+          color: #1e293b;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
       }
     }
   }
@@ -430,4 +425,36 @@
 .commentDate {
   font-size: 13px;
   color: #888;
+}
+
+.loginContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px 0;
+
+  p {
+    font-size: 15px;
+    color: #555;
+    text-align: center;
+  }
+
+  .loginButton {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    background-color: #27abf1;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #1a92d1;
+    }
+  }
 }

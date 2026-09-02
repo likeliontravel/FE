@@ -13,7 +13,7 @@ import {
   updateComment, 
   Comment,
   clearBoardLoading
-} from '../../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
+} from '../../../../util/board/boardSilce';
 import styles from '../../../../styles/postDetail/postDetail.module.scss';
 import SearchBar from '../../SearchBar/SearchBar';
 import Image from 'next/image';
@@ -61,7 +61,6 @@ const getProfileImage = (url: string | null | undefined): string => {
   return url;
 };
 
-// 💡 깊은 계층(대댓글)까지 찾아주는 재귀 탐색 헬퍼 함수
 const findCommentRecursive = (list: any[], targetId: number): any | null => {
   if (!list || !Array.isArray(list)) return null;
   for (const item of list) {
@@ -111,7 +110,6 @@ const CommentItem = ({
 }) => {
   const isEditing = editingCommentId === comment.id;
   
-  // 💡 대댓글 본인 확인 식별 로직 강화
   const isAuthor = useMemo(() => {
     if (!comment || !loggedInUser) return false;
     const myIdentifier = loggedInUser.userIdentifier || loggedInUser.email;
@@ -331,7 +329,7 @@ const PostDetail = () => {
     try {
       await dispatch(createComment({ boardId, commentContent: newComment })).unwrap();
       setNewComment('');
-      await dispatch(fetchComments(boardId)).unwrap(); // 💡 최신 댓글 동기화
+      await dispatch(fetchComments(boardId)).unwrap();
     } catch (err) { 
       alert(`댓글 작성 실패: ${err}`); 
     }
@@ -348,7 +346,7 @@ const PostDetail = () => {
       })).unwrap();
       setReplyContent(''); 
       setReplyingTo(null); 
-      await dispatch(fetchComments(boardId)).unwrap(); // 💡 최신 댓글 동기화
+      await dispatch(fetchComments(boardId)).unwrap();
     } catch (err) { 
       alert(`답글 작성 실패: ${err}`); 
     }
@@ -389,7 +387,6 @@ const PostDetail = () => {
     setEditingContent(''); 
   }, []);
 
-  // 💡 대댓글까지 재귀 탐색하여 수정 처리
   const handleUpdateComment = useCallback(async () => {
     if (!editingContent.trim() || editingCommentId === null) return;
 
@@ -420,13 +417,12 @@ const PostDetail = () => {
         commentContent: editingContent 
       })).unwrap();
       setEditingCommentId(null); 
-      await dispatch(fetchComments(boardId)).unwrap(); // 💡 최신화 즉시 동기화
+      await dispatch(fetchComments(boardId)).unwrap();
     } catch (err) { 
       alert(`수정 실패: ${err}`); 
     }
   }, [dispatch, boardId, editingCommentId, editingContent, comments, loggedInUser]);
 
-  // 💡 대댓글까지 재귀 탐색하여 즉시 삭제 처리
   const handleDeleteComment = useCallback(async (id: number) => {
     const commentToDelete = findCommentRecursive(comments, id);
     if (!commentToDelete) return;
@@ -452,7 +448,7 @@ const PostDetail = () => {
     if (confirm('댓글을 삭제하시겠습니까?')) {
       try { 
         await dispatch(deleteComment(id)).unwrap(); 
-        await dispatch(fetchComments(boardId)).unwrap(); // 💡 즉시 재조회로 지연 없는 화면 삭제 반영
+        await dispatch(fetchComments(boardId)).unwrap();
       } catch (err) { 
         alert(`삭제 실패: ${err}`); 
       }
@@ -576,10 +572,16 @@ const PostDetail = () => {
                     <p className={styles.username}>{loggedInUser.name}님</p>
                   </div>
                   <div className={styles.profileDivider} />
+                  
                   <div className={styles.profileActions}>
-                    <button><Image src="/imgs/Popular.png" alt="인기" width={36} height={36} /><span>인기글</span></button>
-                    <button onClick={() => router.push('/postWrite')}><Image src="/imgs/writing.png" alt="작성" width={36} height={36} /><span>글쓰기</span></button>
-                    <button onClick={() => router.push('/posts/mypost')}><Image src="/imgs/myposts.png" alt="내글" width={36} height={36} /><span>내 글보기</span></button>
+                    <button type="button" className={styles.writeButton} onClick={() => router.push('/postWrite')}>
+                      <Image src="/imgs/writing.png" alt="글쓰기" width={22} height={22} />
+                      <span>글쓰기</span>
+                    </button>
+                    <button type="button" className={styles.myPostsButton} onClick={() => router.push('/posts/mypost')}>
+                      <Image src="/imgs/myposts.png" alt="내 글 보기" width={22} height={22} />
+                      <span>내 글 보기</span>
+                    </button>
                   </div>
                 </>
               ) : (

@@ -17,11 +17,30 @@ import SearchBar from '../SearchBar/SearchBar';
 import Image from 'next/image';
 
 const regionKeywords = [
-  '서울','인천','대전','대구','광주','부산','울산','경기','강원','충북','충남','세종','전북','전남','경북','경남','제주','가평','양양','강릉','경주','전주','여수','춘천','홍천','태안','통영','거제','포항','안동'
+  '가평/양평',
+  '강릉',
+  '경주',
+  '강남',
+  '부산',
+  '여수',
+  '인천',
+  '중구/강북',
+  '전주',
+  '제주',
+  '춘천/홍천',
+  '태안',
+  '통영/거제',
+  '포항/안동',
 ];
-const themeKeywords = ['자연 속에서 힐링', '미식 여행 및 먹방 중심', '체험 및 액티비티', '문화예술 및 역사탐방', '기타'];
 
-// --- 프로필 이미지 예외 처리 전용 헬퍼 함수 ---
+const themeKeywords = [
+  '체험 및 액티비티',
+  '자연 속에서 힐링',
+  '열정적인 쇼핑투어',
+  '미식 여행/먹방 중심',
+  '문화 예술 및 역사 탐방',
+];
+
 const getProfileImage = (url: string | null | undefined): string => {
   if (!url || url === 'null' || url.trim() === '') {
     return '/imgs/default-profile.png';
@@ -35,7 +54,6 @@ const getProfileImage = (url: string | null | undefined): string => {
   return url;
 };
 
-// --- 안전한 엔티티 디코딩 및 태그 제거 함수 (수화 불일치 완벽 예방) ---
 const createExcerpt = (htmlContent: string, maxLength: number = 100): string => {
   if (!htmlContent) return '';
   try {
@@ -162,19 +180,21 @@ const PostList = () => {
                 <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                   <div className={styles.postItem}>
                     <div className={styles.postTextContent}>
-                      {/* 제목 영역에 '지역'과 '테마' 배지 나열 */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
                         <h3 className={styles.postTitle} style={{ margin: 0, lineHeight: '1.2' }}>{post.title}</h3>
-                        <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', backgroundColor: '#eef2f3', color: '#555', whiteSpace: 'nowrap' }}>
-                          {post.region}
-                        </span>
-                        <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', backgroundColor: '#eef3fe', color: '#3a7bd5', whiteSpace: 'nowrap' }}>
-                          {post.theme}
-                        </span>
+                        {post.region && (
+                          <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', backgroundColor: '#eef2f3', color: '#555', whiteSpace: 'nowrap' }}>
+                            {post.region}
+                          </span>
+                        )}
+                        {post.theme && (
+                          <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', backgroundColor: '#eef3fe', color: '#3a7bd5', whiteSpace: 'nowrap' }}>
+                            {post.theme}
+                          </span>
+                        )}
                       </div>
                       
                       <div className={styles.postMeta}>
-                          {/* 1. 게시글 목록 작성자 프로필 예외 처리 (배경 이미지 방식) */}
                           <div 
                             className={styles.authorAvatar} 
                             style={{ backgroundImage: `url(${getProfileImage(post.writerProfileImageUrl)})` }}
@@ -197,11 +217,11 @@ const PostList = () => {
           </main>
 
           <aside className={styles.sidebar}>
+            {/* 프로필 카드 영역 */}
             <div className={styles.profileCard}>
               {loggedInUser && loggedInUser.name ? (
                 <>
                   <div className={styles.profileHeader}>
-                    {/* 🔥 에러 수정: Next.js <Image> 대신 일반 <img> 태그를 사용하여 소셜 프사 도메인 차단 우회 */}
                     <img 
                       src={getProfileImage(loggedInUser.profileImageUrl)} 
                       alt={`${loggedInUser.name}님의 프로필`}
@@ -212,10 +232,17 @@ const PostList = () => {
                     <p className={styles.username}>{loggedInUser.name}님</p>
                   </div>
                   <div className={styles.profileDivider} />
+                  
+                  {/* 💡 [수정] 2열 버튼으로 재배치된 프로필 액션 (글쓰기 & 내 글 보기) */}
                   <div className={styles.profileActions}>
-                    <button type="button"><Image src="/imgs/Popular.png" alt="인기글" width={36} height={36} /><span>인기글 보기</span></button>
-                    <button type="button" onClick={goToPostWrite}><Image src="/imgs/writing.png" alt="글쓰기" width={36} height={36} /><span>글쓰기</span></button>
-                    <button type="button" onClick={goToMyPosts}><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
+                    <button type="button" className={styles.writeButton} onClick={goToPostWrite}>
+                      <Image src="/imgs/writing.png" alt="글쓰기" width={22} height={22} />
+                      <span>글쓰기</span>
+                    </button>
+                    <button type="button" className={styles.myPostsButton} onClick={goToMyPosts}>
+                      <Image src="/imgs/myposts.png" alt="내 글 보기" width={22} height={22} />
+                      <span>내 글 보기</span>
+                    </button>
                   </div>
                 </>
               ) : (
@@ -228,7 +255,7 @@ const PostList = () => {
               )}
             </div>
 
-            {/* 카테고리 필터 영역 */}
+            {/* 지역 및 테마 필터 영역 */}
             <div className={styles.categoryContainer}>
               <div className={styles.categoryTabs}>
                 <button 
@@ -236,26 +263,31 @@ const PostList = () => {
                   className={`${styles.categoryTab} ${activeTab === '지역' ? styles.active : ''}`} 
                   onClick={handleTabClick('지역')}
                 >
-                  지역
+                  📍 지역별
                 </button>
                 <button 
                   type="button"
                   className={`${styles.categoryTab} ${activeTab === '테마' ? styles.active : ''}`} 
                   onClick={handleTabClick('테마')}
                 >
-                  테마
+                  🏷️ 테마별
                 </button>
               </div>
-              <div className={styles.categoryItems}>
-                {currentKeywords.map((keyword) => (
-                  <span 
-                    key={keyword} 
-                    className={`${styles.categoryItem} ${activeCategory === keyword ? styles.activeItem : ''}`} 
-                    onClick={() => handleCategoryClick(keyword)}
-                  >
-                    {keyword}
-                  </span>
-                ))}
+
+              <div className={`${styles.categoryItems} ${activeTab === '테마' ? styles.themeGrid : ''}`}>
+                {currentKeywords.map((keyword) => {
+                  const isSelected = activeCategory === keyword;
+                  return (
+                    <button 
+                      key={keyword} 
+                      type="button"
+                      className={`${styles.categoryItem} ${isSelected ? styles.activeItem : ''}`} 
+                      onClick={() => handleCategoryClick(keyword)}
+                    >
+                      {keyword}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </aside>

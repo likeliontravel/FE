@@ -26,7 +26,6 @@ const getProfileImage = (url: string | null | undefined): string => {
   return url;
 };
 
-// --- 안전한 엔티티 디코딩 및 태그 제거 함수 ---
 const createExcerpt = (htmlContent: string | null | undefined, maxLength: number = 100): string => {
   if (!htmlContent || typeof htmlContent !== 'string') return '';
   try {
@@ -80,7 +79,6 @@ const MyPostsPage = () => {
     return <div style={{textAlign: 'center', padding: '50px'}}>사용자 정보를 확인 중입니다...</div>;
   }
 
-  // 로그인되어 있지 않을 때 안전한 안내 UI 출력
   if (!loggedInUser) {
     return (
       <div style={{textAlign: 'center', padding: '50px'}}>
@@ -115,13 +113,27 @@ const MyPostsPage = () => {
                   <Link href={`/posts/${post.id}`} key={post.id} className={styles.postItemLink}>
                     <div className={styles.postItem}>
                       <div className={styles.postTextContent}>
-                        <h3 className={styles.postTitle}>{post.title || '제목 없음'}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                          <h3 className={styles.postTitle} style={{ margin: 0, lineHeight: '1.2' }}>{post.title || '제목 없음'}</h3>
+                          {post.region && (
+                            <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', backgroundColor: '#eef2f3', color: '#555', whiteSpace: 'nowrap' }}>
+                              {post.region}
+                            </span>
+                          )}
+                          {post.theme && (
+                            <span style={{ fontSize: '11px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', backgroundColor: '#eef3fe', color: '#3a7bd5', whiteSpace: 'nowrap' }}>
+                              {post.theme}
+                            </span>
+                          )}
+                        </div>
+
                         <div className={styles.postMeta}>
                             <div 
                               className={styles.authorAvatar} 
                               style={{ backgroundImage: `url(${getProfileImage(post.writerProfileImageUrl)})` }}
                             ></div>
                             <span className={styles.authorName}>{post.writer || '익명'}</span>
+                            <span className={styles.viewCount}>조회수 {post.boardHits || 0}</span>
                         </div>
                         <p className={styles.postExcerpt}>
                           {createExcerpt(post.content)}
@@ -152,9 +164,14 @@ const MyPostsPage = () => {
               </div>
               <div className={styles.profileDivider} />
               <div className={styles.profileActions}>
-                <button type="button"><Image src="/imgs/Popular.png" alt="인기글" width={36} height={36} /><span>인기글 보기</span></button>
-                <button type="button" onClick={goToPostWrite}><Image src="/imgs/writing.png" alt="글쓰기" width={36} height={36} /><span>글쓰기</span></button>
-                <button type="button" onClick={goToMyPosts}><Image src="/imgs/myposts.png" alt="내 글" width={36} height={36} /><span>내 글보기</span></button>
+                <button type="button" className={styles.writeButton} onClick={goToPostWrite}>
+                  <Image src="/imgs/writing.png" alt="글쓰기" width={22} height={22} />
+                  <span>글쓰기</span>
+                </button>
+                <button type="button" className={styles.myPostsButton} onClick={goToMyPosts}>
+                  <Image src="/imgs/myposts.png" alt="내 글 보기" width={22} height={22} />
+                  <span>내 글 보기</span>
+                </button>
               </div>
             </div>
           </aside>
