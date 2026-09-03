@@ -68,9 +68,22 @@ interface ScheduleCheckProps {
   isReadOnly?: boolean;
 }
 
-const ScheduleCheck = ({ groupName, isReadOnly }: ScheduleCheckProps) => {
+const ScheduleCheck = ({
+  groupName: propGroupName,
+  isReadOnly,
+}: ScheduleCheckProps) => {
   const route = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+
+  const groupName = useMemo(() => {
+    if (!propGroupName) return "";
+    try {
+      return decodeURIComponent(propGroupName);
+    } catch {
+      return propGroupName;
+    }
+  }, [propGroupName]);
+
   const { mainViewDate, currentScheduleId } = useSelector(
     (state: RootState) => state.schedule,
   );
