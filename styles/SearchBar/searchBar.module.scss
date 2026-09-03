@@ -1,68 +1,78 @@
+/* searchBar.module.scss */
+
 .searchBar {
-  width: 62.4%;
-  background-color: #afb2b7;
+  width: 100%;
+  max-width: 680px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 40px 0;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 .searchContainer {
   display: flex;
   align-items: center;
-  width: 100%; /* 검색창 너비를 100%로 설정하여 컨텐츠와 맞추기 */
-  max-width: 850px; /* 최대 너비 설정 */
-  padding: 16px 24px;
-  border-radius: 15px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
   position: relative;
-}
-
-/* 검색창에 포커스 시   ./gradlew build   */
-.searchContainer:focus-within {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 14px 28px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eaeaea;
 }
 
 .searchInput {
-  flex: 1;
+  flex-grow: 1;
   border: none;
   outline: none;
   background: transparent;
   font-size: 18px;
   font-weight: 500;
-  padding: 8px 12px;
   padding-right: 40px;
+  color: #333;
+  &::placeholder {
+    color: #aaa;
+  }
 }
 
-.searchIcon {
+.searchIconWrapper {
   position: absolute;
-  right: 20px;
-  width: 35px;
-  height: 35px;
-}
-
-.recommendedKeywords {
-  margin-top: 10px;
-  width: 850px; // 검색창과 너비 통일
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-start; // 왼쪽 정렬
-}
-
-.keyword {
-  background-color: #ffffff;
-  color: #333333;
-  border-radius: 16px;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
 
   &:hover {
     background-color: #f0f0f0;
+  }
+}
+
+.recommendedKeywords {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.keyword {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  color: #444;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    background-color: #f8f8f8;
+    border-color: #ccc;
   }
 }

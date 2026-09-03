@@ -5,11 +5,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/',
-        destination: '/login',
+        destination: '/main',
       },
     ];
   },
-
+  
   async headers() {
     return [
       {

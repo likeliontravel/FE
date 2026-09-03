@@ -1,9 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../../store/store";
+import {
+  createGroup,
+  fetchUserGroups,
+} from "../../../util/group/groupSlice";
 import style from "../../../styles/group/groupPage.module.scss";
 
+export interface CreateGroupPayload {
+  groupName: string;
+  description?: string;
+}
+
 export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
+  const dispatch = useDispatch<AppDispatch>();
+
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,28 +29,19 @@ export default function GroupCreateModal({ onClose }: { onClose: () => void }) {
     try {
       setIsSubmitting(true);
 
-      const res = await fetch("/group/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          groupName: groupName.trim(),
-          description: description.trim(),
-        }),
-      });
+      const payload: CreateGroupPayload = {
+        groupName: groupName.trim(),
+        description: description.trim(),
+      };
 
-      const result = await res.json();
+      await dispatch(createGroup(payload)).unwrap();
+      alert("그룹이 성공적으로 생성되었습니다!");
+      dispatch(fetchUserGroups());
 
-      if (res.ok && result.success) {
-        alert("그룹이 성공적으로 생성되었습니다!");
-        onClose();
-      } else {
-        alert("그룹 생성 실패: " + result.message);
-      }
-    } catch (err) {
+      onClose();
+    } catch (err: any) {
       console.error(err);
-      alert("요청 중 오류가 발생했습니다.");
+      alert("그룹 생성 실패: " + (err || "알 수 없는 오류가 발생했습니다."));
     } finally {
       setIsSubmitting(false);
     }

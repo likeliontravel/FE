@@ -2,7 +2,6 @@
 @use "../component/display_mixins.scss" as *;
 
 .mypage_div {
-  width: 100vw;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -27,14 +26,13 @@
 
 .profile {
   @include width-height(69px, 69px);
-  @include background_image-size_cover-repeat_no_repeat(
-    "../../public/imgs/Ellipse5.png"
-  );
+  border: solid 3px #eaedf1;
   border-radius: 50%;
 }
 
 .user {
   @include width-height(100px, auto);
+  margin-left: 10px;
 }
 
 .name {
@@ -58,7 +56,6 @@
   @include display_flex-flex_direction_column-justify_content_space_between;
   button {
     @include font_size-font_weight-line_height(10px, 500, 28px);
-    padding: 2px 8.5px 2px 8.5px;
     border: none;
     border-radius: 20px;
     color: #5d6064;
