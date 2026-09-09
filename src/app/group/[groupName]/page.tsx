@@ -24,7 +24,7 @@ export default function groupDetail() {
   const dispatch = useDispatch<AppDispatch>();
   const params = useParams();
   const route = useRouter();
-  const groupName = params.groupName as string;
+  const groupName = decodeURIComponent((params?.groupName as string) || "");
 
   const { user } = useSelector((state: RootState) => state.auth);
   const { groupDetail, latestNotice } = useSelector(

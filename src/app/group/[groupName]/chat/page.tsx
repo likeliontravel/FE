@@ -80,8 +80,7 @@ export default function WebSocketChatClient() {
   const searchParams = useSearchParams();
   const params = useParams();
   const router = useRouter();
-  const groupName =
-    typeof params.groupName === "string" ? params.groupName : "";
+  const groupName = decodeURIComponent((params?.groupName as string) || "");
   const groupDescription = searchParams.get("groupDescription") ?? "";
 
   const { messages, chatList, searchResults, isSearching, isImageUploading } =
