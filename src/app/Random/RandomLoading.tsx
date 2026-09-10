@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, Transition } from 'framer-motion';
 import styles from '../../../styles/Random/Random.module.scss';
 import Image from 'next/image';
 import { useMemo } from 'react';
@@ -16,7 +16,7 @@ const animationSettings = {
   y: [0, -12, 12, -6, 6, 0],
 };
 
-const transitionSettings = {
+const transitionSettings: Transition = { 
   duration: 1.5,
   ease: 'easeInOut',
   repeat: Infinity,
@@ -30,10 +30,9 @@ export default function RandomLoading() {
     { left: '150px', top: '165px' },
   ];
 
-  // 🔧 transition 배열을 useMemo로 메모이제이션
   const transitions = useMemo(
     () =>
-      balls.map((_, index) => ({
+      balls.map((_, index): Transition => ({
         ...transitionSettings,
         delay: index * 0.2,
       })),
@@ -56,7 +55,7 @@ export default function RandomLoading() {
             key={index}
             className={styles.ball}
             animate={animationSettings}
-            transition={transitions[index]} // ✅ 메모이제이션된 transition 사용
+            transition={transitions[index]}
             style={ballPositions[index]}
           >
             <Image

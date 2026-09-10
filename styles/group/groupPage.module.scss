@@ -59,6 +59,7 @@
   border-radius: 10px;
   background-color: #27abf1;
   padding: 5px 10px 5px 10px;
+  cursor: pointer;
   p {
     @include width-height(100px, 24px);
     @include font_size-font_weight-line_height(20px, 700, 24.2px);
@@ -171,11 +172,63 @@
   @include width-height(270px, 100%);
   flex-shrink: 0;
   border-radius: 10px;
+  cursor: pointer;
 }
 
 .group_content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
   overflow: hidden;
-  background-color: #27abf1;
+  position: relative;
+
+  &:nth-child(4n + 1) {
+    background-color: #27abf1;
+    .group_content_title p {
+      color: #27abf1;
+    }
+    .shapes_img {
+      @include background_image-size_cover-repeat_no_repeat(
+        "../../public/imgs/Vector_blue.png"
+      );
+    }
+  }
+
+  &:nth-child(4n + 2) {
+    background-color: #9ce425;
+    .group_content_title p {
+      color: #9ce425;
+    }
+    .shapes_img {
+      @include background_image-size_cover-repeat_no_repeat(
+        "../../public/imgs/Vector_green.png"
+      );
+    }
+  }
+
+  &:nth-child(4n + 3) {
+    background-color: #fbe327;
+    .group_content_title p {
+      color: #fbe327;
+    }
+    .shapes_img {
+      @include background_image-size_cover-repeat_no_repeat(
+        "../../public/imgs/Vector_yellow.png"
+      );
+    }
+  }
+
+  &:nth-child(4n) {
+    background-color: #f83e79;
+    .group_content_title p {
+      color: #f83e79;
+    }
+    .shapes_img {
+      @include background_image-size_cover-repeat_no_repeat(
+        "../../public/imgs/Vector_pink.png"
+      );
+    }
+  }
 }
 
 .group_plus {
@@ -197,21 +250,25 @@
 .group_content_title {
   @include width-height(100px, 60px);
   position: relative;
-  top: 20;
-  left: 20;
+  margin-left: 20px;
   border-radius: 12px;
   background-color: white;
   p {
-    @include font_size-font_weight-line_height(40px, 700, 62px);
+    @include font_size-font_weight-line_height(30px, 700, 62px);
     color: #27abf1;
     margin: 0;
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
 .group_content_people {
   position: relative;
-  top: 30;
-  left: 28;
+  margin-top: 10px;
+  margin-left: 20px;
   p {
     @include font_size-font_weight-line_height(16px, 700, 19.36px);
     color: white;
@@ -222,12 +279,7 @@
 
 .shapes_img {
   @include width-height(150px, 150px);
-  @include background_image-size_cover-repeat_no_repeat(
-    "../../public/imgs/Vector.png"
-  );
-  position: relative;
-  top: 25;
-  left: 100;
+  margin-left: 38%;
 }
 
 .schedule_div,
@@ -240,10 +292,18 @@
 }
 
 .schedule_div_group_img {
+  position: relative;
   @include width-height(758px, 100%);
   @include background_image-size_cover-repeat_no_repeat(
     "../../public/imgs/group_img.png"
   );
+  p {
+    position: absolute;
+    right: -10%;
+    top: 5%;
+    @include font_size-font_weight-line_height(100px, 700, 121.02px);
+    color: #27abf1;
+  }
 }
 
 .comming_div {
@@ -264,18 +324,19 @@
 
 .commig_div_p_div_flex_div {
   p {
-    @include font_size-font_weight-line_height(40px, 700, 62px);
+    @include font_size-font_weight-line_height(20px, 700, 62px);
     margin: 0;
   }
 }
 
 .commig_div_p_div_flex_div_title {
-  @include width-height(93px, 58px);
+  @include width-height(auto, 58px);
   background-color: #27abf1;
   border-radius: 12px;
   margin-right: 12px;
+  padding: 0 10px;
   p {
-    @include font_size-font_weight-line_height(40px, 700, 62px);
+    @include font_size-font_weight-line_height(15px, 700, 62px);
     color: white;
     margin: 0;
   }
@@ -303,22 +364,12 @@
   @include width-height(150px, 54px);
   border-radius: 50px;
   background-color: #27abf1;
+  cursor: pointer;
   p {
     @include width-height(112px, 32px);
     @include font_size-font_weight-line_height(22px, 700, 32px);
     color: white;
     padding: 12px 14px 12px 20px;
-  }
-}
-
-.schedule_div_deadline {
-  @include width-height(250px, 128px);
-  position: absolute;
-  top: 570px;
-  right: 316px;
-  p {
-    @include font_size-font_weight-line_height(100px, 700, 121.02px);
-    color: #27abf1;
   }
 }
 

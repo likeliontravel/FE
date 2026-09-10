@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        - NEXT_PUBLIC_KAKAO_APP_KEY=${NEXT_PUBLIC_KAKAO_APP_KEY}
+    image: byeongduk/toleave-frontend:latest
+    platform: linux/amd64

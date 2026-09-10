@@ -2,6 +2,7 @@
 @use "../component/display_mixins.scss" as *;
 
 .group_detail {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -28,19 +29,20 @@
 }
 
 .group_detail_top {
-  width: 75vw;
-  height: 15vh;
+  width: 75%;
+  min-height: 130px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: #d3f0ff;
   padding: 2%;
-  div {
+  .left_info {
+    width: 70%;
     display: flex;
     flex-direction: column;
     align-items: center;
     h1 {
-      width: 88px;
+      width: 100%;
       font-family: Inter;
       font-weight: 700;
       font-size: 40px;
@@ -48,18 +50,66 @@
       margin: 0;
     }
     p {
+      width: 100%;
       font-family: Inter;
       font-weight: 500;
       font-size: 16px;
       line-height: 100%;
     }
   }
-  p {
-    font-family: Inter;
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 100%;
-    margin-bottom: 5%;
+  .right_actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+
+    .btn_wrapper {
+      display: flex;
+      gap: 8px;
+
+      button {
+        padding: 8px 14px;
+        font-family: Inter;
+        font-weight: 600;
+        font-size: 13px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .edit_desc_btn {
+        background-color: #27abf1;
+        color: white;
+        &:hover {
+          background-color: #1a94db;
+        }
+      }
+
+      .delete_group_btn,
+      .leave_group_btn {
+        background-color: #ff5f92;
+        color: white;
+        &:hover {
+          background-color: #e04477;
+        }
+      }
+    }
+
+    /* 멤버 정보 텍스트 */
+    .member_count {
+      font-family: Inter;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 100%;
+      color: #64748b;
+      margin: 0;
+    }
   }
 }
 
@@ -82,6 +132,7 @@
   padding: 1%;
   cursor: pointer;
   p {
+    width: 10%;
     background-color: #f83e79;
     color: white;
     font-family: Inter;
@@ -93,8 +144,9 @@
     padding: 1% 2%;
     margin-bottom: 9%;
   }
-  div {
-    margin-left: 10%;
+  .notice {
+    width: 80%;
+    margin-left: 5%;
     h4 {
       color: #2c2d2e;
       font-family: Inter;
@@ -104,6 +156,7 @@
       margin: 0;
     }
     p {
+      width: 100%;
       background: none;
       color: #2c2d2e;
       font-family: Inter;
@@ -112,6 +165,9 @@
       line-height: 26px;
       margin: 0;
       padding: 0;
+      text-align: start;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }
@@ -165,7 +221,6 @@
 }
 
 .group_detail_bottom {
-  width: 78vw;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -180,7 +235,7 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 5;
+  z-index: 15;
 }
 
 .modal_content {
@@ -200,16 +255,17 @@
 
 .modal_top {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
-  width: 100%;
+  width: 90%;
   height: 72px;
+  padding: 0 5%;
   border-bottom: solid 1px #e6e6e6;
   img {
     cursor: pointer;
   }
   h3 {
-    width: 70%;
+    width: 50%;
     font-family: Inter;
     font-weight: 600;
     font-size: 24px;
@@ -224,6 +280,27 @@
     background: none;
     border: none;
     cursor: pointer;
+  }
+}
+
+.top_right_actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .delete_notice_btn {
+    font-family: Inter;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ff5f92;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
@@ -314,6 +391,7 @@
     width: 100%;
     height: 80px;
     div {
+      width: 80%;
       display: flex;
       flex-direction: column;
       font-family: Inter;
@@ -332,13 +410,12 @@
       margin-right: 15px;
     }
   }
+  .group_modal_center {
+    margin-top: 40%;
+  }
   li:hover {
     background-color: #f4f5fb;
     cursor: pointer;
-  }
-  img {
-    position: absolute;
-    top: 40%;
   }
 }
 
@@ -434,13 +511,28 @@
   border-radius: 8px;
   width: 100px;
   height: 40px;
+  background-color: #27abf1;
+  color: white;
+  font-family: Inter;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 100%;
+  cursor: pointer;
+}
+
+.edit_btn_disabled {
+  position: absolute;
+  bottom: 3%;
+  border: none;
+  border-radius: 8px;
+  width: 100px;
+  height: 40px;
   background-color: #eaedf1;
   color: #9fa2a6;
   font-family: Inter;
   font-weight: 600;
   font-size: 18px;
   line-height: 100%;
-  cursor: pointer;
 }
 
 .calendar_div {

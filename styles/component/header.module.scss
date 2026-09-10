@@ -22,23 +22,26 @@
 
 .header {
   @include display-flex_alii-center();
-  @include width-height(1920px, 80px);
+  @include width-height(auto, 80px);
 }
 
 .logo {
   @include back-img("../../public/imgs/logo.png");
-  @include width-height(100px, 40px);
-  margin-left: 130px;
+  @include width-height(8vw, 40px);
+  min-width: 90px;
+  max-width: 120px;
+  margin-left: 10%;
 }
 
 .navBar {
+  @include width-height(80vw, 80px);
   @include display-flex_alii-center();
 }
 
 .navGroup {
   @include display-flex_alii-center_juc-spacearound();
   @include width-height(750px, 80px);
-  margin-left: 470px;
+  margin-left: 20%;
 
   a {
     text-decoration: none;
@@ -81,6 +84,27 @@
 }
 
 .userImage {
-  @include back-img("../../public/imgs/Ellipse5.png");
   @include width-height(30px, 30px);
+}
+
+.loggedInUser {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+
+  p {
+    margin: 0;
+  }
+}
+
+.logoutButton {
+  cursor: pointer;
+  color: #888;
+  font-size: 0.9em;
+
+  &:hover {
+    text-decoration: underline;
+    color: #333;
+  }
 }

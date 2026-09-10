@@ -1,28 +1,20 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
+"use client";
 
-const BASE_URL = 'http://api.toleave.shop';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { api, publicApi } from "../api";
+import { RootState } from "../../store/store";
 
-// Axios 인스턴스 설정
-const api = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: true, // 쿠키 기반 인증 활성화
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// 사용자 데이터 타입 정의
 interface User {
-  id: string;
+  id: number | null;
   email: string;
   name: string;
-  isSubscribed: boolean;
+  userIdentifier: string;
+  policy: boolean;
+  subscribe: boolean;
+  role: string;
+  profileImageUrl: string | null;
+  provider?: string;
+  shouldChangePassword?: boolean;
 }
 
 interface SignUpData {
@@ -39,261 +31,288 @@ interface AuthState {
   error: string | null;
   successMessage: string | null;
   signUpData: SignUpData;
+  isEmailVerified: boolean;
 }
 
 interface APIResponse<T = unknown> {
   message: string;
   data?: T;
+  success: boolean;
+  status: number;
 }
 
-// 초기 상태
 const initialState: AuthState = {
   user: null,
   loading: false,
   error: null,
   successMessage: null,
+  isEmailVerified: false,
   signUpData: {
-    name: '',
-    email: '',
-    password: '',
+    name: "",
+    email: "",
+    password: "",
     termsAccepted: [false, false, false],
     selectedPlan: null,
   },
 };
 
-// 회원가입 비동기 액션
-export const signUpUser = createAsyncThunk<APIResponse, SignUpData>(
-  'auth/signUpUser',
-  async (userData, { rejectWithValue }) => {
-    try {
-      const response = await axios.post<APIResponse>(
-        `${BASE_URL}/general-user/SignUp`,
-        userData
-      );
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        return rejectWithValue(
-          error.response?.data?.message || '회원가입 실패'
-        );
-      }
-      return rejectWithValue('회원가입 실패');
-    }
-  }
-);
 
-// 마이페이지 비동기 액션
-export const fetchUserProfile = createAsyncThunk<APIResponse<User>>(
-  'auth/fetchUserProfile',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get<APIResponse<User>>(
-        `${BASE_URL}/general-user/profile`
-      );
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        return rejectWithValue(
-          error.response?.data?.message || '프로필 불러오기 실패'
-        );
-      }
-      return rejectWithValue('프로필 불러오기 실패');
-    }
-  }
-);
-
-// 회원 탈퇴 비동기 액션
-export const deleteUser = createAsyncThunk<APIResponse, { email: string }>(
-  'auth/deleteUser',
-  async ({ email }, { rejectWithValue }) => {
-    try {
-      const response = await axios.delete<APIResponse>(
-        `${BASE_URL}/user/${email}`
-      );
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        return rejectWithValue(
-          error.response?.data?.message || '회원 탈퇴 실패'
-        );
-      }
-      return rejectWithValue('회원 탈퇴 실패');
-    }
-  }
-);
-
-// 로그아웃 비동기 액션 (AccessToken 제거)
-export const logoutUser = createAsyncThunk<APIResponse>(
-  'auth/logoutUser',
-  async (_, { rejectWithValue }) => {
-    try {
-      await api.post('/logout');
-      localStorage.removeItem('accessToken');
-      delete api.defaults.headers.Authorization; // Axios 헤더에서 제거
-      return { message: '로그아웃 성공' };
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        return rejectWithValue(
-          error.response?.data?.message || '로그아웃 실패'
-        );
-      }
-      return rejectWithValue('로그아웃 실패');
-    }
-  }
-);
-
-//회원 정보 수정 비동기 액션
-export const updateUser = createAsyncThunk<
-  APIResponse,
-  Partial<{ email: string; password?: string; name?: string }>
->('auth/updateUser', async (updateData, { rejectWithValue }) => {
-  try {
-    const response = await axios.put<APIResponse>(
-      `${BASE_URL}/user/update`,
-      updateData
-    );
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message || '회원 정보 수정 실패'
-      );
-    }
-    return rejectWithValue('회원 정보 수정 실패');
-  }
-});
-
-//구독 동의 여부 변경 비동기 액션
-export const updateSubscription = createAsyncThunk<
-  APIResponse,
-  { email: string; subscribe: boolean }
->('auth/updateSubscription', async (data, { rejectWithValue }) => {
-  try {
-    const response = await axios.post<APIResponse>(
-      `${BASE_URL}/user/subscription`,
-      data
-    );
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message || '구독 정보 변경 실패'
-      );
-    }
-    return rejectWithValue('구독 정보 변경 실패');
-  }
-});
-
-// 이메일 인증 코드 요청
 export const requestEmailCode = createAsyncThunk<
   APIResponse,
   { email: string }
->('auth/requestEmailCode', async ({ email }, { rejectWithValue }) => {
+>("auth/requestEmailCode", async (payload, { rejectWithValue }) => {
   try {
-    const response = await axios.post<APIResponse>(`${BASE_URL}/mail/send`, {
-      email,
+    const response = await publicApi.post<APIResponse>("/mail/send", payload, {
+      headers: { "Content-Type": "application/json" },
     });
     return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message || '이메일 코드 요청 실패'
-      );
-    }
-    return rejectWithValue('이메일 코드 요청 실패');
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "코드 요청 실패"
+    );
   }
 });
 
-// 이메일 인증 코드 검증
 export const verifyEmailCode = createAsyncThunk<
   APIResponse,
   { email: string; code: string }
->('auth/verifyEmailCode', async (data, { rejectWithValue }) => {
+>("auth/verifyEmailCode", async (payload, { rejectWithValue }) => {
   try {
-    const response = await axios.post<APIResponse>(
-      `${BASE_URL}/mail/verify`,
-      data
+    const response = await publicApi.post<APIResponse>(
+      "/mail/verify",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
     );
     return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message || '이메일 인증 실패'
-      );
-    }
-    return rejectWithValue('이메일 인증 실패');
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "인증 실패"
+    );
   }
 });
 
-// Axios 요청 인터셉터 - accessToken 자동 갱신
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+export const signUpUser = createAsyncThunk<
+  APIResponse,
+  { name?: string; email?: string; password?: string } | void,
+  { state: RootState }
+>("auth/signUpUser", async (userData, { getState, rejectWithValue }) => {
+  try {
+    const state = getState();
+    const signUpData = state.auth.signUpData;
 
-      try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-          throw new Error('Refresh token not available');
-        }
+    const payload = {
+      name: userData?.name || signUpData.name,
+      email: userData?.email || signUpData.email,
+      password: userData?.password || signUpData.password,
+    };
 
-        const refreshResponse = await axios.post<
-          APIResponse<{ accessToken: string }>
-        >(`${BASE_URL}/refresh-token`, { refreshToken });
-
-        const newAccessToken = refreshResponse.data.data?.accessToken;
-        if (newAccessToken) {
-          localStorage.setItem('accessToken', newAccessToken);
-          api.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return axios(originalRequest);
-        }
-      } catch (refreshError) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
+    const response = await publicApi.post<APIResponse>(
+      "/auth/join",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
       }
-    }
+    );
+    return response.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "회원가입 실패"
+    );
+  }
+});
 
-    return Promise.reject(error);
+// 4. 로그인 (POST /auth/login)
+export const loginUser = createAsyncThunk<
+  User,
+  { email: string; password: string }
+>("auth/loginUser", async (credentials, { rejectWithValue }) => {
+  try {
+    const response = await publicApi.post<APIResponse<User>>(
+      "/auth/login",
+      credentials,
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || "로그인 데이터 오류");
+    }
+    return response.data.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || error.message || "로그인 실패"
+    );
+  }
+});
+
+// 5. 로그아웃 (POST /auth/logout)
+export const logoutUser = createAsyncThunk<APIResponse>(
+  "auth/logoutUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.post<APIResponse>(
+        "/auth/logout",
+        {},
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "로그아웃 실패");
+    }
   }
 );
 
-// 로그인 비동기 액션 (AccessToken + RefreshToken 저장)
-export const loginUser = createAsyncThunk<
-  APIResponse<{ accessToken: string; refreshToken: string; user: User }>,
-  { email: string; password: string }
->('auth/loginUser', async (credentials, { rejectWithValue }) => {
+// 6. 비밀번호 재설정 요청
+export const requestPasswordReset = createAsyncThunk<
+  APIResponse,
+  { email: string }
+>("auth/requestPasswordReset", async (payload, { rejectWithValue }) => {
   try {
-    const response = await api.post<
-      APIResponse<{ accessToken: string; refreshToken: string; user: User }>
-    >('/login', credentials);
-
-    // accessToken, refreshToken 저장 및 헤더 설정
-    const { accessToken, refreshToken } = response.data.data || {};
-
-    if (accessToken && refreshToken) {
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      api.defaults.headers.Authorization = `Bearer ${accessToken}`;
-    }
-
+    const response = await publicApi.post<APIResponse>(
+      "/auth/password/reset/request",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
     return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(error.response?.data?.message || '로그인 실패');
-    }
-    return rejectWithValue('로그인 실패');
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data?.message || "요청 실패");
   }
 });
 
-// Redux Slice 생성
+// 7. 비밀번호 재설정 실행
+export const resetPassword = createAsyncThunk<
+  APIResponse,
+  { email: string; code: string; newPw: string }
+>("auth/resetPassword", async (payload, { rejectWithValue }) => {
+  try {
+    const response = await publicApi.post<APIResponse>(
+      "/auth/password/reset",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data?.message || "재설정 실패");
+  }
+});
+
+// 8. 프로필 조회
+export const fetchUserProfile = createAsyncThunk<User>(
+  "auth/fetchUserProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get<APIResponse<User>>("/members/me");
+      if (!response.data.data) throw new Error("프로필 정보 없음");
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "조회 실패");
+    }
+  }
+);
+
+// 9. 이름 변경
+export const updateName = createAsyncThunk<User, { name: string }>(
+  "auth/updateName",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await api.patch<APIResponse<User>>(
+        "/members/me/name",
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      return response.data.data!;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "수정 실패");
+    }
+  }
+);
+
+// 10. 비밀번호 변경
+export const updatePassword = createAsyncThunk<
+  APIResponse,
+  { email?: string; password: string }
+>("auth/updatePassword", async (payload, { rejectWithValue }) => {
+  try {
+    const response = await api.put<APIResponse>(
+      "/members/me/password",
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "비밀번호 변경 실패"
+    );
+  }
+});
+
+// 11. 프로필 이미지 업로드
+export const uploadProfileImage = createAsyncThunk<string, File>(
+  "auth/uploadProfileImage",
+  async (file, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await api.post<APIResponse<string>>(
+        "/members/me/profileImage",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      return response.data.data!;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "업로드 실패");
+    }
+  }
+);
+
+// 12. 프로필 이미지 삭제
+export const deleteProfileImage = createAsyncThunk<APIResponse>(
+  "auth/deleteProfileImage",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.delete<APIResponse>(
+        "/members/me/profileImage"
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "이미지 삭제 실패"
+      );
+    }
+  }
+);
+
+// 13. 회원 탈퇴
+export const withdrawUser = createAsyncThunk<APIResponse>(
+  "auth/withdrawUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.delete<APIResponse>("/members/me");
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "회원 탈퇴 실패");
+    }
+  }
+);
+
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setSignUpData: (state, action: PayloadAction<Partial<SignUpData>>) => {
@@ -301,54 +320,89 @@ const authSlice = createSlice({
     },
     resetSignUpData: (state) => {
       state.signUpData = initialState.signUpData;
+      state.isEmailVerified = false; 
+    },
+    clearAuthError: (state) => {
+      state.error = null;
+    },
+    setUser: (state, action: PayloadAction<User | null>) => {
+      state.user = action.payload;
+    },
+    fetchUserName: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.name = action.payload;
+      }
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(signUpUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.successMessage = null;
+      .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
+        state.user = action.payload;
+        state.successMessage = "로그인 성공";
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
       })
       .addCase(
         signUpUser.fulfilled,
         (state, action: PayloadAction<APIResponse>) => {
-          state.loading = false;
           state.successMessage = action.payload.message;
         }
       )
-      .addCase(signUpUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchUserProfile.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(
         fetchUserProfile.fulfilled,
-        (state, action: PayloadAction<APIResponse<User>>) => {
-          state.loading = false;
-          state.user = action.payload.data || null;
+        (state, action: PayloadAction<User>) => {
+          state.user = action.payload;
         }
       )
-      .addCase(fetchUserProfile.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+      .addCase(verifyEmailCode.fulfilled, (state) => {
+        state.isEmailVerified = true;
+        state.successMessage = "인증 성공";
       })
-      .addCase(logoutUser.pending, (state) => {
-        state.loading = true;
+      .addCase(updateName.fulfilled, (state, action: PayloadAction<User>) => {
+        if (state.user) state.user.name = action.payload.name;
       })
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.loading = false;
-        state.user = null;
-      })
-      .addCase(logoutUser.rejected, (state) => {
-        state.loading = false;
-      });
+      .addCase(
+        uploadProfileImage.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          if (state.user) state.user.profileImageUrl = action.payload;
+        }
+      )
+      .addMatcher(
+        (action) =>
+          action.type.startsWith("auth/") && action.type.endsWith("/pending"),
+        (state) => {
+          state.loading = true;
+          state.error = null;
+          state.successMessage = null;
+        }
+      )
+      .addMatcher(
+        (action) =>
+          action.type.startsWith("auth/") && action.type.endsWith("/fulfilled"),
+        (state) => {
+          state.loading = false;
+        }
+      )
+      .addMatcher(
+        (action) =>
+          action.type.startsWith("auth/") && action.type.endsWith("/rejected"),
+        (state, action: any) => {
+          state.loading = false;
+          const payload = action.payload;
+          state.error =
+            typeof payload === "string" ? payload : "오류가 발생했습니다.";
+        }
+      );
   },
 });
 
-export const { setSignUpData, resetSignUpData } = authSlice.actions;
+export const {
+  fetchUserName,
+  setSignUpData,
+  resetSignUpData,
+  clearAuthError,
+  setUser,
+} = authSlice.actions;
 
 export default authSlice.reducer;
