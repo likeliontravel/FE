@@ -70,7 +70,7 @@ export default function PostWriteMap({ searchKeyword, onSelectPlace, setPlaceLis
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
 
-  const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY || '705ecc4de821b5770092b4aeff178932';
+  const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY || 'bcca074a50bc2fb82991d15482b1603b';
 
   const initMap = () => {
     if (window.kakao && window.kakao.maps && mapContainerRef.current) {

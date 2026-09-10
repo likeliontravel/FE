@@ -11,7 +11,7 @@ import {
   fetchBoardsByRegion,
   fetchBoardsByTheme,
   Board 
-} from '../../../util/board/boardSilce'; // 파일명 오타 유지 (boardSilce)
+} from '../../../util/board/boardSilce';
 import styles from '../../../styles/post/postList.module.scss';
 import SearchBar from '../SearchBar/SearchBar';
 import Image from 'next/image';
@@ -233,7 +233,6 @@ const PostList = () => {
                   </div>
                   <div className={styles.profileDivider} />
                   
-                  {/* 💡 [수정] 2열 버튼으로 재배치된 프로필 액션 (글쓰기 & 내 글 보기) */}
                   <div className={styles.profileActions}>
                     <button type="button" className={styles.writeButton} onClick={goToPostWrite}>
                       <Image src="/imgs/writing.png" alt="글쓰기" width={22} height={22} />
@@ -263,14 +262,14 @@ const PostList = () => {
                   className={`${styles.categoryTab} ${activeTab === '지역' ? styles.active : ''}`} 
                   onClick={handleTabClick('지역')}
                 >
-                  📍 지역별
+                   지역별
                 </button>
                 <button 
                   type="button"
                   className={`${styles.categoryTab} ${activeTab === '테마' ? styles.active : ''}`} 
                   onClick={handleTabClick('테마')}
                 >
-                  🏷️ 테마별
+                   테마별
                 </button>
               </div>
 

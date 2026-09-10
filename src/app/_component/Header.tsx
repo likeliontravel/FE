@@ -16,22 +16,25 @@ export default function Header() {
   const dispatch = useDispatch<AppDispatch>();
 
   const { user } = useSelector((state: RootState) => state.auth || {});
-  
-  // Redux에서 안 읽은 알림 개수 실시간 가져오기
   const { unreadCount } = useSelector((state: RootState) => state.notification || { unreadCount: 0 });
 
-  // 알림창 열림/닫힘 상태
   const [isNotiOpen, setIsNotiOpen] = useState(false);
 
-  // 1. 실시간 SSE 연결 훅 실행 (로그인 시 자동 연결)
   useNotificationSSE();
 
-  // 2. 로그인 시 초기 안 읽은 알림 개수 조회
   useEffect(() => {
     if (user) {
       dispatch(fetchUnreadCount());
     }
   }, [user, dispatch]);
+
+  const handleGoBack = () => {
+    router.back();
+  };
+
+  const handleGoForward = () => {
+    router.forward();
+  };
 
   const handleLogout = async () => {
     if (confirm("정말 로그아웃 하시겠습니까?")) {
@@ -66,7 +69,80 @@ export default function Header() {
   return (
     <>
       <div className={style.header}>
-        <Link href="/main" className={style.logo}></Link>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <Link href="/main" className={style.logo}></Link>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <button
+              type="button"
+              onClick={handleGoBack}
+              title="뒤로 가기"
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                border: "1px solid #e2e8f0",
+                backgroundColor: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "#64748b",
+                transition: "all 0.15s ease",
+                padding: 0,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#f1f5f9";
+                e.currentTarget.style.color = "#1e293b";
+                e.currentTarget.style.borderColor = "#cbd5e1";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#ffffff";
+                e.currentTarget.style.color = "#64748b";
+                e.currentTarget.style.borderColor = "#e2e8f0";
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleGoForward}
+              title="앞으로 가기"
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                border: "1px solid #e2e8f0",
+                backgroundColor: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "#64748b",
+                transition: "all 0.15s ease",
+                padding: 0,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#f1f5f9";
+                e.currentTarget.style.color = "#1e293b";
+                e.currentTarget.style.borderColor = "#cbd5e1";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#ffffff";
+                e.currentTarget.style.color = "#64748b";
+                e.currentTarget.style.borderColor = "#e2e8f0";
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+
         <div className={style.navBar}>
           <div className={style.navGroup}>
             <Link 
@@ -128,7 +204,6 @@ export default function Header() {
                 )}
               </div>
 
-              {/* 알림 드롭다운 모달창 */}
               <NotificationModal 
                 isOpen={isNotiOpen} 
                 onClose={() => setIsNotiOpen(false)} 
@@ -136,12 +211,14 @@ export default function Header() {
             </div>
 
             <div className={style.user}>
-              <div
-                className={style.userImage}
-                style={{
-                  backgroundImage: `url(${user?.profileImageUrl || "/imgs/default-profile.png"})`,
-                }}
-              ></div>
+              {user && (
+                <div
+                  className={style.userImage}
+                  style={{
+                    backgroundImage: `url(${user.profileImageUrl || "/imgs/default-profile.png"})`,
+                  }}
+                ></div>
+              )}
               
               {user ? (
                 <div className={style.loggedInUser}>

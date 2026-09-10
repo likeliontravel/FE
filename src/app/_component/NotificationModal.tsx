@@ -19,7 +19,6 @@ interface NotificationModalProps {
   onClose: () => void;
 }
 
-// 상대 시간 포맷팅 헬퍼
 const formatRelativeTime = (dateString: string) => {
   if (!dateString) return '';
   const now = new Date();
@@ -33,7 +32,6 @@ const formatRelativeTime = (dateString: string) => {
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 };
 
-// 프로필 이미지 헬퍼
 const getProfileImage = (url: string | null | undefined): string => {
   if (!url || url === 'null' || url.trim() === '') return '/imgs/default-profile.png';
   return url;
@@ -48,14 +46,12 @@ export default function NotificationModal({ isOpen, onClose }: NotificationModal
     (state: RootState) => state.notification
   );
 
-  // 모달 열릴 때 최신 알림 1페이지 조회
   useEffect(() => {
     if (isOpen) {
       dispatch(fetchNotifications({ isRefresh: true, size: 20 }));
     }
   }, [isOpen, dispatch]);
 
-  // 외부 영역 클릭 시 모달 닫기
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -83,7 +79,11 @@ export default function NotificationModal({ isOpen, onClose }: NotificationModal
           router.push(`/posts/${item.targetId}`);
           break;
         case 'GROUP_JOIN':
-          router.push(`/group/${item.targetId}`);
+          if (item.groupName) {
+            router.push(`/group/${encodeURIComponent(item.groupName)}`);
+          } else {
+            router.push(`/group/${item.targetId}`);
+          }
           break;
         case 'SCHEDULE_REMINDER':
           router.push(`/schedule/${item.targetId}`);
@@ -95,18 +95,15 @@ export default function NotificationModal({ isOpen, onClose }: NotificationModal
     [dispatch, router, onClose]
   );
 
-  // 전체 읽음 처리
   const handleMarkAllRead = () => {
     dispatch(markAllNotificationsAsRead());
   };
 
-  // 단건 삭제
   const handleDelete = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     dispatch(deleteNotification(id));
   };
 
-  // 다음 페이지 더보기 (커서 페이징)
   const handleLoadMore = () => {
     if (hasNext && nextCursor && !loading) {
       dispatch(fetchNotifications({ lastNotificationId: nextCursor, size: 20 }));
@@ -115,7 +112,6 @@ export default function NotificationModal({ isOpen, onClose }: NotificationModal
 
   if (!isOpen) return null;
 
-  // 알림 유형별 뱃지 아이콘
   const getTypeBadge = (type: NotificationItem['type']) => {
     switch (type) {
       case 'COMMENT':
@@ -162,7 +158,6 @@ export default function NotificationModal({ isOpen, onClose }: NotificationModal
                 className={`${styles.notiItem} ${!item.read ? styles.unread : ''}`}
                 onClick={() => handleItemClick(item)}
               >
-                {/* 행위자 프로필 이미지 */}
                 <img
                   src={getProfileImage(item.actorProfileImageUrl)}
                   alt={item.actorName || '프로필'}

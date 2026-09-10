@@ -21,7 +21,7 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY || '705ecc4de821b5770092b4aeff178932';
+  const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY || 'bcca074a50bc2fb82991d15482b1603b';
 
   const initKakaoSDK = useCallback(() => {
     if (!window.kakao || !window.kakao.maps) return;
@@ -47,13 +47,11 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
       document.head.appendChild(script);
     }
 
-    // 3. 스크립트 로드 완료 이벤트 리스너 등록
     const handleScriptLoad = () => {
       initKakaoSDK();
     };
     script.addEventListener('load', handleScriptLoad);
 
-    // 4. 안전장치: 0.1초마다 kakao.maps 존재 여부 감지 (services 대기 조건 제거!)
     const interval = setInterval(() => {
       if (window.kakao && window.kakao.maps) {
         initKakaoSDK();
@@ -61,7 +59,6 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
       }
     }, 100);
 
-    // 5. 5초 타임아웃
     const timeout = setTimeout(() => {
       clearInterval(interval);
       if (!window.kakao || !window.kakao.maps) {
@@ -76,7 +73,6 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
     };
   }, [KAKAO_APP_KEY, initKakaoSDK]);
 
-  // 지도 생성 (isLoaded 가 true 가 되었을 때)
   useEffect(() => {
     if (isLoaded && mapContainer.current && !map) {
       try {
@@ -98,7 +94,6 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
     }
   }, [isLoaded, map]);
 
-  // 장소 검색
   const searchPlaces = () => {
     if (!keyword.trim()) {
       alert('검색어를 입력해주세요!');
@@ -154,7 +149,6 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
         </div>
 
         <div style={{ display: 'flex', flex: 1, gap: '10px', overflow: 'hidden', minHeight: '450px' }}>
-          {/* 검색 목록 */}
           <div style={{ width: '35%', overflowY: 'auto', borderRight: '1px solid #eee', paddingRight: '10px' }}>
             {loadError ? (
               <div style={{ textAlign: 'center', color: '#e53e3e', marginTop: '50px', fontSize: '13px', padding: '10px', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
@@ -198,7 +192,6 @@ const MapModal = ({ onClose, onSelectPlace }: MapModalProps) => {
             )}
           </div>
           
-          {/* 지도 영역 */}
           <div ref={mapContainer} style={{ flex: 1, height: '100%', minHeight: '400px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}></div>
         </div>
       </div>
