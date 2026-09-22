@@ -174,7 +174,6 @@ export const uploadImages = createAsyncThunk<string[], File[] | FileList | File>
       const formData = new FormData();
       const filesArray = imageFiles instanceof File ? [imageFiles] : Array.from(imageFiles);
 
-      // 최대 5장 검증
       if (filesArray.length === 0) {
         return rejectWithValue('업로드할 이미지 파일을 선택해주세요.');
       }
@@ -238,16 +237,20 @@ export const deleteBoard = createAsyncThunk<number, number>(
   }
 );
 
-export const createComment = createAsyncThunk<any, { boardId: number; commentContent: string; parentCommentId?: number | null }>(
+export const createComment = createAsyncThunk<
+  any, 
+  { boardId: number; commentContent: string; parentCommentId?: number | null }
+>(
   'board/createComment',
   async ({ boardId, commentContent, parentCommentId }, { dispatch, rejectWithValue }) => {
     try {
-      const payload = {
+      const payload: { content: string; parentCommentId?: number } = {
         content: commentContent,
-        commentContent: commentContent,
-        parentCommentId: parentCommentId ?? null,
-        parentId: parentCommentId ?? null,
       };
+
+      if (parentCommentId) {
+        payload.parentCommentId = Number(parentCommentId);
+      }
 
       const response = await api.post(`/comment/${boardId}`, payload);
       dispatch(fetchComments(boardId));

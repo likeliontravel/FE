@@ -18,15 +18,6 @@ import styles from '../../../../styles/postDetail/postDetail.module.scss';
 import SearchBar from '../../SearchBar/SearchBar';
 import Image from 'next/image';
 
-const regionKeywords = [
-  '서울', '인천', '대전', '대구', '광주', '부산', '울산', '경기', '강원', 
-  '충북', '충남', '세종', '전북', '전남', '경북', '경남', '제주', '가평', 
-  '양양', '강릉', '경주', '전주', '여수', '춘천', '홍천', '태안', '통영', 
-  '거제', '포항', '안동'
-];
-
-const themeKeywords = ['힐링', '액티비티', '맛집', '문화'];
-
 interface NestedComment extends Comment {
   children: NestedComment[];
 }
@@ -254,6 +245,8 @@ const PostDetail = () => {
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
 
+  const [currentImgIdx, setCurrentImgIdx] = useState(0);
+
   const requireLogin = useCallback(() => { 
     if (!loggedInUser) { 
       alert('로그인이 필요한 기능입니다.'); 
@@ -270,6 +263,35 @@ const PostDetail = () => {
       dispatch(fetchComments(boardId)); 
     } 
   }, [dispatch, boardId]);
+
+  const postImages = useMemo(() => {
+    if (!post) return [];
+    const urls = new Set<string>();
+    
+    if (post.thumbnailPublicUrl) {
+      urls.add(post.thumbnailPublicUrl);
+    }
+    
+    if (post.content) {
+      const imgRegex = /<img[^>]+src=["']([^"']+)["']/g;
+      let match;
+      while ((match = imgRegex.exec(post.content)) !== null) {
+        const src = match[1];
+        if (!src.includes('dapi.kakao.com') && !src.includes('spi.map.kakao.com')) {
+          urls.add(src);
+        }
+      }
+    }
+    return Array.from(urls);
+  }, [post]);
+
+  const handlePrevImg = useCallback(() => {
+    setCurrentImgIdx(prev => (prev === 0 ? postImages.length - 1 : prev - 1));
+  }, [postImages.length]);
+
+  const handleNextImg = useCallback(() => {
+    setCurrentImgIdx(prev => (prev === postImages.length - 1 ? 0 : prev + 1));
+  }, [postImages.length]);
 
   const isPostAuthor = useMemo(() => {
     if (!post || !loggedInUser) return false;
@@ -480,7 +502,22 @@ const PostDetail = () => {
         <div className={styles.contentWrapper}>
           <main className={styles.mainContent}>
             <div className={styles.titleWrapper}>
-              <h1 className={styles.title}>{post.title}</h1>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {post.region && (
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '14px', backgroundColor: '#eef2f3', color: '#475569' }}>
+                      📍 {post.region}
+                    </span>
+                  )}
+                  {post.theme && (
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '14px', backgroundColor: '#e0f2fe', color: '#0284c7' }}>
+                      🏷️ {post.theme}
+                    </span>
+                  )}
+                </div>
+                <h1 className={styles.title} style={{ margin: 0 }}>{post.title}</h1>
+              </div>
+
               {isPostAuthor && (
                 <div className={styles.postActions}>
                   <button onClick={handleEditPost}>수정</button>
@@ -500,9 +537,106 @@ const PostDetail = () => {
               <span className={styles.postDate}>{formatDate(post.createdTime)}</span>
             </div>
             
-            {post.thumbnailPublicUrl && (
-              <div className={styles.imageGrid}>
-                <img src={post.thumbnailPublicUrl} alt="썸네일" />
+            {postImages.length > 0 && (
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                height: '420px',
+                backgroundColor: '#0f172a',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                marginBottom: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.08)'
+              }}>
+                <img 
+                  src={postImages[currentImgIdx]} 
+                  alt={`갤러리 사진 ${currentImgIdx + 1}`} 
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    transition: 'all 0.2s ease-in-out'
+                  }}
+                />
+
+                {postImages.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handlePrevImg}
+                      style={{
+                        position: 'absolute',
+                        left: '16px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#1e293b',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        zIndex: 2,
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; }}
+                    >
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleNextImg}
+                      style={{
+                        position: 'absolute',
+                        right: '16px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#1e293b',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        zIndex: 2,
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; }}
+                    >
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '16px',
+                      right: '16px',
+                      backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                      color: '#ffffff',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      letterSpacing: '1px',
+                      zIndex: 2,
+                    }}>
+                      {currentImgIdx + 1} / {postImages.length}
+                    </div>
+                  </>
+                )}
               </div>
             )}
             
