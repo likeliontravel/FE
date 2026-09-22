@@ -245,7 +245,7 @@ const PostDetail = () => {
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
 
-  const [currentImgIdx, setCurrentImgIdx] = useState(0);
+  const [selectedModalImage, setSelectedModalImage] = useState<string | null>(null);
 
   const requireLogin = useCallback(() => { 
     if (!loggedInUser) { 
@@ -268,30 +268,29 @@ const PostDetail = () => {
     if (!post) return [];
     const urls = new Set<string>();
     
-    if (post.thumbnailPublicUrl) {
-      urls.add(post.thumbnailPublicUrl);
+    if (post.thumbnailPublicUrl && post.thumbnailPublicUrl.trim() !== '') {
+      urls.add(post.thumbnailPublicUrl.trim());
     }
     
     if (post.content) {
-      const imgRegex = /<img[^>]+src=["']([^"']+)["']/g;
+      const decoded = unescapeHtml(post.content);
+      const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
       let match;
-      while ((match = imgRegex.exec(post.content)) !== null) {
+      while ((match = imgRegex.exec(decoded)) !== null) {
         const src = match[1];
-        if (!src.includes('dapi.kakao.com') && !src.includes('spi.map.kakao.com')) {
-          urls.add(src);
+        if (!src.includes('dapi.kakao.com') && !src.includes('spi.map.kakao.com') && !src.includes('map2.daum.net')) {
+          urls.add(src.trim());
         }
       }
     }
     return Array.from(urls);
   }, [post]);
 
-  const handlePrevImg = useCallback(() => {
-    setCurrentImgIdx(prev => (prev === 0 ? postImages.length - 1 : prev - 1));
-  }, [postImages.length]);
-
-  const handleNextImg = useCallback(() => {
-    setCurrentImgIdx(prev => (prev === postImages.length - 1 ? 0 : prev + 1));
-  }, [postImages.length]);
+  const handleWheelScroll = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (e.deltaY !== 0) {
+      e.currentTarget.scrollLeft += e.deltaY;
+    }
+  };
 
   const isPostAuthor = useMemo(() => {
     if (!post || !loggedInUser) return false;
@@ -513,7 +512,7 @@ const PostDetail = () => {
                   )}
                   {post.theme && (
                     <span style={{ fontSize: '13px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '14px', backgroundColor: '#e0f2fe', color: '#0284c7' }}>
-                     {post.theme}
+                      {post.theme}
                     </span>
                   )}
                 </div>
@@ -528,6 +527,7 @@ const PostDetail = () => {
               )}
             </div>
             
+            {/* 2. 작성자 프로필 정보 */}
             <div className={styles.authorInfo}>
               <img 
                 src={getProfileImage(post.writerProfileImageUrl)} 
@@ -541,104 +541,89 @@ const PostDetail = () => {
             
             {postImages.length > 0 && (
               <div style={{
-                position: 'relative',
-                width: '100%',
-                height: '450px',
-                backgroundColor: '#0f172a',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                marginBottom: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+                marginBottom: '36px',
+                backgroundColor: '#ffffff',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid #eef2f6',
+                boxShadow: '0 4px 18px rgba(0, 0, 0, 0.04)'
               }}>
-                <img 
-                  src={postImages[currentImgIdx]} 
-                  alt={`게시글 사진 ${currentImgIdx + 1}`} 
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '18px' }}>📸</span>
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#1e293b' }}>
+                      사진 모아보기
+                      <span style={{ marginLeft: '8px', color: '#27abf1', fontSize: '15px' }}>{postImages.length}장</span>
+                    </h3>
+                  </div>
+                  <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>
+                    마우스 휠로 좌우 넘겨보기 ↔ (클릭 시 크게보기)
+                  </span>
+                </div>
+
+                {/* 가로 휠 스크롤 트랙 */}
+                <div
+                  onWheel={handleWheelScroll}
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    transition: 'opacity 0.2s ease-in-out'
+                    display: 'flex',
+                    gap: '14px',
+                    overflowX: 'auto',
+                    paddingBottom: '8px',
+                    cursor: 'grab',
+                    scrollBehavior: 'smooth'
                   }}
-                />
-
-                {postImages.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handlePrevImg}
+                >
+                  {postImages.map((src, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => setSelectedModalImage(src)}
                       style={{
-                        position: 'absolute',
-                        left: '16px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                        border: 'none',
+                        flexShrink: 0,
+                        width: '240px',
+                        height: '170px',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        position: 'relative',
                         cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#1e293b',
-                        boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
-                        zIndex: 2,
-                        transition: 'all 0.15s ease'
+                        backgroundColor: '#f1f5f9',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.85)'; }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(39, 171, 241, 0.25)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.06)';
+                      }}
                     >
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleNextImg}
-                      style={{
+                      <img 
+                        src={src} 
+                        alt={`게시글 사진 ${idx + 1}`} 
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                      <div style={{
                         position: 'absolute',
-                        right: '16px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#1e293b',
-                        boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
-                        zIndex: 2,
-                        transition: 'all 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.85)'; }}
-                    >
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </button>
-
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '16px',
-                      right: '16px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.65)',
-                      color: '#ffffff',
-                      padding: '4px 14px',
-                      borderRadius: '20px',
-                      fontSize: '13px',
-                      fontWeight: '700',
-                      letterSpacing: '1px',
-                      zIndex: 2,
-                    }}>
-                      {currentImgIdx + 1} / {postImages.length}
+                        bottom: '8px',
+                        right: '8px',
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        color: '#ffffff',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {idx + 1} / {postImages.length}
+                      </div>
                     </div>
-                  </>
-                )}
+                  ))}
+                </div>
               </div>
             )}
             
@@ -732,6 +717,56 @@ const PostDetail = () => {
           </aside>
         </div>
       </div>
+
+      {selectedModalImage && (
+        <div 
+          onClick={() => setSelectedModalImage(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            cursor: 'zoom-out'
+          }}
+        >
+          <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}>
+            <img 
+              src={selectedModalImage} 
+              alt="확대 이미지" 
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                boxShadow: '0 8px 30px rgba(0, 0, 0, 0.5)'
+              }}
+            />
+            <button
+              onClick={() => setSelectedModalImage(null)}
+              style={{
+                position: 'absolute',
+                top: '-40px',
+                right: '0',
+                background: 'none',
+                border: 'none',
+                color: '#ffffff',
+                fontSize: '28px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
