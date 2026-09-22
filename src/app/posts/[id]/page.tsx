@@ -501,17 +501,19 @@ const PostDetail = () => {
         
         <div className={styles.contentWrapper}>
           <main className={styles.mainContent}>
+            
+            {/* 1. 제목 및 지역/테마 뱃지 표시 영역 */}
             <div className={styles.titleWrapper}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   {post.region && (
                     <span style={{ fontSize: '13px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '14px', backgroundColor: '#eef2f3', color: '#475569' }}>
-                      📍 {post.region}
+                      {post.region}
                     </span>
                   )}
                   {post.theme && (
                     <span style={{ fontSize: '13px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '14px', backgroundColor: '#e0f2fe', color: '#0284c7' }}>
-                      🏷️ {post.theme}
+                     {post.theme}
                     </span>
                   )}
                 </div>
@@ -541,7 +543,7 @@ const PostDetail = () => {
               <div style={{
                 position: 'relative',
                 width: '100%',
-                height: '420px',
+                height: '450px',
                 backgroundColor: '#0f172a',
                 borderRadius: '12px',
                 overflow: 'hidden',
@@ -549,16 +551,16 @@ const PostDetail = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.08)'
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
               }}>
                 <img 
                   src={postImages[currentImgIdx]} 
-                  alt={`갤러리 사진 ${currentImgIdx + 1}`} 
+                  alt={`게시글 사진 ${currentImgIdx + 1}`} 
                   style={{
                     width: '100%',
                     height: '100%',
                     objectFit: 'contain',
-                    transition: 'all 0.2s ease-in-out'
+                    transition: 'opacity 0.2s ease-in-out'
                   }}
                 />
 
@@ -572,22 +574,22 @@ const PostDetail = () => {
                         left: '16px',
                         top: '50%',
                         transform: 'translateY(-50%)',
-                        width: '40px',
-                        height: '40px',
+                        width: '42px',
+                        height: '42px',
                         borderRadius: '50%',
-                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
                         border: 'none',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: '#1e293b',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
                         zIndex: 2,
-                        transition: 'background-color 0.15s ease'
+                        transition: 'all 0.15s ease'
                       }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.85)'; }}
                     >
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                     </button>
@@ -600,22 +602,22 @@ const PostDetail = () => {
                         right: '16px',
                         top: '50%',
                         transform: 'translateY(-50%)',
-                        width: '40px',
-                        height: '40px',
+                        width: '42px',
+                        height: '42px',
                         borderRadius: '50%',
-                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
                         border: 'none',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: '#1e293b',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
                         zIndex: 2,
-                        transition: 'background-color 0.15s ease'
+                        transition: 'all 0.15s ease'
                       }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.85)'; }}
                     >
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </button>
@@ -626,9 +628,9 @@ const PostDetail = () => {
                       right: '16px',
                       backgroundColor: 'rgba(0, 0, 0, 0.65)',
                       color: '#ffffff',
-                      padding: '4px 12px',
+                      padding: '4px 14px',
                       borderRadius: '20px',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       fontWeight: '700',
                       letterSpacing: '1px',
                       zIndex: 2,
@@ -640,8 +642,10 @@ const PostDetail = () => {
               </div>
             )}
             
+            {/* 4. 본문 내용 */}
             <div className={styles.postBody} dangerouslySetInnerHTML={postBodyContent} />
             
+            {/* 5. 댓글 영역 */}
             <div className={styles.commentsSection}>
               <div className={styles.commentInputWrapper}>
                 <div className={styles.commentInputContainer}>
