@@ -542,7 +542,7 @@ const PostDetail = () => {
             {postImages.length > 0 && (
               <div style={{
                 marginBottom: '36px',
-                backgroundColor: '#ffffff',
+                backgroundColor: '#e0f2fe',
                 borderRadius: '16px',
                 padding: '20px',
                 border: '1px solid #eef2f6',
@@ -550,7 +550,7 @@ const PostDetail = () => {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '18px' }}>📸</span>
+                    <span style={{ fontSize: '18px' }}></span>
                     <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#1e293b' }}>
                       사진 모아보기
                       <span style={{ marginLeft: '8px', color: '#27abf1', fontSize: '15px' }}>{postImages.length}장</span>
