@@ -1,4 +1,4 @@
-name: Frontend CI & Docker Build
+name: Frontend CI / CD Pipeline
 
 on:
   push:
@@ -52,3 +52,21 @@ jobs:
             NEXT_PUBLIC_KAKAO_APP_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_APP_KEY }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  cd-deploy:
+    needs: ci-build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/toleave_yechan
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/toleave-frontend:latest
+            docker compose -f docker-compose.prod.yml up -d --force-recreate frontend
+            docker image prune -f
